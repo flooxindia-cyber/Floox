@@ -40,10 +40,29 @@ const FLOOX = (() => {
 
   // ── Auth actions ──────────────────────────────────────────────────────────
   async function login(email, password) {
-    const data = await apiPost('login', { email, password });
-    saveSession(data.token, data.user);
-    return data.user;
+  const res = await fetch('/api/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, password })
+  });
+
+  let data;
+
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('Login server returned an invalid response.');
   }
+
+  if (!res.ok) {
+    throw new Error(data.error || 'Login failed. Please try again.');
+  }
+
+  saveSession(data.token, data.user);
+  return data.user;
+}
 
   async function register(payload) {
     return await apiPost('register', payload);
