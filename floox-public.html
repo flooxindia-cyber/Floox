@@ -881,7 +881,7 @@ async function loadPublicArtists() {
   const scroll = document.getElementById('publicArtistsScroll');
   if (!scroll) return;
   try {
-    const res   = await fetch('/.netlify/functions/artists?limit=10');
+    const res   = await fetch('/api/artists?limit=20');
     const data  = await res.json();
     const artists = data.artists || [];
     if (!artists.length) {
