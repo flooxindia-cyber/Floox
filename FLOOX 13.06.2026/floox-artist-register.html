@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join as Artist — Floox | Your Stage. Your Story.</title>
+<link rel="icon" href="logo_floox.jpeg">
+<link rel="stylesheet" href="floox-shared.css">
+<style>
+.hero{min-height:38vh;background:#0D0800;position:relative;overflow:hidden;display:flex;align-items:center;padding:8rem 5% 4rem}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 20% 50%,rgba(0,194,168,0.2) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 80% 30%,rgba(124,58,237,0.15) 0%,transparent 60%),#0D0800}
+.lights{position:absolute;inset:0;pointer-events:none}
+.light{position:absolute;bottom:0;width:2px;transform-origin:bottom center;animation:lSway 4s ease-in-out infinite}
+.light:nth-child(1){left:10%;height:70%;background:linear-gradient(to top,rgba(255,92,0,0.4),transparent);animation-delay:0s}
+.light:nth-child(2){left:30%;height:85%;background:linear-gradient(to top,rgba(255,45,120,0.4),transparent);animation-delay:1.2s}
+.light:nth-child(3){left:55%;height:75%;background:linear-gradient(to top,rgba(0,194,168,0.35),transparent);animation-delay:0.6s}
+.light:nth-child(4){left:80%;height:65%;background:linear-gradient(to top,rgba(124,58,237,0.4),transparent);animation-delay:2s}
+@keyframes lSway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.hero-content{position:relative;z-index:2}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(0,194,168,0.15);border:1px solid rgba(0,194,168,0.3);border-radius:100px;padding:0.35rem 0.9rem;font-size:0.75rem;font-weight:700;color:rgba(0,230,200,0.9);margin-bottom:1.2rem;letter-spacing:0.06em;text-transform:uppercase}
+.badge-dot{width:6px;height:6px;background:#22C55E;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,0.5)}50%{opacity:0.5;box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+.hero h1{font-family:var(--head);font-size:clamp(2.5rem,5vw,4rem);font-weight:800;color:#fff;line-height:1;letter-spacing:-2px;margin-bottom:0.8rem}
+.hero h1 span{background:linear-gradient(135deg,var(--yellow),var(--orange),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:rgba(255,255,255,0.55);font-size:1rem;max-width:500px;line-height:1.7}
+.form-section{padding:4rem 5% 6rem;max-width:860px;margin:0 auto}
+
+/* upload unlimited badge */
+.unlimited-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,194,168,0.1);border:1.5px solid rgba(0,194,168,0.25);border-radius:100px;padding:0.3rem 0.85rem;font-family:var(--head);font-size:0.72rem;font-weight:700;color:var(--teal);margin-bottom:0.8rem;letter-spacing:0.04em}
+
+/* upload progress overlay */
+.upload-progress-wrap{margin-top:0.6rem;display:none}
+.up-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.up-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--purple));width:0;border-radius:3px;transition:width 0.3s}
+.up-status{font-family:var(--head);font-size:0.72rem;font-weight:700;color:var(--muted);margin-top:0.3rem}
+
+/* review rows */
+.rev-row{display:flex;align-items:flex-start;gap:1rem;padding:0.7rem 0;border-bottom:1px solid var(--border)}
+.rev-label{font-family:var(--head);font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;min-width:130px;flex-shrink:0}
+.rev-val{font-size:0.88rem;color:var(--text);font-weight:500}
+
+/* password strength */
+.pw-strength{display:flex;gap:4px;margin-top:5px}
+.pw-seg{height:3px;flex:1;border-radius:2px;background:var(--border);transition:background 0.3s}
+
+/* nav dark override */
+#navbar{background:rgba(255,251,244,0.95)}
+</style>
+</head>
+<body>
+
+<nav id="navbar">
+  <a href="index.html" class="nav-logo">
+    <img src="logo_floox.jpeg" alt="Floox">
+    <span class="nav-logo-text">Floox</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="floox-public.html">Discover</a></li>
+    <li><a href="floox-platform.html">Platform</a></li>
+    <li><a href="floox-organiser-register.html">For Organisers</a></li>
+    <li><a href="floox-contact.html">Plan Event</a></li>
+    <li><a href="floox-login.html" class="nav-cta" data-auth="login">Login</a></li>
+    <li style="display:none" data-auth="logout"><a href="#" onclick="FLOOX.logout();return false">Logout</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="lights"><div class="light"></div><div class="light"></div><div class="light"></div><div class="light"></div></div>
+  <div class="hero-content">
+    <div class="hero-badge"><span class="badge-dot"></span>Artist Registration </div>
+    <h1>Your Stage.<br><span>Your Story.</span></h1>
+    <p>Create your Floox artist profile, upload unlimited media, and get discovered by 380+ verified organisers across India.</p>
+  </div>
+</div>
+
+<div class="form-section">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:25%"></div></div>
+
+  <div class="form-steps" id="formSteps">
+    <div class="fstep">
+      <div class="fstep-num active" id="sn1">1</div>
+      <span class="fstep-label active" id="sl1">Basic Info</span>
+      <div class="fstep-line" id="sl1-line"></div>
+    </div>
+    <div class="fstep">
+      <div class="fstep-num inactive" id="sn2">2</div>
+      <span class="fstep-label" id="sl2">Artist Details</span>
+      <div class="fstep-line" id="sl2-line"></div>
+    </div>
+    <div class="fstep">
+      <div class="fstep-num inactive" id="sn3">3</div>
+      <span class="fstep-label" id="sl3">Media Upload</span>
+      <div class="fstep-line" id="sl3-line"></div>
+    </div>
+    <div class="fstep">
+      <div class="fstep-num inactive" id="sn4">4</div>
+      <span class="fstep-label" id="sl4">Review</span>
+    </div>
+  </div>
+
+  <!-- STEP 1: BASIC INFO -->
+  <div class="form-card active" id="step1">
+    <div class="card-title">👤 Basic Information</div>
+    <div class="card-sub">This is what organisers see first on your profile. Make a great first impression!</div>
+
+    <div style="margin-bottom:1.4rem">
+      <div class="ms-label">Profile Photo</div>
+      <div style="display:flex;align-items:center;gap:1.5rem">
+        <div class="profile-pic-wrap">
+          <div class="profile-pic-circle" id="profilePicCircle">
+            <input type="file" accept="image/*" id="profilePicInput" onchange="handleProfilePic(this)">
+            <div id="profilePicPlaceholder"><div class="pp-placeholder">🎤</div><div class="pp-label">Upload</div></div>
+          </div>
+        </div>
+        <div><h4 style="font-family:var(--head);font-size:0.9rem;font-weight:700;margin-bottom:0.3rem">Upload a clear profile photo</h4><p style="font-size:0.8rem;color:var(--muted);line-height:1.6">Square image works best. Min 400×400px. JPG or PNG.<br>This is the first thing organisers see — make it count!</p></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:0.85rem">
+      <div class="frow2">
+        <div><label class="flabel">Full Name *</label><input type="text" class="finput" id="artistName" placeholder="Your full name"></div>
+        <div><label class="flabel">Stage Name (if any)</label><input type="text" class="finput" id="stageName" placeholder="Stage / artist name"></div>
+      </div>
+      <div class="frow2">
+        <div><label class="flabel">Email Address *</label><input type="email" class="finput" id="artistEmail" placeholder="you@email.com"></div>
+        <div><label class="flabel">Phone Number *</label><input type="tel" class="finput" id="artistPhone" placeholder="+91 XXXXX XXXXX"></div>
+      </div>
+      <div class="frow2">
+        <div><label class="flabel">City *</label><input type="text" class="finput" id="artistCity" placeholder="Your city"></div>
+        <div><label class="flabel">State</label>
+          <select class="fselect" id="artistState">
+            <option value="" disabled selected>Select state</option>
+            <option>Uttar Pradesh</option><option>Delhi</option><option>Rajasthan</option><option>Punjab</option><option>Haryana</option><option>Uttarakhand</option><option>Maharashtra</option><option>Karnataka</option><option>Tamil Nadu</option><option>Telangana</option><option>Gujarat</option><option>West Bengal</option><option>Madhya Pradesh</option><option>Bihar</option><option>Jharkhand</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="flabel">Password *</label>
+        <div style="position:relative">
+          <input type="password" class="finput" id="artistPass" placeholder="Create a strong password (min 8 characters)" oninput="checkPwStrength(this.value)">
+          <button type="button" onclick="togglePwVis('artistPass',this)" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:0.9rem">👁️</button>
+        </div>
+        <div class="pw-strength"><div class="pw-seg" id="ps1"></div><div class="pw-seg" id="ps2"></div><div class="pw-seg" id="ps3"></div><div class="pw-seg" id="ps4"></div></div>
+        <div style="font-family:var(--head);font-size:0.68rem;font-weight:700;color:var(--muted);margin-top:3px" id="pwStrengthLabel"></div>
+      </div>
+    </div>
+    <div class="btn-row"><div></div><button class="btn-next" onclick="goStep(2)">Next: Artist Details →</button></div>
+  </div>
+
+  <!-- STEP 2: ARTIST DETAILS -->
+  <div class="form-card" id="step2">
+    <div class="card-title">🎵 Artist Details</div>
+    <div class="card-sub">Tell organisers about your art — genres, experience, rates, and what makes you unique.</div>
+    <div style="display:flex;flex-direction:column;gap:0.85rem">
+      <div>
+        <div class="ms-label">Your Genres * (select all that apply)</div>
+        <div class="ms-wrap" id="genreTags">
+          <span class="ms-tag" onclick="toggleT(this)">🎬 Bollywood / Hindi Pop</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎻 Classical / Semi-Classical</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎸 Indie / Folk</span>
+          <span class="ms-tag" onclick="toggleT(this)">🌙 Sufi / Ghazal</span>
+          <span class="ms-tag" onclick="toggleT(this)">🙏 Devotional / Bhajan</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎛️ Electronic / DJ</span>
+          <span class="ms-tag" onclick="toggleT(this)">🤘 Rock / Metal</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎷 Jazz / Blues</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎤 Rap / Hip-Hop</span>
+          <span class="ms-tag" onclick="toggleT(this)">💃 Dance Performance</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎭 Stand-up Comedy</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎵 Punjabi / Bhangra</span>
+          <span class="ms-tag" onclick="toggleT(this)">✨ Other</span>
+        </div>
+      </div>
+      <div>
+        <div class="ms-label">Type of Performance</div>
+        <div class="ms-wrap" id="perfTypeTags">
+          <span class="ms-tag" onclick="toggleT(this)">🎤 Solo Singer</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎸 Band</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎛️ DJ Set</span>
+          <span class="ms-tag" onclick="toggleT(this)">💃 Dancer</span>
+          <span class="ms-tag" onclick="toggleT(this)">🥁 Instrumentalist</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎭 Comedian</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎪 Anchor / Emcee</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎼 Composer / Music Producer</span>
+        </div>
+      </div>
+      <div class="frow2">
+        <div>
+          <label class="flabel">Years of Experience</label>
+          <select class="fselect" id="experience">
+            <option value="" disabled selected>Select experience</option>
+            <option>Less than 1 year</option><option>1–2 years</option><option>3–5 years</option><option>5–10 years</option><option>10+ years</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">Minimum Fee per Event (₹)</label>
+          <select class="fselect" id="minFee">
+            <option value="" disabled selected>Select range</option>
+            <option>Below ₹5,000</option><option>₹5,000 – ₹10,000</option><option>₹10,000 – ₹25,000</option><option>₹25,000 – ₹50,000</option><option>₹50,000 – ₹1 Lakh</option><option>Above ₹1 Lakh</option><option>Negotiable</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="ms-label">Event Types You're Available For</div>
+        <div class="ms-wrap" id="eventTypeTags">
+          <span class="ms-tag" onclick="toggleT(this)">💼 Corporate Events</span>
+          <span class="ms-tag" onclick="toggleT(this)">💍 Weddings & Sangeet</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎪 Music Festivals</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎓 College Fests</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎉 Private Parties</span>
+          <span class="ms-tag" onclick="toggleT(this)">🍽️ Restaurants / Lounges</span>
+          <span class="ms-tag" onclick="toggleT(this)">🕌 Mehfil / Intimate Gigs</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎭 Cultural Programmes</span>
+        </div>
+      </div>
+      <div><label class="flabel">Bio / About You</label><textarea class="finput" id="artistBio" placeholder="Write a short bio — your style, experience, what makes your performance special. (100–300 words recommended)" style="min-height:110px"></textarea></div>
+      <div><label class="flabel">Instagram Profile URL</label><input type="url" class="finput" id="instagramLink" placeholder="https://instagram.com/yourname"></div>
+      <div><label class="flabel">YouTube Channel URL (optional)</label><input type="url" class="finput" id="youtubeLink" placeholder="https://youtube.com/@yourchannel"></div>
+      <div><label class="flabel">Spotify / SoundCloud Link (optional)</label><input type="url" class="finput" id="spotifyLink" placeholder="https://open.spotify.com/artist/..."></div>
+      <div><label class="flabel">Personal Website (optional)</label><input type="url" class="finput" id="websiteLink" placeholder="https://yourwebsite.com"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(1)">← Back</button>
+      <button class="btn-next" onclick="goStep(3)">Next: Upload Media →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: MEDIA UPLOAD -->
+  <div class="form-card" id="step3">
+    <div class="card-title">🎬 Upload Your Best Work</div>
+    <div class="card-sub">Showcase your talent! Upload <strong>unlimited</strong> videos, photos and audio — no file count restrictions. More media = more bookings!</div>
+
+    <!-- Videos -->
+    <div style="margin-bottom:1.8rem">
+      <label class="flabel" style="margin-bottom:0.4rem;display:block">🎥 Performance Videos</label>
+      <div class="unlimited-badge">♾️ Unlimited uploads · No file count limit</div>
+      <div class="upload-zone" id="videoZone" ondragover="dragOver(event,'videoZone')" ondragleave="dragLeave('videoZone')" ondrop="dropFiles(event,'video')">
+        <input type="file" accept="video/*" multiple id="videoInput" onchange="handleFiles(this,'video')">
+        <span class="upload-icon">🎬</span>
+        <div class="upload-title">Drop your performance videos here</div>
+        <div class="upload-sub">Or click to browse. Show organisers your stage presence and energy!</div>
+        <div class="upload-types"><span class="utype">MP4</span><span class="utype">MOV</span><span class="utype">AVI</span><span class="utype">MKV</span><span class="utype">No limit on count</span></div>
+      </div>
+      <div class="preview-grid" id="videoPreview"></div>
+    </div>
+
+    <!-- Photos -->
+    <div style="margin-bottom:1.8rem">
+      <label class="flabel" style="margin-bottom:0.4rem;display:block">📸 Performance Photos</label>
+      <div class="unlimited-badge">♾️ Unlimited uploads · No file count limit</div>
+      <div class="upload-zone" id="photoZone" ondragover="dragOver(event,'photoZone')" ondragleave="dragLeave('photoZone')" ondrop="dropFiles(event,'photo')">
+        <input type="file" accept="image/*" multiple id="photoInput" onchange="handleFiles(this,'photo')">
+        <span class="upload-icon">📸</span>
+        <div class="upload-title">Drop performance photos here</div>
+        <div class="upload-sub">Stage shots, event photos, professional headshots — anything that shows your best side.</div>
+        <div class="upload-types"><span class="utype">JPG</span><span class="utype">PNG</span><span class="utype">WEBP</span><span class="utype">GIF</span><span class="utype">No limit on count</span></div>
+      </div>
+      <div class="preview-grid" id="photoPreview"></div>
+    </div>
+
+    <!-- Audio -->
+    <div style="margin-bottom:1.8rem">
+      <label class="flabel" style="margin-bottom:0.4rem;display:block">🎵 Audio Samples</label>
+      <div class="unlimited-badge">♾️ Unlimited uploads · No file count limit</div>
+      <div class="upload-zone" id="audioZone">
+        <input type="file" accept="audio/*" multiple id="audioInput" onchange="handleFiles(this,'audio')">
+        <span class="upload-icon">🎵</span>
+        <div class="upload-title">Upload audio recordings or demos</div>
+        <div class="upload-sub">Original songs, covers, live recordings — let your music speak!</div>
+        <div class="upload-types"><span class="utype">MP3</span><span class="utype">WAV</span><span class="utype">M4A</span><span class="utype">FLAC</span><span class="utype">No limit on count</span></div>
+      </div>
+      <div id="audioList" style="margin-top:0.8rem;display:flex;flex-direction:column;gap:0.5rem"></div>
+    </div>
+
+    <!-- YouTube Links -->
+    <div>
+      <label class="flabel" style="margin-bottom:0.6rem;display:block">📺 YouTube / Reel Links (Optional)</label>
+      <div style="display:flex;flex-direction:column;gap:0.5rem" id="ytLinkRows">
+        <input type="url" class="finput" placeholder="Paste a YouTube / Instagram Reel / Facebook video link" id="ytLink1">
+      </div>
+      <button type="button" onclick="addYTLink()" style="font-family:var(--head);font-size:0.78rem;font-weight:700;color:var(--orange);background:none;border:none;cursor:pointer;padding:0.5rem 0;display:flex;align-items:center;gap:5px">+ Add another link</button>
+    </div>
+
+    <!-- Upload status -->
+    <div id="uploadStatus" style="display:none;margin-top:1rem;background:rgba(0,194,168,0.06);border:1.5px solid rgba(0,194,168,0.2);border-radius:14px;padding:1rem">
+      <div style="font-family:var(--head);font-size:0.82rem;font-weight:700;color:var(--teal);margin-bottom:0.5rem" id="uploadStatusText">Uploading files…</div>
+      <div class="up-bar"><div class="up-fill" id="uploadFill"></div></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(2)">← Back</button>
+      <button class="btn-next" onclick="goStep(4)">Next: Review & Submit →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: REVIEW -->
+  <div class="form-card" id="step4">
+    <div class="card-title">✅ Review & Submit</div>
+    <div class="card-sub">Almost there! Review your profile details before we create your account.</div>
+    <div id="reviewContent" style="display:flex;flex-direction:column;margin-bottom:1.5rem"></div>
+    <div style="background:linear-gradient(135deg,rgba(255,92,0,0.06),rgba(255,45,120,0.04));border:1.5px solid rgba(255,92,0,0.15);border-radius:16px;padding:1.2rem;margin-bottom:1.2rem">
+      <div style="font-family:var(--head);font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:0.4rem">🔒 Privacy & Terms</div>
+      <div style="font-size:0.8rem;color:var(--muted);line-height:1.65;margin-bottom:0.8rem">Your data is secure and never shared without consent. By creating a profile you agree to Floox's <a href="floox-contact.html" style="color:var(--orange)">Terms of Service</a> and <a href="floox-contact.html" style="color:var(--orange)">Privacy Policy</a>.</div>
+      <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+        <input type="checkbox" id="termsCheck" style="margin-top:3px;accent-color:var(--orange)">
+        <span style="font-size:0.82rem;color:var(--text);font-weight:500">I agree to Floox's Terms of Service and Privacy Policy</span>
+      </label>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(3)">← Back</button>
+      <button class="btn-next" id="submitBtn" onclick="submitForm()" style="background:linear-gradient(135deg,var(--green),#059669);box-shadow:0 6px 22px rgba(16,185,129,0.35)">🚀 Create My Artist Profile</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-page" id="successPage">
+    <div class="suc-graphic">🎤</div>
+    <div class="suc-title">You're on the Stage! 🎉</div>
+    <div class="suc-sub">Your Your artist account is ready! You can now sign in.</div>
+    <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem">
+      <div style="display:flex;align-items:center;gap:6px;font-family:var(--head);font-size:0.78rem;font-weight:700;padding:0.4rem 1rem;border-radius:100px;background:var(--bg);border:1.5px solid var(--border);color:var(--muted)">✅ Profile submitted</div>
+      <div style="display:flex;align-items:center;gap:6px;font-family:var(--head);font-size:0.78rem;font-weight:700;padding:0.4rem 1rem;border-radius:100px;background:var(--bg);border:1.5px solid var(--border);color:var(--muted)">📧 Confirmation sent</div>
+      <div style="display:flex;align-items:center;gap:6px;font-family:var(--head);font-size:0.78rem;font-weight:700;padding:0.4rem 1rem;border-radius:100px;background:var(--bg);border:1.5px solid var(--border);color:var(--muted)">⏳ Review: 24 hrs</div>
+    </div>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+      <a href="floox-public.html" class="btn-next" style="text-decoration:none">🎵 Explore Events</a>
+      <a href="floox-login.html" class="btn-back" style="text-decoration:none">Sign In to My Account</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-grid">
+    <div>
+      <a href="index.html" class="foot-logo-row"><img src="logo_floox.jpeg" alt="Floox"><span>Floox</span></a>
+      <p class="foot-desc">India's platform connecting artists and event organisers. Your Stage. Your Story.</p>
+    </div>
+    <div><div class="foot-h">Navigate</div><ul class="foot-ul"><li><a href="floox-public.html">Discover Events</a></li><li><a href="floox-platform.html">Platform</a></li><li><a href="floox-artist-register.html">Join as Artist</a></li><li><a href="floox-organiser-register.html">Join as Organiser</a></li></ul></div>
+    <div><div class="foot-h">Support</div><ul class="foot-ul"><li><a href="floox-contact.html">Contact Us</a></li><li><a href="floox-contact.html">Plan My Event</a></li><li><a href="floox-login.html">Login</a></li></ul></div>
+    <div><div class="foot-h">Legal</div><ul class="foot-ul"><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li><li><a href="#">Cookie Policy</a></li></ul></div>
+  </div>
+  <div class="foot-bottom"><span>© 2026 Floox · Your Stage. Your Story.</span><div class="foot-legal"><a href="#">Privacy</a><a href="#">Terms</a></div></div>
+</footer>
+
+<script src="floox-auth.js"></script>
+<script>
+let curStep = 1;
+const totalSteps = 4;
+const uploadedFiles = { video:[], photo:[], audio:[] };
+let ytLinkCount = 1;
+let registeredUserId = null;
+
+function goStep(n) {
+  if (n > curStep && !validateStep(curStep)) return;
+  document.getElementById('step'+curStep).classList.remove('active');
+  curStep = n;
+  document.getElementById('step'+n).classList.add('active');
+  updateStepUI();
+  if (n === 4) buildReview();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateStepUI() {
+  document.getElementById('progressFill').style.width = ((curStep/totalSteps)*100)+'%';
+  for (let i=1; i<=4; i++) {
+    const sn = document.getElementById('sn'+i);
+    const sl = document.getElementById('sl'+i);
+    const ln = document.getElementById('sl'+i+'-line');
+    if (i < curStep) { sn.className='fstep-num done'; sn.textContent='✓'; sl.className='fstep-label done'; if(ln) ln.className='fstep-line done'; }
+    else if (i === curStep) { sn.className='fstep-num active'; sn.textContent=i; sl.className='fstep-label active'; if(ln) ln.className='fstep-line'; }
+    else { sn.className='fstep-num inactive'; sn.textContent=i; sl.className='fstep-label'; if(ln) ln.className='fstep-line'; }
+  }
+}
+
+function validateStep(s) {
+  if (s===1) {
+    if (!document.getElementById('artistName').value.trim()) { FLOOX.toast('Please enter your full name','error'); return false; }
+    const e = document.getElementById('artistEmail').value.trim();
+    if (!e || !e.includes('@')) { FLOOX.toast('Please enter a valid email','error'); return false; }
+    if (!document.getElementById('artistPhone').value.trim()) { FLOOX.toast('Please enter your phone number','error'); return false; }
+    if (!document.getElementById('artistCity').value.trim()) { FLOOX.toast('Please enter your city','error'); return false; }
+    if (document.getElementById('artistPass').value.length < 8) { FLOOX.toast('Password must be at least 8 characters','error'); return false; }
+  }
+  if (s===2) {
+    if (!document.querySelectorAll('#genreTags .ms-tag.sel').length) { FLOOX.toast('Please select at least one genre','error'); return false; }
+  }
+  return true;
+}
+
+function toggleT(el) { el.classList.toggle('sel'); }
+function togglePwVis(id, btn) { const i=document.getElementById(id); i.type=i.type==='password'?'text':'password'; btn.textContent=i.type==='password'?'👁️':'🔒'; }
+
+function checkPwStrength(v) {
+  const segs = ['ps1','ps2','ps3','ps4'];
+  const lbl = document.getElementById('pwStrengthLabel');
+  const colors = ['#FF2D78','#FF5C00','#FFD600','#22C55E'];
+  const labels = ['Weak','Fair','Good','Strong'];
+  let score = 0;
+  if (v.length >= 8) score++;
+  if (/[A-Z]/.test(v)) score++;
+  if (/[0-9]/.test(v)) score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  segs.forEach((id,i) => { document.getElementById(id).style.background = i < score ? colors[score-1] : 'var(--border)'; });
+  lbl.textContent = v.length ? labels[score-1] || 'Weak' : '';
+  lbl.style.color = score > 0 ? colors[score-1] : 'var(--muted)';
+}
+
+function handleProfilePic(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const circle = document.getElementById('profilePicCircle');
+      document.getElementById('profilePicPlaceholder').style.display = 'none';
+      let img = circle.querySelector('img.pp');
+      if (!img) { img = document.createElement('img'); img.className='pp'; circle.appendChild(img); }
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function handleFiles(input, type) {
+  Array.from(input.files).forEach(file => {
+    uploadedFiles[type].push(file);
+    renderPreview(file, type);
+  });
+  input.value = ''; // reset so same file can be added again if needed
+}
+
+function dragOver(e, zoneId) { e.preventDefault(); document.getElementById(zoneId).classList.add('drag-over'); }
+function dragLeave(zoneId) { document.getElementById(zoneId).classList.remove('drag-over'); }
+function dropFiles(e, type) {
+  e.preventDefault();
+  const zone = e.currentTarget; zone.classList.remove('drag-over');
+  Array.from(e.dataTransfer.files).forEach(file => { uploadedFiles[type].push(file); renderPreview(file, type); });
+}
+
+function renderPreview(file, type) {
+  if (type === 'audio') {
+    const div = document.createElement('div'); div.className = 'file-list-item';
+    div.innerHTML = `<span class="fi-icon">🎵</span><span class="fi-name">${file.name}</span><span class="fi-size">${FLOOX.fmtBytes(file.size)}</span><button class="fi-rm" onclick="removeFile('audio',${uploadedFiles.audio.indexOf(file)},this.closest('.file-list-item'))">✕</button>`;
+    document.getElementById('audioList').appendChild(div);
+    return;
+  }
+  const grid = document.getElementById(type+'Preview');
+  const div = document.createElement('div'); div.className = 'preview-item';
+  const idx = uploadedFiles[type].length - 1;
+  if (type === 'video') {
+    const vid = document.createElement('video'); vid.src = URL.createObjectURL(file); vid.muted = true;
+    vid.style.cssText = 'width:100%;height:100%;object-fit:cover';
+    div.appendChild(vid);
+    const badge = document.createElement('div'); badge.className = 'preview-badge'; badge.textContent = 'VIDEO'; div.appendChild(badge);
+  } else {
+    const img = document.createElement('img'); img.src = URL.createObjectURL(file); div.appendChild(img);
+  }
+  const btn = document.createElement('button'); btn.className = 'preview-remove'; btn.innerHTML = '✕';
+  btn.onclick = () => { uploadedFiles[type].splice(idx, 1); div.remove(); };
+  div.appendChild(btn);
+  grid.appendChild(div);
+}
+
+function removeFile(type, idx, el) { if (idx > -1) uploadedFiles[type].splice(idx, 1); el?.remove(); }
+
+function addYTLink() {
+  ytLinkCount++;
+  const inp = document.createElement('input'); inp.type='url'; inp.className='finput';
+  inp.placeholder = 'Paste another video link'; inp.id = 'ytLink'+ytLinkCount;
+  document.getElementById('ytLinkRows').appendChild(inp);
+}
+
+function buildReview() {
+  const genres = Array.from(document.querySelectorAll('#genreTags .ms-tag.sel')).map(t => t.textContent).join(', ') || '—';
+  const rows = [
+    { l:'Full Name', v: document.getElementById('artistName').value || '—' },
+    { l:'Stage Name', v: document.getElementById('stageName').value || '—' },
+    { l:'Email', v: document.getElementById('artistEmail').value || '—' },
+    { l:'Phone', v: document.getElementById('artistPhone').value || '—' },
+    { l:'City', v: document.getElementById('artistCity').value || '—' },
+    { l:'Genres', v: genres },
+    { l:'Experience', v: document.getElementById('experience').value || '—' },
+    { l:'Min. Fee', v: document.getElementById('minFee').value || '—' },
+    { l:'Videos', v: uploadedFiles.video.length + ' file(s) queued for upload' },
+    { l:'Photos', v: uploadedFiles.photo.length + ' file(s) queued for upload' },
+    { l:'Audio', v: uploadedFiles.audio.length + ' file(s) queued for upload' },
+  ];
+  document.getElementById('reviewContent').innerHTML = rows.map(r =>
+    `<div class="rev-row"><div class="rev-label">${r.l}</div><div class="rev-val">${r.v}</div></div>`
+  ).join('');
+}
+
+async function submitForm() {
+  if (!document.getElementById('termsCheck').checked) { FLOOX.toast('Please agree to Terms & Privacy Policy','error'); return; }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+
+  const payload = {
+    role: 'artist',
+    email: document.getElementById('artistEmail').value.trim(),
+    password: document.getElementById('artistPass').value,
+    name: document.getElementById('artistName').value.trim(),
+    phone: document.getElementById('artistPhone').value.trim(),
+    city: document.getElementById('artistCity').value.trim(),
+    state: document.getElementById('artistState').value,
+    data: {
+      stageName: document.getElementById('stageName').value.trim(),
+      genres: Array.from(document.querySelectorAll('#genreTags .ms-tag.sel')).map(t => t.textContent.trim()),
+      performanceTypes: Array.from(document.querySelectorAll('#perfTypeTags .ms-tag.sel')).map(t => t.textContent.trim()),
+      eventTypes: Array.from(document.querySelectorAll('#eventTypeTags .ms-tag.sel')).map(t => t.textContent.trim()),
+      experience: document.getElementById('experience').value,
+      minFee: document.getElementById('minFee').value,
+      bio: document.getElementById('artistBio').value.trim(),
+      instagram: document.getElementById('instagramLink').value.trim(),
+      youtube: document.getElementById('youtubeLink').value.trim(),
+      spotify: document.getElementById('spotifyLink').value.trim(),
+      website: document.getElementById('websiteLink').value.trim(),
+      ytLinks: Array.from({ length: ytLinkCount }, (_,i) => document.getElementById('ytLink'+(i+1))?.value.trim()).filter(Boolean)
+    }
+  };
+
+  try {
+    const regRes = await FLOOX.register(payload);
+    registeredUserId = regRes.userId;
+
+    // Now log in to get token for media uploads
+    btn.textContent = 'Uploading media…';
+    const loginRes = await fetch('/.netlify/functions/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: payload.email, password: payload.password })
+    }).then(r => r.json());
+
+    if (loginRes.token) {
+      FLOOX.saveSession(loginRes.token, loginRes.user);
+      // Upload all media files
+      const allFiles = [
+        ...uploadedFiles.video.map(f => ({file:f, type:'video'})),
+        ...uploadedFiles.photo.map(f => ({file:f, type:'photo'})),
+        ...uploadedFiles.audio.map(f => ({file:f, type:'audio'})),
+      ];
+      // Upload profile pic
+      const profilePicInput = document.getElementById('profilePicInput');
+      if (profilePicInput.files[0]) allFiles.unshift({ file: profilePicInput.files[0], type: 'profile' });
+
+      const total = allFiles.length;
+      for (let i = 0; i < total; i++) {
+        const { file, type } = allFiles[i];
+        document.getElementById('uploadStatus').style.display = 'block';
+        document.getElementById('uploadStatusText').textContent = `Uploading ${i+1} of ${total}: ${file.name}`;
+        document.getElementById('uploadFill').style.width = Math.round(((i+0.5)/total)*100)+'%';
+        try { await FLOOX.uploadFile(file, type); } catch(e) { console.warn('File upload failed:', file.name, e.message); }
+        document.getElementById('uploadFill').style.width = Math.round(((i+1)/total)*100)+'%';
+      }
+    }
+
+    // Show success
+    document.getElementById('step4').classList.remove('active');
+    document.getElementById('formSteps').style.display = 'none';
+    document.getElementById('progressFill').parentElement.style.display = 'none';
+    document.getElementById('successPage').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (err) {
+    FLOOX.toast(err.message || 'Registration failed. Please try again.','error');
+    btn.disabled = false; btn.textContent = '🚀 Create My Artist Profile';
+  }
+}
+
+window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40); });
+</script>
+</body>
+</html>

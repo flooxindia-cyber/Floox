@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floox — Artist Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FFFBF4;--white:#fff;--black:#0D0800;--text:#1C1000;--muted:#7A6A50;--border:#E8DDD0;
+  --orange:#FF5C00;--pink:#FF2D78;--teal:#00C2A8;--purple:#7C3AED;--yellow:#FFD600;--green:#22C55E;
+  --head:'Bricolage Grotesque',sans-serif;--body:'Plus Jakarta Sans',sans-serif;
+  --sidebar:260px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.65;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#FFF7EC}::-webkit-scrollbar-thumb{background:#FFCFA0;border-radius:3px}
+
+/* ── LAYOUT ── */
+.dash-wrap{display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar);background:var(--text);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:200;display:flex;flex-direction:column;transition:transform 0.3s}
+.sidebar::-webkit-scrollbar{width:3px}
+.sb-logo{padding:1.8rem 1.5rem 1.2rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.08);text-decoration:none}
+.sb-orb{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--orange),var(--pink));display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:14px;color:#fff;flex-shrink:0}
+.sb-name{font-family:var(--head);font-weight:800;font-size:1.2rem;letter-spacing:-0.3px;color:#fff}
+.sb-name em{font-style:normal;color:var(--orange)}
+.sb-profile{padding:1.2rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sb-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2.5px solid var(--orange);background:linear-gradient(135deg,var(--orange),var(--pink));display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:1.2rem;color:#fff;flex-shrink:0}
+.sb-profile-row{display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem}
+.sb-username{font-family:var(--head);font-weight:700;font-size:0.9rem;color:#fff;line-height:1.2}
+.sb-role{font-size:0.72rem;color:rgba(255,255,255,0.4);display:flex;align-items:center;gap:4px}
+.sb-role-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sb-complete{background:rgba(255,255,255,0.06);border-radius:10px;padding:0.7rem}
+.sb-complete-label{font-family:var(--head);font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:0.4rem;display:flex;justify-content:space-between}
+.sb-complete-bar{height:5px;background:rgba(255,255,255,0.1);border-radius:100px;overflow:hidden}
+.sb-complete-fill{height:100%;background:linear-gradient(90deg,var(--orange),var(--pink));border-radius:100px;transition:width 0.6s ease}
+.sb-nav{padding:1rem 0.8rem;flex:1}
+.sb-section{font-family:var(--head);font-size:0.6rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.22);padding:0.6rem 0.7rem 0.3rem;margin-top:0.5rem}
+.sb-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.9rem;border-radius:10px;font-family:var(--head);font-weight:700;font-size:0.83rem;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.2s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.sb-link:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85)}
+.sb-link.active{background:rgba(255,92,0,0.18);color:#fff}
+.sb-link.active .sb-icon{color:var(--orange)}
+.sb-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.sb-badge{margin-left:auto;background:var(--pink);color:#fff;font-size:0.6rem;font-weight:700;padding:0.12rem 0.45rem;border-radius:100px}
+.sb-bottom{padding:1rem 0.8rem;border-top:1px solid rgba(255,255,255,0.08)}
+.sb-logout{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.9rem;border-radius:10px;font-family:var(--head);font-weight:700;font-size:0.83rem;color:rgba(255,255,255,0.35);cursor:pointer;transition:all 0.2s;border:none;background:none;width:100%}
+.sb-logout:hover{background:rgba(255,45,120,0.12);color:var(--pink)}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar);flex:1;padding:0;min-height:100vh}
+.topbar{background:rgba(255,251,244,0.95);backdrop-filter:blur(20px);border-bottom:1.5px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:1rem}
+.topbar-left{display:flex;align-items:center;gap:1rem}
+.topbar-title{font-family:var(--head);font-weight:800;font-size:1.15rem;letter-spacing:-0.3px;color:var(--text)}
+.topbar-sub{font-size:0.78rem;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:0.8rem}
+.tb-btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--head);font-weight:700;font-size:0.78rem;padding:0.55rem 1.1rem;border-radius:100px;cursor:pointer;border:none;text-decoration:none;transition:all 0.2s;white-space:nowrap}
+.tb-fire{background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;box-shadow:0 4px 16px rgba(255,92,0,0.35)}
+.tb-fire:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,92,0,0.45)}
+.tb-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border)}
+.tb-ghost:hover{border-color:var(--orange);color:var(--orange)}
+.notif-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;position:relative;transition:all 0.2s}
+.notif-btn:hover{border-color:var(--orange)}
+.notif-dot{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--pink);border:2px solid #fff}
+.mob-sb-toggle{display:none;background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text)}
+
+/* ── PAGE CONTENT ── */
+.page-content{padding:2rem;display:none}
+.page-content.active{display:block}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.stat-card{background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:1.2rem 1.4rem;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.07)}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.stat-card.c1::after{background:linear-gradient(90deg,var(--orange),var(--pink))}
+.stat-card.c2::after{background:linear-gradient(90deg,var(--teal),var(--purple))}
+.stat-card.c3::after{background:linear-gradient(90deg,var(--yellow),var(--orange))}
+.stat-card.c4::after{background:linear-gradient(90deg,var(--green),var(--teal))}
+.stat-icon{font-size:1.5rem;margin-bottom:0.6rem}
+.stat-val{font-family:var(--head);font-size:2rem;font-weight:800;letter-spacing:-1px;color:var(--text);line-height:1}
+.stat-label{font-size:0.75rem;color:var(--muted);margin-top:0.25rem;font-weight:500}
+.stat-change{font-family:var(--head);font-size:0.7rem;font-weight:700;margin-top:0.5rem;display:inline-flex;align-items:center;gap:3px;padding:0.15rem 0.5rem;border-radius:100px}
+.stat-change.up{background:rgba(34,197,94,0.1);color:var(--green)}
+.stat-change.down{background:rgba(255,45,120,0.1);color:var(--pink)}
+
+/* ── SECTION GRID ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.grid-3-1{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+
+/* ── CARDS ── */
+.card{background:#fff;border:1.5px solid var(--border);border-radius:18px;overflow:hidden}
+.card-head{padding:1.2rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-family:var(--head);font-weight:800;font-size:0.95rem;letter-spacing:-0.2px;color:var(--text)}
+.card-body{padding:1.4rem}
+.card-link{font-family:var(--head);font-size:0.75rem;font-weight:700;color:var(--orange);text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:gap 0.2s}
+.card-link:hover{gap:8px}
+
+/* ── BOOKING ITEMS ── */
+.booking-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border)}
+.booking-item:last-child{border-bottom:none;padding-bottom:0}
+.bi-date{width:48px;height:48px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--head);font-weight:800;line-height:1}
+.bi-date.upcoming{background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff}
+.bi-date.past{background:var(--border);color:var(--muted)}
+.bi-date .bi-dd{font-size:1.1rem}
+.bi-date .bi-mm{font-size:0.58rem;letter-spacing:0.06em;text-transform:uppercase;opacity:0.85}
+.bi-info{flex:1;min-width:0}
+.bi-title{font-family:var(--head);font-weight:700;font-size:0.88rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bi-meta{font-size:0.75rem;color:var(--muted);display:flex;align-items:center;gap:0.5rem;margin-top:0.2rem;flex-wrap:wrap}
+.bi-dot{width:3px;height:3px;border-radius:50%;background:var(--muted)}
+.bi-badge{font-family:var(--head);font-size:0.65rem;font-weight:700;padding:0.18rem 0.55rem;border-radius:100px}
+.bi-badge.pending{background:rgba(255,214,0,0.15);color:#B8860B}
+.bi-badge.confirmed{background:rgba(34,197,94,0.12);color:var(--green)}
+.bi-badge.completed{background:rgba(0,194,168,0.12);color:var(--teal)}
+.bi-badge.cancelled{background:rgba(255,45,120,0.1);color:var(--pink)}
+.bi-fee{font-family:var(--head);font-weight:800;font-size:0.9rem;color:var(--text);flex-shrink:0}
+
+/* ── PROFILE CARD ── */
+.profile-cover{height:130px;background:linear-gradient(135deg,var(--orange),var(--pink));position:relative}
+.profile-cover-img{width:100%;height:100%;object-fit:cover}
+.profile-avatar-wrap{position:absolute;bottom:-34px;left:1.4rem}
+.profile-avatar{width:72px;height:72px;border-radius:50%;border:4px solid #fff;background:linear-gradient(135deg,var(--orange),var(--pink));display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:1.6rem;color:#fff;overflow:hidden}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-info{padding:2.6rem 1.4rem 1.4rem}
+.profile-stage{font-family:var(--head);font-weight:800;font-size:1.1rem;letter-spacing:-0.3px;color:var(--text)}
+.profile-sub{font-size:0.78rem;color:var(--muted);margin-top:0.15rem}
+.profile-tags{display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.8rem}
+.ptag{font-family:var(--head);font-size:0.68rem;font-weight:700;padding:0.22rem 0.65rem;border-radius:100px;border:1.5px solid var(--border);color:var(--muted)}
+.ptag.pt-orange{border-color:rgba(255,92,0,0.25);color:var(--orange);background:rgba(255,92,0,0.06)}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+.pstat{text-align:center}
+.pstat-val{font-family:var(--head);font-weight:800;font-size:1rem;color:var(--text)}
+.pstat-label{font-size:0.68rem;color:var(--muted)}
+.profile-fee{background:linear-gradient(135deg,rgba(255,92,0,0.06),rgba(255,45,120,0.04));border:1px solid rgba(255,92,0,0.15);border-radius:12px;padding:0.8rem;margin-top:1rem;display:flex;align-items:center;justify-content:space-between}
+.fee-label{font-family:var(--head);font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted)}
+.fee-val{font-family:var(--head);font-weight:800;font-size:1rem;color:var(--orange)}
+
+/* ── MEDIA GRID ── */
+.media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.7rem}
+.media-item{aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;cursor:pointer;background:var(--border)}
+.media-item img,.media-item video{width:100%;height:100%;object-fit:cover;transition:transform 0.3s}
+.media-item:hover img,.media-item:hover video{transform:scale(1.05)}
+.media-overlay{position:absolute;inset:0;background:rgba(13,8,0,0.45);opacity:0;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.4rem}
+.media-item:hover .media-overlay{opacity:1}
+.media-type-badge{position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.65);color:#fff;font-size:0.6rem;font-weight:700;padding:0.12rem 0.4rem;border-radius:4px;font-family:var(--head);letter-spacing:0.04em}
+.media-add{border:2.5px dashed var(--border);border-radius:12px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;color:var(--muted);font-size:1.6rem}
+.media-add:hover{border-color:var(--orange);color:var(--orange);background:rgba(255,92,0,0.03)}
+.media-add span{font-family:var(--head);font-size:0.7rem;font-weight:700;margin-top:0.4rem}
+
+/* ── ENQUIRIES ── */
+.enquiry-item{padding:1rem;border:1.5px solid var(--border);border-radius:12px;margin-bottom:0.75rem;transition:all 0.2s;cursor:pointer}
+.enquiry-item:hover{border-color:var(--orange);box-shadow:0 4px 16px rgba(255,92,0,0.08)}
+.enq-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem}
+.enq-from{font-family:var(--head);font-weight:700;font-size:0.88rem;color:var(--text)}
+.enq-time{font-size:0.7rem;color:var(--muted)}
+.enq-event{font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem}
+.enq-foot{display:flex;align-items:center;gap:0.5rem}
+.enq-budget{font-family:var(--head);font-weight:700;font-size:0.8rem;color:var(--text)}
+
+/* ── PROFILE FORM ── */
+.form-section{background:#fff;border:1.5px solid var(--border);border-radius:18px;margin-bottom:1.5rem;overflow:hidden}
+.form-section-head{padding:1.2rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.8rem}
+.fsh-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.fsh-icon.orange{background:rgba(255,92,0,0.1)}
+.fsh-icon.teal{background:rgba(0,194,168,0.1)}
+.fsh-icon.purple{background:rgba(124,58,237,0.1)}
+.fsh-title{font-family:var(--head);font-weight:800;font-size:0.95rem;color:var(--text)}
+.fsh-sub{font-size:0.75rem;color:var(--muted)}
+.form-body{padding:1.4rem}
+.flabel{font-family:var(--head);font-size:0.7rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.35rem}
+.finput{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:0.78rem 1rem;font-family:var(--body);font-size:0.88rem;color:var(--text);outline:none;transition:all 0.2s;width:100%}
+.finput:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,92,0,0.1)}
+.finput::placeholder{color:#C0B0A0}
+textarea.finput{resize:vertical;min-height:100px}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.85rem}
+.fgroup{margin-bottom:1rem}
+.fgroup:last-child{margin-bottom:0}
+.ms-wrap{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.35rem}
+.ms-tag{font-family:var(--head);font-size:0.75rem;font-weight:700;padding:0.38rem 0.9rem;border-radius:100px;border:1.5px solid var(--border);cursor:pointer;transition:all 0.18s;color:var(--muted);background:#fff;user-select:none}
+.ms-tag:hover{border-color:var(--orange);color:var(--orange)}
+.ms-tag.sel{background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(255,92,0,0.28)}
+.save-bar{background:rgba(255,251,244,0.95);backdrop-filter:blur(20px);border-top:1.5px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;bottom:0;z-index:50}
+.save-bar-msg{font-size:0.8rem;color:var(--muted);display:flex;align-items:center;gap:0.5rem}
+.unsaved-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);display:none}
+.unsaved-dot.show{display:block}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{border:2.5px dashed var(--border);border-radius:16px;padding:1.8rem;text-align:center;cursor:pointer;transition:all 0.3s;position:relative;background:#FAFAF8}
+.upload-zone:hover{border-color:var(--orange);background:rgba(255,92,0,0.02)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+/* ── EARN CARD ── */
+.earn-card{background:linear-gradient(135deg,var(--text),#3A2800);border-radius:18px;padding:1.4rem;color:#fff;margin-bottom:1rem;position:relative;overflow:hidden}
+.earn-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,92,0,0.15)}
+.earn-label{font-family:var(--head);font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:0.3rem}
+.earn-val{font-family:var(--head);font-size:2.2rem;font-weight:800;letter-spacing:-1px;color:#fff}
+.earn-sub{font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:0.2rem}
+.earn-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:1rem}
+.eb-item{background:rgba(255,255,255,0.07);border-radius:10px;padding:0.65rem}
+.eb-val{font-family:var(--head);font-weight:800;font-size:0.95rem;color:#fff}
+.eb-label{font-size:0.67rem;color:rgba(255,255,255,0.4)}
+
+/* ── ACTIVITY LOG ── */
+.activity-item{display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.act-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0}
+.act-icon.orange{background:rgba(255,92,0,0.12)}
+.act-icon.teal{background:rgba(0,194,168,0.12)}
+.act-icon.green{background:rgba(34,197,94,0.12)}
+.act-icon.pink{background:rgba(255,45,120,0.1)}
+.act-text{flex:1;font-size:0.8rem;color:var(--muted);line-height:1.4}
+.act-text strong{color:var(--text);font-weight:600}
+.act-time{font-size:0.68rem;color:var(--muted);white-space:nowrap}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);z-index:9999;background:var(--text);color:#fff;border-radius:100px;padding:0.85rem 1.6rem;font-size:0.85rem;display:flex;align-items:center;gap:0.6rem;opacity:0;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,0.4);font-family:var(--head);font-weight:700}
+
+/* ── MOBILE OVERLAY ── */
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){
+  .grid-2,.grid-3-1{grid-template-columns:1fr}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .mob-sb-toggle{display:block}
+  .sb-overlay.show{display:block}
+}
+@media(max-width:640px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .frow2,.frow3{grid-template-columns:1fr}
+  .page-content{padding:1rem}
+  .topbar{padding:0.8rem 1rem}
+  .media-grid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar Overlay (mobile) -->
+<div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <a href="index.html" class="sb-logo">
+    <div class="sb-orb">Fx</div>
+    <span class="sb-name">Fl<em>oo</em>x</span>
+  </a>
+
+  <div class="sb-profile">
+    <div class="sb-profile-row">
+      <div class="sb-avatar" id="sbAvatar">A</div>
+      <div>
+        <div class="sb-username" id="sbUsername">Artist Name</div>
+        <div class="sb-role"><span class="sb-role-dot"></span> Artist · Live</div>
+      </div>
+    </div>
+    <div class="sb-complete">
+      <div class="sb-complete-label">
+        <span>Profile Complete</span>
+        <span id="completePercent">70%</span>
+      </div>
+      <div class="sb-complete-bar"><div class="sb-complete-fill" id="completeFill" style="width:70%"></div></div>
+    </div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section">Main</div>
+    <button class="sb-link active" onclick="showPage('overview')">
+      <span class="sb-icon">📊</span> Overview
+    </button>
+    <button class="sb-link" onclick="showPage('bookings')">
+      <span class="sb-icon">📅</span> Bookings
+      <span class="sb-badge" id="pendingBadge">2</span>
+    </button>
+    <button class="sb-link" onclick="showPage('enquiries')">
+      <span class="sb-icon">💬</span> Enquiries
+    </button>
+    <button class="sb-link" onclick="showPage('earnings')">
+      <span class="sb-icon">💰</span> Earnings
+    </button>
+    <div class="sb-section">Profile</div>
+    <button class="sb-link" onclick="showPage('profile')">
+      <span class="sb-icon">✏️</span> Edit Profile
+    </button>
+    <button class="sb-link" onclick="showPage('media')">
+      <span class="sb-icon">🎬</span> Media & Portfolio
+    </button>
+    <button class="sb-link" onclick="showPage('settings')">
+      <span class="sb-icon">⚙️</span> Settings
+    </button>
+  </nav>
+
+  <div class="sb-bottom">
+    <a href="floox-public.html" class="sb-link" style="color:rgba(255,255,255,0.45)">
+      <span class="sb-icon">🌐</span> View Public Page
+    </a>
+    <button class="sb-logout" onclick="doLogout()">
+      <span class="sb-icon">🚪</span> Sign Out
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="mob-sb-toggle" onclick="openSidebar()">☰</button>
+      <div>
+        <div class="topbar-title" id="pageTitle">Overview</div>
+        <div class="topbar-sub" id="pageSubtitle">Welcome back! Here's your dashboard</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <a href="floox-public.html" class="tb-btn tb-ghost" target="_blank">👁 View Profile</a>
+      <a href="floox-search-results.html" class="tb-btn tb-fire">🔍 Find Events</a>
+      <div class="notif-btn" title="Notifications">🔔<span class="notif-dot"></span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ OVERVIEW PAGE -->
+  <div class="page-content active" id="page-overview">
+    <div class="stat-grid">
+      <div class="stat-card c1">
+        <div class="stat-icon">📅</div>
+        <div class="stat-val" id="totalBookings">8</div>
+        <div class="stat-label">Total Bookings</div>
+        <span class="stat-change up">↑ 3 this month</span>
+      </div>
+      <div class="stat-card c2">
+        <div class="stat-icon">💰</div>
+        <div class="stat-val" id="totalEarnings">₹0</div>
+        <div class="stat-label">Total Earnings</div>
+        <span class="stat-change up">↑ 2 paid</span>
+      </div>
+      <div class="stat-card c3">
+        <div class="stat-icon">👁</div>
+        <div class="stat-val">142</div>
+        <div class="stat-label">Profile Views</div>
+        <span class="stat-change up">↑ 18 this week</span>
+      </div>
+      <div class="stat-card c4">
+        <div class="stat-icon">💬</div>
+        <div class="stat-val">5</div>
+        <div class="stat-label">New Enquiries</div>
+        <span class="stat-change up">↑ 2 new</span>
+      </div>
+    </div>
+
+    <div class="grid-3-1">
+      <!-- Upcoming Bookings -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Upcoming Bookings</span>
+          <a href="#" class="card-link" onclick="showPage('bookings');return false">See all →</a>
+        </div>
+        <div class="card-body" id="upcomingList"></div>
+      </div>
+
+      <!-- Profile Snapshot -->
+      <div class="card" style="overflow:visible">
+        <div class="profile-cover" id="coverPreview">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar" id="avatarPreview">A</div>
+          </div>
+        </div>
+        <div class="profile-info">
+          <div class="profile-stage" id="stageNamePreview">Your Stage Name</div>
+          <div class="profile-sub" id="typePreview">Performer · Your City</div>
+          <div class="profile-tags" id="genreTagsPreview"></div>
+          <div class="profile-stats">
+            <div class="pstat"><div class="pstat-val" id="pRating">4.8</div><div class="pstat-label">Rating</div></div>
+            <div class="pstat"><div class="pstat-val" id="pShows">8</div><div class="pstat-label">Shows</div></div>
+            <div class="pstat"><div class="pstat-val" id="pYears">2+</div><div class="pstat-label">Years</div></div>
+          </div>
+          <div class="profile-fee">
+            <div>
+              <div class="fee-label">Fee Range</div>
+              <div class="fee-val" id="feePreview">Set your fee</div>
+            </div>
+            <a href="#" onclick="showPage('profile');return false" style="font-size:0.78rem;font-family:var(--head);font-weight:700;color:var(--orange);text-decoration:none">Edit →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Recent Activity -->
+      <div class="card">
+        <div class="card-head"><span class="card-title">Recent Activity</span></div>
+        <div class="card-body" id="activityList"></div>
+      </div>
+
+      <!-- Quick Enquiries -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Recent Enquiries</span>
+          <a href="#" class="card-link" onclick="showPage('enquiries');return false">See all →</a>
+        </div>
+        <div class="card-body" id="enquiryPreview"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ BOOKINGS PAGE -->
+  <div class="page-content" id="page-bookings">
+    <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1.5rem">
+      <button class="tb-btn tb-fire" id="filterAll" onclick="filterBookings('all')">All Bookings</button>
+      <button class="tb-btn tb-ghost" id="filterConfirmed" onclick="filterBookings('confirmed')">Confirmed</button>
+      <button class="tb-btn tb-ghost" id="filterPending" onclick="filterBookings('pending')">Pending</button>
+      <button class="tb-btn tb-ghost" id="filterCompleted" onclick="filterBookings('completed')">Completed</button>
+    </div>
+    <div class="card">
+      <div class="card-body" id="allBookingsList" style="padding:0"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ ENQUIRIES PAGE -->
+  <div class="page-content" id="page-enquiries">
+    <div class="grid-2">
+      <div>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-head"><span class="card-title">New Enquiries</span></div>
+          <div class="card-body" id="newEnquiriesList"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Enquiry Details</span></div>
+          <div class="card-body" id="enquiryDetail" style="color:var(--muted);font-size:0.85rem;text-align:center;padding:2rem">
+            Select an enquiry to view details
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ EARNINGS PAGE -->
+  <div class="page-content" id="page-earnings">
+    <div class="grid-3-1">
+      <div>
+        <div class="earn-card">
+          <div class="earn-label">Total Earned (All Time)</div>
+          <div class="earn-val" id="totalEarnBig">₹0</div>
+          <div class="earn-sub">Across all completed bookings</div>
+          <div class="earn-breakdown">
+            <div class="eb-item">
+              <div class="eb-val" id="earnThisMonth">₹0</div>
+              <div class="eb-label">This Month</div>
+            </div>
+            <div class="eb-item">
+              <div class="eb-val" id="pendingPayout">₹0</div>
+              <div class="eb-label">Pending Payout</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Transaction History</span></div>
+          <div class="card-body" id="transactionList"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-body" style="text-align:center;padding:2rem">
+            <div style="font-size:2.5rem;margin-bottom:0.5rem">💳</div>
+            <div style="font-family:var(--head);font-weight:700;font-size:0.9rem;margin-bottom:0.4rem">Payout Setup</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem">Connect your bank account to receive payments directly</div>
+            <button class="tb-btn tb-fire" style="width:100%;justify-content:center">Connect Bank</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Fee Stats</span></div>
+          <div class="card-body">
+            <div style="margin-bottom:1rem">
+              <div style="font-family:var(--head);font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem">Avg Fee Per Show</div>
+              <div style="font-family:var(--head);font-size:1.4rem;font-weight:800;color:var(--text)" id="avgFee">₹0</div>
+            </div>
+            <div>
+              <div style="font-family:var(--head);font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem">Your Fee Range</div>
+              <div style="font-family:var(--head);font-size:1rem;font-weight:700;color:var(--orange)" id="feeRangeStat">Not set</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ PROFILE EDIT PAGE -->
+  <div class="page-content" id="page-profile">
+
+    <!-- Cover & Avatar Upload -->
+    <div class="form-section">
+      <div class="form-section-head">
+        <div class="fsh-icon orange">🖼</div>
+        <div>
+          <div class="fsh-title">Profile Images</div>
+          <div class="fsh-sub">Cover photo and avatar</div>
+        </div>
+      </div>
+      <div class="form-body">
+        <div class="fgroup">
+          <label class="flabel">Cover Photo</label>
+          <div class="upload-zone" id="coverZone" onclick="triggerUpload('coverFile')">
+            <input type="file" id="coverFile" accept="image/*" onchange="handleCoverUpload(this)">
+            <div style="font-size:2rem;margin-bottom:0.5rem">🌄</div>
+            <div style="font-family:var(--head);font-weight:700;font-size:0.9rem">Upload Cover Photo</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem">1200×400px recommended · JPG, PNG</div>
+          </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Profile Photo</label>
+          <div style="display:flex;align-items:center;gap:1.2rem">
+            <div class="profile-avatar" id="avatarEditPreview" style="width:80px;height:80px;font-size:1.8rem;flex-shrink:0">A</div>
+            <div class="upload-zone" style="flex:1" onclick="triggerUpload('avatarFile')">
+              <input type="file" id="avatarFile" accept="image/*" onchange="handleAvatarUpload(this)">
+              <div style="font-size:1.5rem;margin-bottom:0.3rem">📷</div>
+              <div style="font-family:var(--head);font-weight:700;font-size:0.85rem">Upload Photo</div>
+              <div style="font-size:0.73rem;color:var(--muted)">Square · JPG, PNG</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Basic Info -->
+    <div class="form-section">
+      <div class="form-section-head">
+        <div class="fsh-icon orange">👤</div>
+        <div>
+          <div class="fsh-title">Basic Info</div>
+          <div class="fsh-sub">Your name, stage name & contact</div>
+        </div>
+      </div>
+      <div class="form-body">
+        <div class="frow2 fgroup">
+          <div><label class="flabel">Full Name</label><input class="finput" id="pName" placeholder="Your real name" oninput="markUnsaved()"></div>
+          <div><label class="flabel">Stage Name</label><input class="finput" id="pStageName" placeholder="What you perform as" oninput="markUnsaved()"></div>
+        </div>
+        <div class="frow2 fgroup">
+          <div><label class="flabel">Email</label><input class="finput" id="pEmail" type="email" placeholder="you@email.com" oninput="markUnsaved()"></div>
+          <div><label class="flabel">Phone</label><input class="finput" id="pPhone" placeholder="+91 98765 43210" oninput="markUnsaved()"></div>
+        </div>
+        <div class="frow2 fgroup">
+          <div><label class="flabel">City</label><input class="finput" id="pCity" placeholder="Mumbai, Delhi..." oninput="markUnsaved()"></div>
+          <div><label class="flabel">Performer Type</label>
+            <select class="finput" id="pPerformerType" onchange="markUnsaved()" style="appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C0B0A0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 1rem center">
+              <option value="">Select type</option>
+              <option>Solo Artist</option><option>Band</option><option>DJ</option><option>Comedian</option>
+              <option>Dancer</option><option>Magician</option><option>Emcee</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Bio / About</label>
+          <textarea class="finput" id="pBio" rows="4" placeholder="Tell event organisers about yourself, your style, experience..." oninput="markUnsaved()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Details -->
+    <div class="form-section">
+      <div class="form-section-head">
+        <div class="fsh-icon teal">🎭</div>
+        <div>
+          <div class="fsh-title">Performance Details</div>
+          <div class="fsh-sub">Genres, languages & event types</div>
+        </div>
+      </div>
+      <div class="form-body">
+        <div class="fgroup">
+          <label class="flabel">Genres</label>
+          <div class="ms-wrap" id="genreTags"></div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Languages</label>
+          <div class="ms-wrap" id="langTags"></div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Event Types</label>
+          <div class="ms-wrap" id="eventTypeTags"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fee & Logistics -->
+    <div class="form-section">
+      <div class="form-section-head">
+        <div class="fsh-icon purple">💸</div>
+        <div>
+          <div class="fsh-title">Fee & Logistics</div>
+          <div class="fsh-sub">Performance fee range & requirements</div>
+        </div>
+      </div>
+      <div class="form-body">
+        <div class="frow3 fgroup">
+          <div><label class="flabel">Min Fee (₹)</label><input class="finput" id="pMinFee" type="number" placeholder="5000" oninput="markUnsaved()"></div>
+          <div><label class="flabel">Max Fee (₹)</label><input class="finput" id="pMaxFee" type="number" placeholder="25000" oninput="markUnsaved()"></div>
+          <div><label class="flabel">Currency</label>
+            <select class="finput" id="pCurrency" onchange="markUnsaved()" style="appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C0B0A0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 1rem center">
+              <option>INR</option><option>USD</option><option>EUR</option>
+            </select>
+          </div>
+        </div>
+        <div class="frow2 fgroup">
+          <div><label class="flabel">Equipment / Tech Rider</label><textarea class="finput" id="pEquipment" rows="3" placeholder="Microphone, monitor, PA system..." oninput="markUnsaved()"></textarea></div>
+          <div><label class="flabel">Other Rider Notes</label><textarea class="finput" id="pRiderNotes" rows="3" placeholder="Travel, accommodation, meals..." oninput="markUnsaved()"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Social Links -->
+    <div class="form-section">
+      <div class="form-section-head">
+        <div class="fsh-icon orange">🔗</div>
+        <div>
+          <div class="fsh-title">Social Links</div>
+          <div class="fsh-sub">Let organisers find you online</div>
+        </div>
+      </div>
+      <div class="form-body">
+        <div class="frow2 fgroup">
+          <div><label class="flabel">Instagram</label><input class="finput" id="pInstagram" placeholder="https://instagram.com/yourhandle" oninput="markUnsaved()"></div>
+          <div><label class="flabel">YouTube</label><input class="finput" id="pYoutube" placeholder="https://youtube.com/channel/..." oninput="markUnsaved()"></div>
+        </div>
+        <div class="frow2 fgroup">
+          <div><label class="flabel">Spotify</label><input class="finput" id="pSpotify" placeholder="https://open.spotify.com/artist/..." oninput="markUnsaved()"></div>
+          <div><label class="flabel">Website</label><input class="finput" id="pWebsite" placeholder="https://yourwebsite.com" oninput="markUnsaved()"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Bar -->
+    <div class="save-bar">
+      <div class="save-bar-msg">
+        <span class="unsaved-dot" id="unsavedDot"></span>
+        <span id="saveMsg">All changes saved</span>
+      </div>
+      <button class="tb-btn tb-fire" onclick="saveProfile()">💾 Save Profile</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ MEDIA PAGE -->
+  <div class="page-content" id="page-media">
+    <div class="grid-3-1">
+      <div>
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-head">
+            <span class="card-title">📸 Photos & Videos</span>
+            <span style="font-size:0.75rem;color:var(--muted)" id="mediaCount">0 items</span>
+          </div>
+          <div class="card-body">
+            <div class="upload-zone" style="margin-bottom:1rem" onclick="triggerUpload('mediaFile')">
+              <input type="file" id="mediaFile" accept="image/*,video/*" multiple onchange="handleMediaUpload(this)">
+              <div style="font-size:2rem;margin-bottom:0.4rem">⬆️</div>
+              <div style="font-family:var(--head);font-weight:700;font-size:0.9rem">Upload Photos / Videos</div>
+              <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">JPG, PNG, MP4 · Multiple allowed</div>
+            </div>
+            <div class="media-grid" id="mediaGallery">
+              <div class="media-add" onclick="triggerUpload('mediaFile')">➕<span>Add</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">🎵 Audio Links</span></div>
+          <div class="card-body">
+            <div class="fgroup">
+              <label class="flabel">Spotify / SoundCloud / YouTube Link</label>
+              <div style="display:flex;gap:0.5rem">
+                <input class="finput" id="audioLink" placeholder="Paste any music link..." style="flex:1">
+                <button class="tb-btn tb-teal" style="background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff;padding:0.7rem 1rem" onclick="addAudioLink()">Add</button>
+              </div>
+            </div>
+            <div id="audioLinkList"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Tips</span></div>
+          <div class="card-body" style="font-size:0.8rem;color:var(--muted);line-height:1.8">
+            <div style="margin-bottom:0.8rem">✅ Upload at least 3 high-quality photos</div>
+            <div style="margin-bottom:0.8rem">✅ Include a video of your performance</div>
+            <div style="margin-bottom:0.8rem">✅ Add your best music links</div>
+            <div>✅ Profiles with media get 5× more enquiries</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SETTINGS PAGE -->
+  <div class="page-content" id="page-settings">
+    <div class="grid-2">
+      <div>
+        <div class="form-section">
+          <div class="form-section-head">
+            <div class="fsh-icon orange">🔒</div>
+            <div><div class="fsh-title">Change Password</div></div>
+          </div>
+          <div class="form-body">
+            <div class="fgroup"><label class="flabel">Current Password</label><input class="finput" id="curPwd" type="password" placeholder="••••••••"></div>
+            <div class="fgroup"><label class="flabel">New Password</label><input class="finput" id="newPwd" type="password" placeholder="••••••••"></div>
+            <div class="fgroup"><label class="flabel">Confirm New Password</label><input class="finput" id="conPwd" type="password" placeholder="••••••••"></div>
+            <button class="tb-btn tb-fire" onclick="changePassword()" style="margin-top:0.5rem">Update Password</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="form-section">
+          <div class="form-section-head">
+            <div class="fsh-icon teal">🔔</div>
+            <div><div class="fsh-title">Notifications</div></div>
+          </div>
+          <div class="form-body">
+            <div style="display:flex;flex-direction:column;gap:1rem">
+              <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+                <span style="font-size:0.85rem">New enquiries</span>
+                <input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--orange)">
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+                <span style="font-size:0.85rem">Booking confirmations</span>
+                <input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--orange)">
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+                <span style="font-size:0.85rem">Payment received</span>
+                <input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--orange)">
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+                <span style="font-size:0.85rem">Marketing emails</span>
+                <input type="checkbox" style="width:16px;height:16px;accent-color:var(--orange)">
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-section" style="border-color:rgba(255,45,120,0.25)">
+          <div class="form-section-head">
+            <div class="fsh-icon" style="background:rgba(255,45,120,0.1)">⚠️</div>
+            <div><div class="fsh-title" style="color:var(--pink)">Danger Zone</div></div>
+          </div>
+          <div class="form-body">
+            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem">Deleting your account is permanent and cannot be undone.</div>
+            <button class="tb-btn" onclick="openDeleteModal()" style="background:rgba(255,45,120,0.1);color:var(--pink);border:1px solid rgba(255,45,120,0.2)">Delete Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="floox-auth.js"></script>
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const GENRES = ['Bollywood','Punjabi','Hip-Hop','Rock','Classical','Jazz','EDM','Folk','Sufi','R&B','Pop','Indie'];
+const LANGS  = ['Hindi','English','Punjabi','Bengali','Tamil','Telugu','Marathi','Gujarati','Kannada'];
+const EVENTS = ['Corporate','Wedding','College Festival','Club Night','Concert','Private Party','Restaurant','Other'];
+
+// Demo bookings data
+const demoBookings = [
+  {id:1, event:'Pulse Nightclub — Saturday Night', organiser:'NightOut Co.', city:'Mumbai', date:'2026-06-14', fee:18000, status:'confirmed'},
+  {id:2, event:'TechSummit 2026 Afterparty', organiser:'EventPro', city:'Bengaluru', date:'2026-06-22', fee:25000, status:'pending'},
+  {id:3, event:'Sharma Wedding Reception', organiser:'Wedding Bells', city:'Delhi', date:'2026-07-05', fee:32000, status:'pending'},
+  {id:4, event:'IIT Techfest — Main Stage', organiser:'IIT Mumbai', city:'Mumbai', date:'2026-05-10', fee:15000, status:'completed'},
+  {id:5, event:'Rooftop Sundown Sessions', organiser:'Social House', city:'Pune', date:'2026-05-03', fee:8000, status:'completed'},
+];
+
+const demoEnquiries = [
+  {id:1, from:'Priya Events', event:'Corporate Gala Dinner', date:'2026-07-15', budget:'₹20,000 – ₹30,000', city:'Mumbai', msg:'We are organizing a corporate gala for 200 guests and would love to have you perform. Please share your availability.', time:'2h ago'},
+  {id:2, from:'Raj Weddings', event:'Wedding Reception', date:'2026-08-02', budget:'₹40,000 – ₹60,000', city:'Jaipur', msg:'Looking for a top-tier artist for a high-profile wedding. The event runs from 8 PM to midnight.', time:'5h ago'},
+  {id:3, from:'Club Zeta', event:'New Year Eve Party', date:'2026-12-31', budget:'₹50,000+', city:'Goa', msg:'We want to book you for our iconic NYE bash in Goa. This is a 4-hour set.', time:'1d ago'},
+];
+
+const demoActivity = [
+  {icon:'💬', type:'teal', text:'New enquiry from <strong>Priya Events</strong> for Corporate Gala', time:'2h ago'},
+  {icon:'✅', type:'green', text:'Booking confirmed — <strong>Pulse Nightclub</strong> on June 14', time:'1d ago'},
+  {icon:'💰', type:'orange', text:'Payment of <strong>₹15,000</strong> received from IIT Techfest', time:'3d ago'},
+  {icon:'👁', type:'teal', text:'Your profile was viewed <strong>18 times</strong> this week', time:'5d ago'},
+  {icon:'💬', type:'pink', text:'New enquiry from <strong>Club Zeta</strong> for NYE Party', time:'1d ago'},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let user = null;
+let selectedTags = { genres:[], languages:[], eventTypes:[] };
+let mediaItems = [];
+let audioLinks = [];
+let unsaved = false;
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof FLOOX !== 'undefined') {
+    user = FLOOX.getUser();
+    if (!user) { window.location.href = 'floox-login.html'; return; }
+    if (user.role !== 'artist') { window.location.href = 'index.html'; return; }
+  } else {
+    // Demo mode
+    user = { name:'Arjun Sharma', role:'artist', email:'arjun@demo.com', stage_name:'DJ Arjun', city:'Mumbai', performer_type:'DJ', genres:['Bollywood','EDM'], min_fee:10000, max_fee:35000 };
+  }
+
+  populateUI();
+  renderBookings();
+  renderActivity();
+  renderEnquiries();
+  renderEarnings();
+  initTagSelectors();
+  prefillForm();
+});
+
+function populateUI() {
+  const name = user.stage_name || user.name || 'Artist';
+  document.getElementById('sbUsername').textContent = name;
+  document.getElementById('sbAvatar').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('stageNamePreview').textContent = user.stage_name || user.name || 'Your Stage Name';
+  document.getElementById('typePreview').textContent = (user.performer_type || 'Performer') + ' · ' + (user.city || 'Your City');
+  document.getElementById('avatarPreview').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('avatarEditPreview').textContent = name.charAt(0).toUpperCase();
+
+  if (user.avatar) {
+    document.getElementById('avatarPreview').innerHTML = `<img src="${user.avatar}" alt="">`;
+    document.getElementById('avatarEditPreview').innerHTML = `<img src="${user.avatar}" alt="">`;
+    document.getElementById('sbAvatar').innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  }
+
+  // Genre preview tags
+  const genres = user.genres || [];
+  const genrePreview = document.getElementById('genreTagsPreview');
+  genrePreview.innerHTML = genres.slice(0,4).map(g => `<span class="ptag pt-orange">${g}</span>`).join('');
+
+  // Fee preview
+  if (user.min_fee || user.max_fee) {
+    const cur = user.currency || 'INR';
+    const sym = cur === 'INR' ? '₹' : cur === 'USD' ? '$' : '€';
+    document.getElementById('feePreview').textContent = `${sym}${(user.min_fee||0).toLocaleString()} – ${sym}${(user.max_fee||0).toLocaleString()}`;
+    document.getElementById('feeRangeStat').textContent = `${sym}${(user.min_fee||0).toLocaleString()} – ${sym}${(user.max_fee||0).toLocaleString()}`;
+  }
+
+  // Stats
+  const completedCount = demoBookings.filter(b => b.status === 'completed').length;
+  document.getElementById('totalBookings').textContent = demoBookings.length;
+  document.getElementById('pShows').textContent = completedCount;
+}
+
+// ── BOOKINGS ──────────────────────────────────────────────────────────────────
+function renderBookings() {
+  const upcoming = demoBookings.filter(b => b.status !== 'completed').slice(0,4);
+  document.getElementById('upcomingList').innerHTML = upcoming.map(bookingHTML).join('');
+  document.getElementById('allBookingsList').innerHTML = `<div style="padding:1rem">${demoBookings.map(b => bookingHTML(b, true)).join('')}</div>`;
+
+  const total = demoBookings.reduce((s,b) => s + (b.status==='completed'?b.fee:0), 0);
+  document.getElementById('totalEarnings').textContent = '₹' + total.toLocaleString();
+}
+
+function bookingHTML(b, full=false) {
+  const d = new Date(b.date);
+  const dd = d.getDate();
+  const mm = d.toLocaleString('default',{month:'short'});
+  const isPast = b.status === 'completed';
+  return `<div class="booking-item" ${full ? 'style="padding:1rem 0"' : ''}>
+    <div class="bi-date ${isPast?'past':'upcoming'}"><span class="bi-dd">${dd}</span><span class="bi-mm">${mm}</span></div>
+    <div class="bi-info">
+      <div class="bi-title">${b.event}</div>
+      <div class="bi-meta">${b.organiser} <span class="bi-dot"></span> ${b.city} <span class="bi-dot"></span> <span class="bi-badge ${b.status}">${b.status}</span></div>
+    </div>
+    <div class="bi-fee">₹${b.fee.toLocaleString()}</div>
+  </div>`;
+}
+
+function filterBookings(status) {
+  document.querySelectorAll('[id^="filter"]').forEach(b => b.classList.remove('tb-fire'));
+  document.querySelectorAll('[id^="filter"]').forEach(b => b.classList.add('tb-ghost'));
+  document.getElementById('filter' + status.charAt(0).toUpperCase() + status.slice(1)).classList.add('tb-fire');
+  document.getElementById('filter' + status.charAt(0).toUpperCase() + status.slice(1)).classList.remove('tb-ghost');
+  const filtered = status === 'all' ? demoBookings : demoBookings.filter(b => b.status === status);
+  document.getElementById('allBookingsList').innerHTML = `<div style="padding:1rem">${filtered.length ? filtered.map(b=>bookingHTML(b,true)).join('') : '<div style="text-align:center;color:var(--muted);padding:2rem;font-size:0.85rem">No bookings found</div>'}</div>`;
+}
+
+// ── ACTIVITY ──────────────────────────────────────────────────────────────────
+function renderActivity() {
+  document.getElementById('activityList').innerHTML = demoActivity.map(a => `
+    <div class="activity-item">
+      <div class="act-icon ${a.type}">${a.icon}</div>
+      <div class="act-text">${a.text}</div>
+      <div class="act-time">${a.time}</div>
+    </div>`).join('');
+}
+
+// ── ENQUIRIES ─────────────────────────────────────────────────────────────────
+function renderEnquiries() {
+  const html = demoEnquiries.map(e => enquiryItemHTML(e)).join('');
+  document.getElementById('newEnquiriesList').innerHTML = html;
+  document.getElementById('enquiryPreview').innerHTML = demoEnquiries.slice(0,2).map(e => `
+    <div class="enquiry-item" onclick="openEnquiry(${e.id})">
+      <div class="enq-head"><span class="enq-from">${e.from}</span><span class="enq-time">${e.time}</span></div>
+      <div class="enq-event">${e.event} · ${e.city}</div>
+      <div class="enq-foot"><span class="bi-badge pending">New</span><span class="enq-budget">${e.budget}</span></div>
+    </div>`).join('');
+}
+
+function enquiryItemHTML(e) {
+  return `<div class="enquiry-item" onclick="openEnquiry(${e.id})">
+    <div class="enq-head"><span class="enq-from">${e.from}</span><span class="enq-time">${e.time}</span></div>
+    <div class="enq-event">📅 ${e.date} · 📍 ${e.city}</div>
+    <div class="enq-foot"><span class="bi-badge pending">New</span><span class="enq-budget">${e.budget}</span></div>
+  </div>`;
+}
+
+function openEnquiry(id) {
+  const e = demoEnquiries.find(x => x.id === id);
+  if (!e) return;
+  document.getElementById('enquiryDetail').innerHTML = `
+    <div style="text-align:left">
+      <div style="font-family:var(--head);font-weight:800;font-size:1rem;margin-bottom:0.3rem">${e.from}</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:1.2rem">${e.event} · ${e.city} · ${e.date}</div>
+      <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.4rem;font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:0.65rem;letter-spacing:0.08em">Message</div>
+      <div style="font-size:0.85rem;line-height:1.75;background:var(--bg);border-radius:12px;padding:1rem;margin-bottom:1.2rem">${e.msg}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+        <div><div style="font-size:0.65rem;font-family:var(--head);font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Budget</div><div style="font-family:var(--head);font-weight:800;color:var(--orange)">${e.budget}</div></div>
+        <span class="bi-badge confirmed">Open</span>
+      </div>
+      <div style="display:flex;gap:0.5rem">
+        <button class="tb-btn tb-fire" style="flex:1;justify-content:center" onclick="showToast('Response sent!','success')">✉️ Respond</button>
+        <button class="tb-btn tb-ghost" onclick="showToast('Enquiry declined','info')">Decline</button>
+      </div>
+    </div>`;
+}
+
+// ── EARNINGS ──────────────────────────────────────────────────────────────────
+function renderEarnings() {
+  const completed = demoBookings.filter(b => b.status === 'completed');
+  const total = completed.reduce((s,b) => s+b.fee, 0);
+  const avg = completed.length ? Math.round(total/completed.length) : 0;
+  document.getElementById('totalEarnBig').textContent = '₹' + total.toLocaleString();
+  document.getElementById('earnThisMonth').textContent = '₹' + (completed.filter(b=>b.date.startsWith('2026-05')).reduce((s,b)=>s+b.fee,0)).toLocaleString();
+  document.getElementById('pendingPayout').textContent = '₹' + demoBookings.filter(b=>b.status==='confirmed').reduce((s,b)=>s+b.fee,0).toLocaleString();
+  document.getElementById('avgFee').textContent = '₹' + avg.toLocaleString();
+  document.getElementById('transactionList').innerHTML = completed.map(b => `
+    <div class="booking-item">
+      <div class="bi-info"><div class="bi-title">${b.event}</div><div class="bi-meta">${b.date} <span class="bi-dot"></span> <span class="bi-badge completed">Paid</span></div></div>
+      <div class="bi-fee" style="color:var(--green)">+₹${b.fee.toLocaleString()}</div>
+    </div>`).join('') || '<div style="text-align:center;color:var(--muted);font-size:0.85rem;padding:1.5rem">No transactions yet</div>';
+}
+
+// ── TAGS ──────────────────────────────────────────────────────────────────────
+function initTagSelectors() {
+  const userGenres = user.genres || [];
+  const userLangs  = user.languages || [];
+  const userEvents = user.event_types || [];
+
+  selectedTags.genres = [...userGenres];
+  selectedTags.languages = [...userLangs];
+  selectedTags.eventTypes = [...userEvents];
+
+  renderTags('genreTags', GENRES, 'genres');
+  renderTags('langTags', LANGS, 'languages');
+  renderTags('eventTypeTags', EVENTS, 'eventTypes');
+}
+
+function renderTags(containerId, list, key) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = list.map(t => {
+    const active = selectedTags[key].includes(t);
+    return `<span class="ms-tag ${active?'sel':''}" onclick="toggleTag(this,'${t}','${key}')">${t}</span>`;
+  }).join('');
+}
+
+function toggleTag(el, val, key) {
+  const idx = selectedTags[key].indexOf(val);
+  if (idx > -1) { selectedTags[key].splice(idx,1); el.classList.remove('sel'); }
+  else { selectedTags[key].push(val); el.classList.add('sel'); }
+  markUnsaved();
+}
+
+// ── PROFILE FORM ──────────────────────────────────────────────────────────────
+function prefillForm() {
+  if (!user) return;
+  setValue('pName', user.name);
+  setValue('pStageName', user.stage_name);
+  setValue('pEmail', user.email);
+  setValue('pPhone', user.phone);
+  setValue('pCity', user.city);
+  setValue('pBio', user.bio);
+  setValue('pMinFee', user.min_fee);
+  setValue('pMaxFee', user.max_fee);
+  setValue('pPerformerType', user.performer_type);
+  const sl = user.social_links || {};
+  setValue('pInstagram', sl.instagram);
+  setValue('pYoutube', sl.youtube);
+  setValue('pSpotify', sl.spotify);
+  setValue('pWebsite', sl.website);
+}
+
+function setValue(id, val) { const el = document.getElementById(id); if(el && val) el.value = val; }
+
+function markUnsaved() {
+  unsaved = true;
+  document.getElementById('unsavedDot').classList.add('show');
+  document.getElementById('saveMsg').textContent = 'Unsaved changes';
+}
+
+async function saveProfile() {
+  const fields = {
+    name: document.getElementById('pName').value,
+    stage_name: document.getElementById('pStageName').value,
+    phone: document.getElementById('pPhone').value,
+    city: document.getElementById('pCity').value,
+    bio: document.getElementById('pBio').value,
+    performer_type: document.getElementById('pPerformerType').value,
+    genres: selectedTags.genres,
+    languages: selectedTags.languages,
+    event_types: selectedTags.eventTypes,
+    min_fee: parseFloat(document.getElementById('pMinFee').value) || null,
+    max_fee: parseFloat(document.getElementById('pMaxFee').value) || null,
+    currency: document.getElementById('pCurrency').value,
+    equipment: document.getElementById('pEquipment').value,
+    rider_notes: document.getElementById('pRiderNotes').value,
+    social_links: {
+      instagram: document.getElementById('pInstagram').value,
+      youtube: document.getElementById('pYoutube').value,
+      spotify: document.getElementById('pSpotify').value,
+      website: document.getElementById('pWebsite').value,
+    }
+  };
+  try {
+    if (typeof FLOOX !== 'undefined') {
+      await FLOOX.saveArtistProfile(fields);
+    }
+    user = {...user, ...fields};
+    populateUI();
+    unsaved = false;
+    document.getElementById('unsavedDot').classList.remove('show');
+    document.getElementById('saveMsg').textContent = 'All changes saved';
+    showToast('Profile saved! ✅', 'success');
+  } catch(e) {
+    showToast(e.message || 'Save failed', 'error');
+  }
+}
+
+// ── MEDIA ─────────────────────────────────────────────────────────────────────
+function handleMediaUpload(input) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      mediaItems.push({ src: e.target.result, type: file.type.startsWith('video') ? 'video' : 'image', name: file.name });
+      renderMediaGrid();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderMediaGrid() {
+  const grid = document.getElementById('mediaGallery');
+  const itemsHTML = mediaItems.map((m,i) => `
+    <div class="media-item">
+      ${m.type==='video' ? `<video src="${m.src}" muted></video>` : `<img src="${m.src}" alt="${m.name}">`}
+      <div class="media-overlay">👁</div>
+      <span class="media-type-badge">${m.type.toUpperCase()}</span>
+      <button class="preview-remove" onclick="removeMedia(${i})" style="position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(255,45,120,0.9);color:#fff;border:none;cursor:pointer;font-size:0.65rem">✕</button>
+    </div>`).join('');
+  grid.innerHTML = itemsHTML + `<div class="media-add" onclick="triggerUpload('mediaFile')">➕<span>Add</span></div>`;
+  document.getElementById('mediaCount').textContent = mediaItems.length + ' item' + (mediaItems.length!==1?'s':'');
+}
+
+function removeMedia(i) { mediaItems.splice(i,1); renderMediaGrid(); }
+
+function handleCoverUpload(input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('coverPreview').style.backgroundImage = `url(${e.target.result})`;
+    document.getElementById('coverPreview').style.backgroundSize = 'cover';
+    document.getElementById('coverPreview').style.backgroundPosition = 'center';
+    markUnsaved();
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function handleAvatarUpload(input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('avatarEditPreview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    document.getElementById('avatarPreview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    markUnsaved();
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function addAudioLink() {
+  const val = document.getElementById('audioLink').value.trim();
+  if (!val) return;
+  audioLinks.push(val);
+  document.getElementById('audioLink').value = '';
+  renderAudioLinks();
+}
+
+function renderAudioLinks() {
+  document.getElementById('audioLinkList').innerHTML = audioLinks.map((l,i) => `
+    <div style="display:flex;align-items:center;gap:0.5rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:0.6rem 0.9rem;margin-bottom:0.5rem">
+      <span style="font-size:0.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎵 ${l}</span>
+      <button onclick="audioLinks.splice(${i},1);renderAudioLinks()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:0.9rem">✕</button>
+    </div>`).join('');
+}
+
+// ── PASSWORD ──────────────────────────────────────────────────────────────────
+async function changePassword() {
+  const cur = document.getElementById('curPwd').value;
+  const nw  = document.getElementById('newPwd').value;
+  const con = document.getElementById('conPwd').value;
+  if (!cur || !nw) return showToast('Fill in all fields', 'error');
+  if (nw !== con) return showToast('Passwords do not match', 'error');
+  try {
+    if (typeof FLOOX !== 'undefined') await FLOOX.changePassword(cur, nw);
+    showToast('Password updated ✅', 'success');
+    document.getElementById('curPwd').value = '';
+    document.getElementById('newPwd').value = '';
+    document.getElementById('conPwd').value = '';
+  } catch(e) { showToast(e.message || 'Update failed', 'error'); }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+const pageTitles = {
+  overview:'Overview', bookings:'My Bookings', enquiries:'Enquiries',
+  earnings:'Earnings', profile:'Edit Profile', media:'Media & Portfolio', settings:'Settings'
+};
+const pageSubs = {
+  overview:"Welcome back! Here's your dashboard", bookings:'All your booking history',
+  enquiries:'Messages from event organisers', earnings:'Your performance revenue',
+  profile:'Keep your profile up to date', media:'Manage your photos, videos & audio',
+  settings:'Account & notification settings'
+};
+
+function showPage(name) {
+  document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+  event.currentTarget && event.currentTarget.classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[name] || name;
+  document.getElementById('pageSubtitle').textContent = pageSubs[name] || '';
+  closeSidebar();
+}
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sbOverlay').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sbOverlay').classList.remove('show');
+}
+
+function triggerUpload(id) { document.getElementById(id).click(); }
+
+function doLogout() {
+  if (typeof FLOOX !== 'undefined') FLOOX.logout('index.html');
+  else window.location.href = 'index.html';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg, type='info') {
+  if (typeof FLOOX !== 'undefined') { FLOOX.toast(msg, type); return; }
+  const el = document.getElementById('toast');
+  const colors = {success:'#22C55E', error:'#FF2D78', info:'#00C2A8'};
+  el.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${colors[type]||colors.info};flex-shrink:0;display:inline-block"></span> ${msg}`;
+  el.style.cssText += ';transform:translateX(-50%) translateY(0);opacity:1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.cssText += ';transform:translateX(-50%) translateY(80px);opacity:0', 3500);
+}
+</script>
+<!-- ── DELETE ACCOUNT MODAL ─────────────────────────────────────────────────── -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.88);backdrop-filter:blur(14px);align-items:center;justify-content:center;padding:1.2rem">
+  <div style="background:#0f0a02;border:1.5px solid rgba(255,45,120,.25);border-radius:28px;width:100%;max-width:460px;padding:2.5rem;animation:dmIn .35s cubic-bezier(.34,1.56,.64,1)">
+    <style>@keyframes dmIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}</style>
+    <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
+    <div style="font-family:var(--head,Syne,sans-serif);font-size:1.3rem;font-weight:800;letter-spacing:-.5px;margin-bottom:.75rem;color:#fff">Delete Your Account?</div>
+    <p style="font-size:.88rem;color:rgba(255,255,255,.55);line-height:1.75;margin-bottom:1.4rem">
+      This will <strong style="color:#FF2D78">permanently delete</strong> your Floox profile, all your data, bookings history, and remove you from all searches.<br><br>
+      To confirm, type <strong style="color:#fff;background:rgba(255,45,120,.1);padding:.1rem .4rem;border-radius:6px;font-family:monospace">DELETE</strong> below:
+    </p>
+    <input id="deleteConfirmInput" type="text" placeholder='Type "DELETE" to confirm'
+      oninput="document.getElementById('deleteConfirmBtn').disabled = this.value.trim() !== 'DELETE'"
+      style="width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,45,120,.2);border-radius:12px;padding:.78rem 1rem;font-size:.9rem;color:#fff;outline:none;font-family:inherit;margin-bottom:1.2rem;transition:border-color .2s"
+      onfocus="this.style.borderColor='rgba(255,45,120,.5)'" onblur="this.style.borderColor='rgba(255,45,120,.2)'">
+    <div style="display:flex;gap:.75rem">
+      <button id="deleteConfirmBtn" disabled onclick="confirmDeleteAccount()"
+        style="flex:1;font-family:var(--head,Syne,sans-serif);font-weight:800;font-size:.88rem;padding:.85rem;border-radius:14px;background:linear-gradient(135deg,#FF2D78,#7C3AED);color:#fff;border:none;cursor:pointer;opacity:.45;transition:all .25s"
+        onmouseover="if(!this.disabled)this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+        🗑️ Delete Permanently
+      </button>
+      <button onclick="closeDeleteModal()"
+        style="font-family:var(--head,Syne,sans-serif);font-weight:700;font-size:.88rem;padding:.85rem 1.5rem;border-radius:14px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.14);color:rgba(255,255,255,.65);cursor:pointer;transition:all .2s"
+        onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">
+        Cancel
+      </button>
+    </div>
+    <p id="deleteErrMsg" style="display:none;font-size:.78rem;color:#FF2D78;margin-top:.8rem;text-align:center"></p>
+  </div>
+</div>
+
+<script>
+// ── DELETE ACCOUNT ──────────────────────────────────────────────────────────
+function openDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'flex';
+  document.getElementById('deleteConfirmInput').value = '';
+  document.getElementById('deleteConfirmBtn').disabled = true;
+  document.getElementById('deleteConfirmBtn').style.opacity = '.45';
+  document.getElementById('deleteErrMsg').style.display = 'none';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// Enable confirm button only when DELETE is typed
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('deleteConfirmInput');
+  const btn   = document.getElementById('deleteConfirmBtn');
+  if (input && btn) {
+    input.addEventListener('input', () => {
+      const ok = input.value.trim() === 'DELETE';
+      btn.disabled    = !ok;
+      btn.style.opacity = ok ? '1' : '.45';
+      btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+    });
+  }
+  // Close on backdrop click
+  document.getElementById('deleteModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+  });
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDeleteModal();
+});
+
+async function confirmDeleteAccount() {
+  const btn    = document.getElementById('deleteConfirmBtn');
+  const errMsg = document.getElementById('deleteErrMsg');
+  btn.disabled = true;
+  btn.textContent = '⏳ Deleting…';
+  btn.style.opacity = '.7';
+  errMsg.style.display = 'none';
+
+  try {
+    // Call the delete-account Netlify function
+    await FLOOX.apiPost('delete-account', {}, true);
+
+    // Clear all local data
+    FLOOX.clearSession();
+    localStorage.removeItem('floox_likes');
+
+    // Show success then redirect
+    btn.textContent = '✓ Deleted';
+    btn.style.background = 'rgba(34,197,94,.2)';
+    btn.style.color = '#22C55E';
+    btn.style.border = '1.5px solid rgba(34,197,94,.3)';
+
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1500);
+
+  } catch (e) {
+    // Show error — do NOT delete locally if server fails
+    errMsg.textContent = e.message && !e.message.toLowerCase().includes('fetch')
+      ? e.message
+      : '⚠️ Could not reach server. Make sure delete-account.js is deployed in your Netlify functions folder.';
+    errMsg.style.display = 'block';
+    btn.disabled    = false;
+    btn.textContent = '🗑️ Delete Permanently';
+    btn.style.opacity = '1';
+  }
+}
+</script>
+</body>
+</html>

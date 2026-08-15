@@ -1,0 +1,13 @@
+{
+  "name": "floox-functions",
+  "version": "2.1.0",
+  "description": "Floox Netlify serverless functions — Supabase edition",
+  "private": true,
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

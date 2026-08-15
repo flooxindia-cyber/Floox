@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search Results — Floox</title>
+<link rel="icon" href="logo_floox.jpeg">
+<meta name="theme-color" content="#FF5C00">
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --o:#FF5C00;--p:#FF2D78;--y:#FFD600;--t:#00C2A8;--v:#7C3AED;--g:#22C55E;
+  --bg:#100a02;--bg2:#160d04;--bg3:#1c1006;
+  --sur:rgba(255,255,255,0.055);--bdr:rgba(255,255,255,0.1);--bdr2:rgba(255,255,255,0.17);
+  --txt:#fff;--txt2:rgba(255,255,255,0.62);--txt3:rgba(255,255,255,0.32);
+  --head:'Cabinet Grotesk',sans-serif;--dis:'Clash Display',sans-serif;
+}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:var(--bg);color:var(--txt);font-family:var(--head);overflow-x:hidden;min-height:100vh}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0d0800}
+::-webkit-scrollbar-thumb{background:#FF5C0055;border-radius:3px}
+
+/* CURSOR */
+.cursor{width:18px;height:18px;border:2px solid var(--o);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transition:transform .15s;transform:translate(-50%,-50%)}
+.cursor-dot{width:5px;height:5px;background:var(--o);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+@media(hover:none){.cursor,.cursor-dot{display:none}}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;background:rgba(16,10,2,.95);backdrop-filter:blur(24px);border-bottom:1px solid var(--bdr)}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-logo img{height:36px;width:36px;border-radius:10px;object-fit:cover}
+.nav-wordmark{font-family:'Clash Display',sans-serif;font-size:1.35rem;font-weight:700;letter-spacing:-.5px;background:linear-gradient(135deg,#FFD600,#FF5C00,#FF2D78);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-back{font-size:.8rem;font-weight:700;color:var(--txt2);padding:.45rem 1rem;border-radius:100px;border:1.5px solid var(--bdr2);transition:all .2s}
+.nav-back:hover{color:var(--o);border-color:var(--o)}
+.nav-right{display:flex;gap:.6rem;align-items:center}
+.btn-login{font-size:.8rem;font-weight:700;padding:.5rem 1.1rem;border-radius:100px;border:1.5px solid var(--bdr2);color:var(--txt2);transition:all .2s}
+.btn-login:hover{border-color:var(--o);color:var(--o)}
+.btn-join{font-size:.8rem;font-weight:800;padding:.5rem 1.3rem;border-radius:100px;background:linear-gradient(135deg,var(--o),var(--p));color:#fff;box-shadow:0 4px 16px rgba(255,92,0,.35);transition:all .25s}
+.btn-join:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,92,0,.5)}
+
+/* SEARCH HEADER */
+.search-header{padding:100px 5% 0;background:var(--bg2)}
+.search-bar-wrap{max-width:780px;margin:0 auto 2rem}
+.search-pill{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);border-radius:20px;padding:.9rem 1rem .9rem 1.4rem;display:flex;align-items:center;gap:.9rem;transition:border-color .3s}
+.search-pill:focus-within{border-color:rgba(255,92,0,.5);box-shadow:0 0 0 3px rgba(255,92,0,.12)}
+.s-ico{font-size:1.1rem;flex-shrink:0}
+.s-inp{flex:1;background:transparent;border:none;outline:none;font-family:var(--head);font-size:1rem;font-weight:600;color:#fff}
+.s-inp::placeholder{color:var(--txt3);font-weight:500}
+.s-divider{width:1px;height:26px;background:var(--bdr2);flex-shrink:0}
+.s-city{background:transparent;border:none;outline:none;font-family:var(--head);font-size:.9rem;color:var(--txt2);width:120px;font-weight:500}
+.s-city::placeholder{color:var(--txt3)}
+.s-btn{font-family:var(--head);font-size:.85rem;font-weight:800;padding:.65rem 1.5rem;border-radius:14px;background:linear-gradient(135deg,var(--o),var(--p));color:#fff;box-shadow:0 4px 16px rgba(255,92,0,.4);transition:all .25s;flex-shrink:0}
+.s-btn:hover{transform:scale(1.03);box-shadow:0 8px 24px rgba(255,92,0,.55)}
+
+/* FILTER ROW */
+.filter-row{max-width:780px;margin:0 auto;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding-bottom:1.5rem}
+.filter-label{font-size:.7rem;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.1em;margin-right:.3rem}
+.filter-chip{font-size:.72rem;font-weight:700;padding:.3rem .85rem;border-radius:100px;border:1.5px solid var(--bdr2);color:var(--txt2);transition:all .2s;cursor:pointer;background:transparent}
+.filter-chip:hover,.filter-chip.active{border-color:var(--o);color:var(--o);background:rgba(255,92,0,.1)}
+.filter-chip.active-type{border-color:var(--t);color:var(--t);background:rgba(0,194,168,.1)}
+
+/* RESULTS AREA */
+.results-wrap{max-width:1140px;margin:0 auto;padding:2.5rem 5% 6rem}
+.results-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:.8rem}
+.results-count{font-family:'Clash Display',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:-.5px}
+.results-count span{color:var(--o)}
+.sort-row{display:flex;align-items:center;gap:.5rem}
+.sort-label{font-size:.75rem;color:var(--txt3);font-weight:600}
+.sort-sel{background:rgba(255,255,255,.07);border:1.5px solid var(--bdr2);border-radius:10px;padding:.4rem .8rem;font-family:var(--head);font-size:.78rem;font-weight:700;color:var(--txt);outline:none;cursor:pointer}
+.sort-sel option{background:#1c1006;color:#fff}
+
+/* SECTION HEADING */
+.res-section-title{font-family:'Clash Display',sans-serif;font-size:1rem;font-weight:700;letter-spacing:-.2px;margin-bottom:1.2rem;display:flex;align-items:center;gap:.7rem;color:var(--txt2)}
+.res-section-title::before{content:'';width:20px;height:2.5px;background:linear-gradient(90deg,var(--o),var(--p));border-radius:2px;flex-shrink:0}
+.res-section-title .res-count-badge{font-family:var(--head);font-size:.65rem;font-weight:800;padding:.18rem .55rem;border-radius:100px;background:rgba(255,92,0,.15);border:1px solid rgba(255,92,0,.3);color:var(--o)}
+
+/* ARTIST CARDS */
+.artist-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-bottom:3rem}
+.acard{background:rgba(255,255,255,.05);border:1.5px solid var(--bdr);border-radius:22px;overflow:hidden;transition:all .3s;cursor:pointer;position:relative}
+.acard:hover{transform:translateY(-6px);border-color:rgba(255,92,0,.3);box-shadow:0 20px 50px rgba(255,92,0,.12)}
+.acard-img-wrap{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--bg3)}
+.acard-img{width:100%;height:100%;object-fit:cover;transition:transform .5s;filter:saturate(1.1)}
+.acard:hover .acard-img{transform:scale(1.06)}
+.acard-img-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(16,10,2,.95) 0%,rgba(16,10,2,.4) 45%,transparent 75%)}
+.acard-badge-row{position:absolute;top:.75rem;left:.75rem;right:.75rem;display:flex;justify-content:space-between;align-items:center}
+.acard-badge{font-family:var(--head);font-size:.58rem;font-weight:800;text-transform:uppercase;padding:.2rem .55rem;border-radius:100px;letter-spacing:.08em}
+.badge-top{background:rgba(255,214,0,.2);border:1px solid rgba(255,214,0,.4);color:#FFD600}
+.badge-ver{background:rgba(0,194,168,.2);border:1px solid rgba(0,194,168,.4);color:#00C2A8}
+.badge-hot{background:rgba(255,92,0,.25);border:1px solid rgba(255,92,0,.5);color:#FF8040}
+.badge-new{background:rgba(34,197,94,.2);border:1px solid rgba(34,197,94,.4);color:#22C55E}
+/* ── PROFILE MODAL ─────────────────────────────────────────────────────────── */
+.pm-bg{position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.88);backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;padding:1.2rem}
+.pm-bg.show{display:flex}
+.pm-box{background:#0d1117;border:1.5px solid rgba(255,255,255,.1);border-radius:28px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;position:relative;animation:pmIn .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pmIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.pm-cover{position:relative;height:200px;overflow:hidden;border-radius:28px 28px 0 0;background:linear-gradient(135deg,rgba(255,92,0,.2),rgba(255,45,120,.15))}
+.pm-cover img{width:100%;height:100%;object-fit:cover;filter:saturate(1.3) brightness(.7)}
+.pm-cover-grd{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,17,23,1) 0%,transparent 60%)}
+.pm-close{position:absolute;top:1rem;right:1rem;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:1.1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;transition:all .2s}
+.pm-close:hover{background:rgba(255,45,120,.3);color:#fff;border-color:rgba(255,45,120,.5)}
+.pm-avatar{position:absolute;bottom:-36px;left:1.6rem;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--o),var(--p));display:flex;align-items:center;justify-content:center;font-size:1.8rem;border:3px solid rgba(255,255,255,.15);overflow:hidden;z-index:4}
+.pm-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pm-body{padding:3rem 1.6rem 1.8rem}
+.pm-name{font-family:var(--head);font-size:1.5rem;font-weight:800;letter-spacing:-.8px;margin-bottom:.2rem}
+.pm-chip{display:inline-flex;align-items:center;gap:5px;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:.2rem .65rem;border-radius:100px;margin-bottom:.9rem}
+.pm-chip.artist{background:rgba(0,194,168,.12);border:1px solid rgba(0,194,168,.28);color:#00C2A8}
+.pm-chip.organiser{background:rgba(255,214,0,.1);border:1px solid rgba(255,214,0,.22);color:#FFD600}
+.pm-bio{font-size:.86rem;color:rgba(255,255,255,.55);line-height:1.75;margin-bottom:1.2rem}
+.pm-meta{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:1.4rem}
+.pm-meta-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:.75rem 1rem}
+.pm-meta-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:.2rem}
+.pm-meta-val{font-family:var(--head);font-size:.9rem;font-weight:700;color:#fff}
+.pm-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:1.2rem}
+.pm-tag{font-size:.72rem;font-weight:600;padding:.26rem .7rem;border-radius:100px;background:rgba(255,92,0,.1);border:1px solid rgba(255,92,0,.2);color:rgba(255,160,80,.9)}
+.pm-actions{display:flex;gap:.75rem;flex-wrap:wrap}
+.pm-btn-book{flex:1;font-family:var(--head);font-weight:800;font-size:.86rem;padding:.85rem;border-radius:14px;background:linear-gradient(135deg,var(--o),var(--p));color:#fff;border:none;cursor:pointer;box-shadow:0 5px 18px rgba(255,92,0,.3);transition:all .25s;text-align:center;text-decoration:none;display:block}
+.pm-btn-book:hover{transform:translateY(-2px);box-shadow:0 9px 26px rgba(255,92,0,.5)}
+.pm-btn-follow{font-family:var(--head);font-weight:700;font-size:.86rem;padding:.85rem 1.4rem;border-radius:14px;border:1.5px solid rgba(255,255,255,.14);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;transition:all .2s}
+.pm-btn-follow:hover{border-color:rgba(255,45,120,.4);color:#FF2D78}
+.pm-btn-follow.following{border-color:rgba(255,45,120,.4);color:#FF2D78;background:rgba(255,45,120,.07)}
+.pm-stars{color:#FFD600;font-size:.85rem;letter-spacing:.5px}
+
+.acard-heart{width:32px;height:32px;border-radius:50%;background:rgba(16,10,2,.7);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s;cursor:pointer}
+.acard-heart:hover,.acard-heart.liked{background:rgba(255,45,120,.2);border-color:var(--p)}
+.acard-body{padding:1rem 1.1rem 1.1rem;position:relative}
+.acard-genre{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--o);margin-bottom:.25rem}
+.acard-name{font-family:'Clash Display',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:-.3px;line-height:1.2;margin-bottom:.3rem}
+.acard-city{font-size:.73rem;color:var(--txt3);display:flex;align-items:center;gap:.3rem;margin-bottom:.6rem}
+.acard-rating{display:flex;align-items:center;gap:.35rem;margin-bottom:.75rem}
+.acard-stars{color:#FFD600;font-size:.75rem;letter-spacing:.5px}
+.acard-rev{font-size:.7rem;color:var(--txt3)}
+.acard-cta{display:block;width:100%;font-family:var(--head);font-size:.78rem;font-weight:800;padding:.65rem;border-radius:12px;border:1.5px solid var(--bdr2);color:var(--txt2);text-align:center;transition:all .25s}
+.acard:hover .acard-cta{border-color:rgba(255,92,0,.45);color:var(--o);background:rgba(255,92,0,.08)}
+
+/* ORGANISER CARDS */
+.org-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin-bottom:3rem}
+.ocard{background:rgba(255,255,255,.05);border:1.5px solid var(--bdr);border-radius:22px;overflow:hidden;transition:all .3s;cursor:pointer}
+.ocard:hover{transform:translateY(-5px);border-color:rgba(255,214,0,.3);box-shadow:0 18px 45px rgba(255,214,0,.08)}
+.ocard-top{padding:1.3rem 1.3rem .8rem;display:flex;align-items:center;justify-content:space-between}
+.ocard-logo{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,rgba(255,214,0,.25),rgba(255,92,0,.15));display:flex;align-items:center;justify-content:center;font-size:1.8rem;border:1.5px solid rgba(255,255,255,.1)}
+.ocard-badge{font-family:var(--head);font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:.2rem .6rem;border-radius:100px}
+.obadge-pro{background:rgba(255,214,0,.18);border:1px solid rgba(255,214,0,.4);color:#FFD600}
+.obadge-ver{background:rgba(0,194,168,.18);border:1px solid rgba(0,194,168,.4);color:#00C2A8}
+.obadge-new{background:rgba(34,197,94,.18);border:1px solid rgba(34,197,94,.4);color:#22C55E}
+.ocard-body{padding:0 1.3rem 1.3rem}
+.ocard-name{font-family:'Clash Display',sans-serif;font-size:1rem;font-weight:700;letter-spacing:-.2px;margin-bottom:.25rem}
+.ocard-city{font-size:.73rem;color:var(--txt3);margin-bottom:.55rem}
+.ocard-tags{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.7rem}
+.otag{font-size:.62rem;font-weight:700;padding:.16rem .55rem;border-radius:100px;background:rgba(255,214,0,.1);border:1px solid rgba(255,214,0,.2);color:rgba(255,214,0,.85)}
+.ocard-stats{display:flex;gap:1rem;font-size:.72rem;color:var(--txt2);font-weight:700;margin-bottom:.8rem}
+.ocard-cta{display:block;width:100%;font-family:var(--head);font-size:.78rem;font-weight:800;padding:.65rem;border-radius:12px;border:1.5px solid var(--bdr2);color:var(--txt2);text-align:center;transition:all .25s}
+.ocard:hover .ocard-cta{border-color:rgba(255,214,0,.5);color:#FFD600;background:rgba(255,214,0,.07)}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:5rem 2rem}
+.empty-icon{font-size:4rem;margin-bottom:1.2rem}
+.empty-title{font-family:'Clash Display',sans-serif;font-size:1.6rem;font-weight:700;letter-spacing:-.5px;margin-bottom:.6rem}
+.empty-sub{font-size:.88rem;color:var(--txt2);line-height:1.7;max-width:380px;margin:0 auto 2rem}
+.empty-tags{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center}
+.empty-tag{font-size:.75rem;font-weight:700;padding:.35rem .9rem;border-radius:100px;border:1.5px solid var(--bdr2);color:var(--txt2);cursor:pointer;transition:all .2s}
+.empty-tag:hover{border-color:var(--o);color:var(--o);background:rgba(255,92,0,.08)}
+
+/* NO DIVIDER */
+.section-gap{height:1px;background:var(--bdr);margin:0 0 2.5rem}
+
+/* FADE IN */
+.fade-in{opacity:0;transform:translateY(20px);animation:fadeIn .5s ease forwards}
+@keyframes fadeIn{to{opacity:1;transform:translateY(0)}}
+.d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}.d4{animation-delay:.2s}
+
+/* RESPONSIVE */
+@media(max-width:1024px){.artist-grid{grid-template-columns:repeat(3,1fr)}.org-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.artist-grid{grid-template-columns:repeat(2,1fr)}.org-grid{grid-template-columns:1fr}.filter-row{gap:.35rem}}
+@media(max-width:440px){.artist-grid{grid-template-columns:1fr}}
+
+/* ── Message form focus states ── */
+#pmMessageSection input:focus,
+#pmMessageSection textarea:focus {
+  border-color: rgba(255,92,0,.5) !important;
+  box-shadow: 0 0 0 3px rgba(255,92,0,.1);
+}
+#pmMessageSection button:hover { opacity: .88; }
+#pmMessageSection button:active { transform: scale(.98); }
+/* ── Toast ── */
+#flooxToast { font-family: inherit; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cur"></div>
+<div class="cursor-dot" id="curDot"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="index.html" class="nav-logo">
+    <img src="logo_floox.jpeg" alt="Floox">
+    <span class="nav-wordmark">Floox</span>
+  </a>
+  <a href="index.html" class="nav-back">← Home</a>
+  <div class="nav-right">
+    <a href="floox-login.html" class="btn-login" data-auth="login">Sign In</a>
+    <a href="floox-artist-register.html" class="btn-join" data-auth="login">Join Free</a>
+    <span class="btn-login" data-auth="username" style="display:none;color:var(--o)"></span>
+    <a href="#" class="btn-login" data-auth="dashboard" style="display:none">Dashboard</a>
+    <button class="btn-login" data-auth="logout" style="display:none;cursor:pointer" onclick="FLOOX.logout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- SEARCH HEADER -->
+<div class="search-header">
+  <div class="search-bar-wrap">
+    <div class="search-pill">
+      <span class="s-ico">🔍</span>
+      <input class="s-inp" id="sQ" placeholder="Search artists, genres, organisers…" oninput="runSearch()" onkeydown="if(event.key==='Enter')runSearch()" autocomplete="off">
+      <div class="s-divider"></div>
+      <input class="s-city" id="sC" placeholder="📍 City" oninput="runSearch()" onkeydown="if(event.key==='Enter')runSearch()">
+      <button class="s-btn" onclick="runSearch()">Search →</button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-chip active-type" id="f-all" onclick="setType('all')">All</button>
+    <button class="filter-chip" id="f-artist" onclick="setType('artist')">Artists</button>
+    <button class="filter-chip" id="f-organiser" onclick="setType('organiser')">Organisers</button>
+    <span style="width:1px;height:18px;background:var(--bdr);display:inline-block;margin:0 .3rem"></span>
+    <button class="filter-chip" id="f-mumbai" onclick="toggleCity('Mumbai')">Mumbai</button>
+    <button class="filter-chip" id="f-delhi" onclick="toggleCity('Delhi')">Delhi</button>
+    <button class="filter-chip" id="f-bangalore" onclick="toggleCity('Bangalore')">Bangalore</button>
+    <button class="filter-chip" id="f-goa" onclick="toggleCity('Goa')">Goa</button>
+    <button class="filter-chip" id="f-pune" onclick="toggleCity('Pune')">Pune</button>
+    <button class="filter-chip" id="f-chennai" onclick="toggleCity('Chennai')">Chennai</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="results-wrap">
+  <div class="results-meta">
+    <div class="results-count" id="resultsCount">Searching…</div>
+    <div class="sort-row">
+      <span class="sort-label">Sort by:</span>
+      <select class="sort-sel" id="sortSel" onchange="runSearch()">
+        <option value="relevance">Relevance</option>
+        <option value="rating">Rating</option>
+        <option value="bookings">Most Booked</option>
+        <option value="name">Name A–Z</option>
+      </select>
+    </div>
+  </div>
+  <div id="resultsContainer"></div>
+</div>
+
+
+<!-- Supabase Realtime config — set these to match your project -->
+<!-- Replace the placeholder values with your actual Supabase URL and anon key -->
+<!-- These are SAFE to expose in frontend (anon key, not service key) -->
+<script>
+  // ⚠️  REPLACE THESE with your actual values from Supabase Dashboard → Settings → API
+  const FLOOX_SUPABASE_URL  = 'YOUR_SUPABASE_URL';   // e.g. https://xyzxyz.supabase.co
+  const FLOOX_SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';  // the "anon public" key
+</script>
+
+<script>
+// ── CURSOR
+(()=>{
+  const c=document.getElementById('cur'),d=document.getElementById('curDot');
+  let mx=0,my=0,cx=0,cy=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;d.style.left=mx+'px';d.style.top=my+'px'});
+  (function tick(){cx+=(mx-cx)*.18;cy+=(my-cy)*.18;c.style.left=cx+'px';c.style.top=cy+'px';requestAnimationFrame(tick)})();
+  if(matchMedia('(pointer:coarse)').matches){c.style.display='none';d.style.display='none'}
+})();
+
+// ── STATE
+let activeType = 'all';
+let activeCities = [];
+// likesSet = Set of liked profile IDs (loaded from Supabase for logged-in users)
+let likesSet = new Set();
+let likesLoaded = false;
+
+// ── LOAD LIKES FROM DB ────────────────────────────────────────────────────
+async function loadLikes() {
+  if (!isLoggedIn()) { likesLoaded = true; return; }
+  try {
+    const token = localStorage.getItem('floox_token');
+    const res   = await fetch('/.netlify/functions/get-likes', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      likesSet = new Set(data.likes || []);
+    }
+  } catch(e) { console.warn('Could not load likes', e); }
+  likesLoaded = true;
+}
+
+// ── SUPABASE REALTIME — auto-refresh when new artist/organiser registers ──
+(function initRealtime() {
+  const supaUrl = (typeof FLOOX_SUPABASE_URL !== 'undefined') ? FLOOX_SUPABASE_URL : '';
+  const supaKey = (typeof FLOOX_SUPABASE_ANON !== 'undefined') ? FLOOX_SUPABASE_ANON : '';
+  if (!supaUrl || !supaKey) return;
+  try {
+    const wsUrl = supaUrl.replace('https://', 'wss://') + '/realtime/v1/websocket?apikey=' + supaKey + '&vsn=1.0.0';
+    const ws = new WebSocket(wsUrl);
+    let hb;
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ topic:'realtime:public:users', event:'phx_join', payload:{config:{broadcast:{self:false}},access_token:supaKey}, ref:'1' }));
+      hb = setInterval(() => ws.readyState===1 && ws.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:'hb'})), 25000);
+    };
+    ws.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        const evt = msg.event || '';
+        const record = msg.payload?.record || {};
+        // Refresh when a new artist or organiser completes their profile
+        if ((evt === 'INSERT' || evt === 'UPDATE') && (record.role === 'artist' || record.role === 'organiser')) {
+          clearTimeout(window._rtRefresh);
+          window._rtRefresh = setTimeout(() => {
+            showToast('🎉 New profile just joined Floox!');
+            runSearch();
+          }, 1200);
+        }
+      } catch(_) {}
+    };
+    ws.onclose = () => { clearInterval(hb); setTimeout(initRealtime, 6000); };
+    ws.onerror = () => ws.close();
+  } catch(_) {}
+})();
+
+// READ URL PARAMS & POPULATE INPUTS
+const params = new URLSearchParams(location.search);
+const initQ = params.get('q') || '';
+const initC = params.get('city') || '';
+document.getElementById('sQ').value = initQ;
+document.getElementById('sC').value = initC;
+if(initC) activeCities = [initC];
+
+function setType(t) {
+  activeType = t;
+  document.querySelectorAll('.filter-chip[data-ftype]').forEach(el => {
+    el.classList.toggle('active-type', el.dataset.ftype === t);
+  });
+  runSearch();
+}
+
+function toggleCity(c) {
+  const btn = document.getElementById('f-'+c.toLowerCase());
+  if(activeCities.includes(c)) {
+    activeCities = activeCities.filter(x=>x!==c);
+    btn.classList.remove('active');
+  } else {
+    activeCities.push(c);
+    btn.classList.add('active');
+  }
+  runSearch();
+}
+
+// ── SEARCH & RENDER ────────────────────────────────────────────────────────
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  let t = document.getElementById('flooxToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'flooxToast';
+    t.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:rgba(20,12,4,.95);border:1.5px solid rgba(255,92,0,.4);color:#fff;padding:.7rem 1.4rem;border-radius:100px;font-size:.82rem;font-weight:700;z-index:9999;transition:opacity .4s;pointer-events:none;white-space:nowrap';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._hide);
+  t._hide = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+}
+
+async function runSearch() {
+  const q = (document.getElementById('sQ').value || '').trim();
+  const cityInput = (document.getElementById('sC').value || '').trim();
+
+  const sp = new URLSearchParams();
+  if(q) sp.set('q', q);
+  if(cityInput) sp.set('city', cityInput);
+  history.replaceState(null,'',window.location.pathname+(sp.toString()?'?'+sp.toString():''));
+
+  document.getElementById('resultsCount').textContent = 'Searching…';
+  document.getElementById('resultsContainer').innerHTML = '<div style="text-align:center;padding:4rem 0;color:rgba(255,255,255,.3);font-size:.9rem">Loading…</div>';
+
+  const sort = document.getElementById('sortSel').value;
+  const city = activeCities.length === 1 ? activeCities[0] : (cityInput || undefined);
+
+  try {
+    const fetchArgs = { q: q || undefined, city, limit: 50 };
+    const [artistsRes, orgsRes] = await Promise.allSettled([
+      (activeType === 'all' || activeType === 'artist')
+        ? fetchArtists(fetchArgs)
+        : Promise.resolve({ artists: [] }),
+      (activeType === 'all' || activeType === 'organiser')
+        ? fetchOrganisers(fetchArgs)
+        : Promise.resolve({ organisers: [] }),
+    ]);
+
+    let artists = artistsRes.status === 'fulfilled' ? (artistsRes.value.artists || []) : [];
+    let orgs    = orgsRes.status    === 'fulfilled' ? (orgsRes.value.organisers || []) : [];
+
+    // Filter by active city pills if multiple selected
+    if(activeCities.length > 1) {
+      artists = artists.filter(a => activeCities.some(c => (a.city||'').toLowerCase().includes(c.toLowerCase())));
+      orgs    = orgs.filter(o    => activeCities.some(c => (o.city||'').toLowerCase().includes(c.toLowerCase())));
+    }
+
+    // Sort
+    if(sort === 'name') {
+      artists.sort((a,b)=>(a.stageName||a.name).localeCompare(b.stageName||b.name));
+      orgs.sort((a,b)=>(a.orgName||a.name).localeCompare(b.orgName||b.name));
+    }
+
+    renderResults(artists, orgs, q);
+  } catch(err) {
+    console.error(err);
+    document.getElementById('resultsContainer').innerHTML = '<div style="text-align:center;padding:4rem 0;color:rgba(255,45,120,.6)">Could not load results. Please try again.</div>';
+  }
+}
+
+async function fetchArtists(filters) {
+  const qs = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([,v])=>v!=null))).toString();
+  const res = await fetch('/.netlify/functions/artists?' + qs);
+  if(!res.ok) throw new Error('artists fetch failed');
+  return res.json();
+}
+
+async function fetchOrganisers(filters) {
+  // Organisers require auth
+  if(!isLoggedIn()) return { organisers: [] };
+  const token = localStorage.getItem('floox_token');
+  const qs = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([,v])=>v!=null))).toString();
+  const res = await fetch('/.netlify/functions/organisers?' + qs, {
+    headers: { Authorization: 'Bearer ' + token }
+  });
+  if(!res.ok) return { organisers: [] };
+  return res.json();
+}
+
+function isLoggedIn() {
+  return !!localStorage.getItem('floox_token') && !!localStorage.getItem('floox_user');
+}
+
+function renderResults(artists, orgs, q) {
+  const container = document.getElementById('resultsContainer');
+  const countEl   = document.getElementById('resultsCount');
+  const total = artists.length + orgs.length;
+
+  countEl.innerHTML = total === 0
+    ? 'No results found'
+    : `<span>${total}</span> result${total!==1?'s':''}${q ? ` for "<span>${q}</span>"` : ''}`;
+
+  if(total === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🎵</div>
+        <div class="empty-title">No results found</div>
+        <div class="empty-sub">Try a different name, city, or genre. Or explore our popular searches below.</div>
+        <div class="empty-tags">
+          ${['Bollywood','DJ','Classical','Rock','Sufi','Comedy','Mumbai','Delhi','Goa'].map(t=>`<span class="empty-tag" onclick="quickSearch('${t}')">${t}</span>`).join('')}
+        </div>
+      </div>`;
+    return;
+  }
+
+  let html = '';
+
+  if(artists.length > 0) {
+    html += `<div class="res-section-title">Artists <span class="res-count-badge">${artists.length}</span></div>`;
+    html += `<div class="artist-grid">`;
+    artists.forEach((a, i) => {
+      const isLiked = likesSet.has(a.id);
+      const delay   = Math.min(i,3);
+      const dispName = a.stageName || a.name;
+      const genre    = (a.genres||[]).join(' / ') || 'Artist';
+      const photo    = a.avatar || '';
+      const city     = a.city || '';
+      html += `
+      <div class="acard fade-in d${delay+1}" onclick="openProfile('${a.id}','artist')">
+        <div class="acard-img-wrap">
+          ${photo
+            ? `<img class="acard-img" src="${photo}" alt="${dispName}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=500&q=80&auto=format&fit=crop'">`
+            : `<div class="acard-img" style="background:linear-gradient(135deg,rgba(255,92,0,.2),rgba(255,45,120,.15));display:flex;align-items:center;justify-content:center;font-size:3rem">🎤</div>`}
+          <div class="acard-img-grad"></div>
+          <div class="acard-badge-row">
+            <span class="acard-badge badge-${a.verified ? 'ver' : 'new'}">${a.verified ? '✓ Verified' : '✦ New'}</span>
+            <button class="acard-heart ${isLiked?'liked':''}" onclick="toggleLike(event,'${a.id}','${dispName}')" title="Follow">${isLiked?'❤️':'🤍'}</button>
+          </div>
+        </div>
+        <div class="acard-body">
+          <div class="acard-genre">${genre}</div>
+          <div class="acard-name">${dispName}</div>
+          <div class="acard-city">📍 ${city||'—'}</div>
+          <div class="acard-rating">
+            <span class="acard-stars">★★★★★</span>
+            <span class="acard-rev">on Floox</span>
+          </div>
+          <span class="acard-cta">View Profile →</span>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if(artists.length > 0 && orgs.length > 0) {
+    html += `<div class="section-gap"></div>`;
+  }
+
+  if(orgs.length > 0) {
+    html += `<div class="res-section-title">Organisers <span class="res-count-badge">${orgs.length}</span></div>`;
+    html += `<div class="org-grid">`;
+    orgs.forEach((o, i) => {
+      const delay    = Math.min(i,3);
+      const dispName = o.orgName || o.name;
+      const orgType  = o.orgType || '';
+      const genres   = (o.preferredGenres||[]).slice(0,3);
+      const isLiked  = likesSet.has(o.id);
+      html += `
+      <div class="ocard fade-in d${delay+1}" onclick="openProfile('${o.id}','organiser')">
+        <div class="ocard-top">
+          <div class="ocard-logo">${o.avatar ? `<img src="${o.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">` : '🎪'}</div>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <span class="ocard-badge obadge-${o.verified?'ver':'new'}">${o.verified?'Verified':'New'}</span>
+            <button class="acard-heart ${isLiked?'liked':''}" onclick="toggleLike(event,'${o.id}','${dispName}')" title="Save organiser">${isLiked?'❤️':'🤍'}</button>
+          </div>
+        </div>
+        <div class="ocard-body">
+          <div class="ocard-name">${dispName}</div>
+          <div class="ocard-city">📍 ${o.city||'—'}</div>
+          <div class="ocard-tags">${genres.map(t=>`<span class="otag">${t}</span>`).join('')}${orgType?`<span class="otag">${orgType}</span>`:''}</div>
+          <div class="ocard-stats"><span>📅 ${o.eventsPerYear||'—'} events/year</span></div>
+          <span class="ocard-cta">View Profile →</span>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+
+    if(!isLoggedIn()) {
+      html += `<div style="text-align:center;margin-top:1rem;padding:1.2rem;background:rgba(255,214,0,.05);border:1.5px dashed rgba(255,214,0,.2);border-radius:18px;font-size:.82rem;color:rgba(255,255,255,.45)">
+        🔒 <a href="floox-login.html" style="color:#FFD600;font-weight:700">Sign in</a> to browse organisers and see their contact details
+      </div>`;
+    }
+  } else if((activeType === 'all' || activeType === 'organiser') && !isLoggedIn()) {
+    html += `<div class="empty-state" style="padding:2.5rem">
+      <div class="empty-icon">🎪</div>
+      <div class="empty-title" style="font-size:1.2rem">Find Event Organisers</div>
+      <div class="empty-sub">Sign in to browse organisers and connect with them directly.</div>
+      <a href="floox-login.html" style="display:inline-block;margin-top:1rem;padding:.75rem 2rem;border-radius:100px;background:linear-gradient(135deg,#FFD600,#FF5C00);color:#000;font-weight:800;font-size:.85rem">Sign In to Search Organisers</a>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+async function toggleLike(e, id, name) {
+  e.stopPropagation();
+  if (!isLoggedIn()) {
+    showToast('🔒 Sign in to like profiles');
+    return;
+  }
+  const btn = e.currentTarget;
+  const wasLiked = likesSet.has(id);
+  // Optimistic UI update
+  if (wasLiked) {
+    likesSet.delete(id);
+    btn.textContent = '🤍';
+    btn.classList.remove('liked');
+  } else {
+    likesSet.add(id);
+    btn.textContent = '❤️';
+    btn.classList.add('liked');
+  }
+  // Sync with DB
+  try {
+    const token = localStorage.getItem('floox_token');
+    const res   = await fetch('/.netlify/functions/toggle-like', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body:    JSON.stringify({ likedId: id }),
+    });
+    if (!res.ok) throw new Error('failed');
+    const data = await res.json();
+    showToast(data.liked ? ('❤️ Added to your likes') : ('🤍 Removed from likes'));
+  } catch(_) {
+    // Rollback on failure
+    if (wasLiked) { likesSet.add(id); btn.textContent = '❤️'; btn.classList.add('liked'); }
+    else          { likesSet.delete(id); btn.textContent = '🤍'; btn.classList.remove('liked'); }
+    showToast('Could not update like, please try again');
+  }
+}
+
+function quickSearch(term) {
+  document.getElementById('sQ').value = term;
+  runSearch();
+}
+
+document.getElementById('sQ').addEventListener('input', ()=>{ clearTimeout(window._sqt); window._sqt=setTimeout(runSearch,350); });
+document.getElementById('sC').addEventListener('input', ()=>{ clearTimeout(window._sct); window._sct=setTimeout(runSearch,350); });
+document.getElementById('sortSel').addEventListener('change', runSearch);
+
+// Initial load — load likes first, then search
+loadLikes().then(() => runSearch());
+</script>
+
+<!-- Profile Modal -->
+<div class="pm-bg" id="profileModal">
+  <div class="pm-box">
+    <div class="pm-cover" id="pmCover">
+      <img id="pmCoverImg" src="" alt="" style="display:none">
+      <div class="pm-cover-grd"></div>
+      <div class="pm-avatar" id="pmAvatar"><span id="pmEmoji">🎤</span><img id="pmAvatarImg" src="" alt="" style="display:none"></div>
+      <button class="pm-close" onclick="closeProfile()">✕</button>
+    </div>
+    <div class="pm-body">
+      <div class="pm-name" id="pmName"></div>
+      <div class="pm-chip" id="pmChip"></div>
+      <p class="pm-bio" id="pmBio" style="display:none"></p>
+      <div class="pm-tags" id="pmTags"></div>
+      <div class="pm-meta" id="pmMeta"></div>
+      <!-- Contact details — shown only to logged-in users -->
+      <div id="pmContact" style="display:none;margin-bottom:1.2rem"></div>
+      <div id="pmLoginNudge" style="display:none;text-align:center;padding:.9rem;background:rgba(255,92,0,.06);border:1.5px dashed rgba(255,92,0,.2);border-radius:14px;font-size:.8rem;color:rgba(255,255,255,.45);margin-bottom:1.2rem">
+        🔒 <a href="floox-login.html" style="color:var(--o);font-weight:700">Sign in</a> to view contact details and send a booking enquiry
+      </div>
+
+      <!-- In-platform message form — shown to logged-in users -->
+      <div id="pmMessageSection" style="display:none;margin-bottom:1.2rem">
+        <div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:.75rem">Send a Message</div>
+        <div id="pmMsgForm">
+          <input id="msgSubject" type="text" placeholder="Subject (e.g. Booking for Diwali event)" maxlength="120"
+            style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:.65rem .9rem;color:#fff;font-size:.82rem;margin-bottom:.55rem;outline:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.55rem">
+            <input id="msgEventDate" type="text" placeholder="Event date (optional)" maxlength="50"
+              style="background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:.65rem .9rem;color:#fff;font-size:.8rem;outline:none">
+            <input id="msgBudget" type="text" placeholder="Budget (optional)" maxlength="50"
+              style="background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:.65rem .9rem;color:#fff;font-size:.8rem;outline:none">
+          </div>
+          <textarea id="msgBody" rows="4" placeholder="Hi! I'd like to enquire about a booking…" maxlength="1500"
+            style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:.65rem .9rem;color:#fff;font-size:.82rem;resize:vertical;outline:none;margin-bottom:.65rem"></textarea>
+          <button onclick="sendMessage()"
+            style="width:100%;padding:.75rem;border-radius:100px;border:none;background:linear-gradient(135deg,#FF5C00,#FF2D78);color:#fff;font-weight:800;font-size:.85rem;cursor:pointer;transition:opacity .2s">
+            📩 Send Message
+          </button>
+          <div id="msgStatus" style="margin-top:.55rem;font-size:.78rem;text-align:center;display:none"></div>
+        </div>
+      </div>
+
+      <div class="pm-actions">
+        <button class="pm-btn-follow" id="pmFollowBtn" onclick="toggleFollowFromModal()">🤍 Follow</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="floox-auth.js"></script>
+<script>
+// Auth nav state
+document.addEventListener('DOMContentLoaded', () => {
+  if(typeof FLOOX !== 'undefined' && FLOOX.isLoggedIn()){
+    const user = FLOOX.getUser();
+    const dashUrl = user.role==='artist' ? 'floox-dashboard-artist.html'
+                  : user.role==='organiser' ? 'floox-dashboard-organiser.html'
+                  : 'floox-public.html';
+    document.querySelectorAll('[data-auth="login"]').forEach(el=>el.style.display='none');
+    document.querySelectorAll('[data-auth="logout"]').forEach(el=>el.style.display='inline-flex');
+    document.querySelectorAll('[data-auth="username"]').forEach(el=>{
+      el.style.display='inline';
+      el.textContent='Hi, '+(user.name||'').split(' ')[0]+'!';
+    });
+    document.querySelectorAll('[data-auth="dashboard"]').forEach(el=>{
+      el.style.display='inline-flex';
+      el.href=dashUrl;
+    });
+  }
+});
+
+// ── PROFILE MODAL ──────────────────────────────────────────────────────────────
+let currentProfileId   = null;
+let currentReceiverId  = null;  // ID of the profile currently open in modal
+
+
+async function openProfile(id, role) {
+  if (!id) return;
+  currentProfileId  = id;
+  currentReceiverId  = id;
+
+  // Show modal with loading state
+  document.getElementById('pmName').textContent = 'Loading…';
+  document.getElementById('pmChip').textContent = '';
+  document.getElementById('pmBio').style.display = 'none';
+  document.getElementById('pmTags').innerHTML = '';
+  document.getElementById('pmMeta').innerHTML = '';
+  document.getElementById('pmContact').style.display = 'none';
+  document.getElementById('pmLoginNudge').style.display = 'none';
+  document.getElementById('pmCoverImg').style.display = 'none';
+  document.getElementById('pmAvatarImg').style.display = 'none';
+  document.getElementById('pmEmoji').textContent = role === 'organiser' ? '🎪' : '🎤';
+  document.getElementById('pmEmoji').style.display = 'inline';
+  document.getElementById('profileModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+
+  try {
+    let user;
+    if (isLoggedIn()) {
+      // Logged-in: fetch full profile including contact details
+      const token = localStorage.getItem('floox_token');
+      const res = await fetch('/.netlify/functions/get-profile?id=' + encodeURIComponent(id), {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Not found');
+      user = data.user;
+    } else {
+      // Not logged-in: we can't call get-profile (needs auth).
+      // For artists, hit the public artists endpoint filtered by id using select + eq filter.
+      // For organisers, we have no public endpoint — just show a login nudge.
+      if (role === 'artist') {
+        const res = await fetch('/.netlify/functions/artists?id=' + encodeURIComponent(id) + '&limit=1');
+        const data = await res.json();
+        user = (data.artists || [])[0] || null;
+      }
+      if (!user) {
+        // Fall through — modal will show a sign-in nudge
+        user = { id, role, name: '—' };
+      }
+    }
+
+    populateModal(user, !isLoggedIn());
+  } catch(err) {
+    document.getElementById('pmName').textContent = 'Could not load profile';
+    document.getElementById('pmBio').textContent = err.message;
+    document.getElementById('pmBio').style.display = 'block';
+  }
+}
+
+function populateModal(user, isGuest) {
+  const isOrg = user.role === 'organiser';
+
+  // Cover / avatar
+  const cover  = user.coverImage || user.avatar || '';
+  const avatar = user.avatar || '';
+  const coverImg = document.getElementById('pmCoverImg');
+  const avImg    = document.getElementById('pmAvatarImg');
+  if (cover) { coverImg.src = cover; coverImg.style.display = 'block'; }
+  if (avatar) { avImg.src = avatar; avImg.style.display = 'block'; document.getElementById('pmEmoji').style.display = 'none'; }
+  else { document.getElementById('pmEmoji').textContent = isOrg ? '🎪' : '🎤'; document.getElementById('pmEmoji').style.display = 'inline'; }
+
+  // Name + chip
+  const dispName = isOrg ? (user.orgName || user.name) : (user.stageName || user.name);
+  document.getElementById('pmName').textContent = dispName;
+  const chip = document.getElementById('pmChip');
+  chip.textContent  = isOrg ? '🎪 Event Organiser' : '🎤 Artist';
+  chip.className    = 'pm-chip ' + (isOrg ? 'organiser' : 'artist');
+
+  // Bio
+  const bioEl = document.getElementById('pmBio');
+  if (user.bio) { bioEl.textContent = user.bio; bioEl.style.display = 'block'; }
+  else { bioEl.style.display = 'none'; }
+
+  // Tags (genres / preferred genres)
+  const tags = isOrg ? (user.preferredGenres || []) : (user.genres || []);
+  const perfTypes = isOrg ? (user.venueTypes || []) : (user.performanceTypes || []);
+  const allTags = [...tags, ...perfTypes].slice(0, 7);
+  document.getElementById('pmTags').innerHTML = allTags.map(t =>
+    `<span class="pm-tag">${t.charAt(0).toUpperCase()+t.slice(1)}</span>`
+  ).join('');
+
+  // Meta grid
+  const meta = [];
+  if (user.city)        meta.push({label:'City',         val:'📍 '+user.city});
+  if (!isOrg) {
+    const fee = (user.minFee && user.maxFee) ? `₹${(+user.minFee).toLocaleString('en-IN')}–₹${(+user.maxFee).toLocaleString('en-IN')}` : '';
+    if (fee)            meta.push({label:'Fee Range',     val:'💰 '+fee});
+    if (user.performerType) meta.push({label:'Type',     val:'🎭 '+user.performerType});
+    if ((user.languages||[]).length) meta.push({label:'Languages', val:'🗣 '+(user.languages||[]).join(', ')});
+  } else {
+    if (user.orgType)   meta.push({label:'Org Type',     val:'🏢 '+user.orgType});
+    if (user.eventsPerYear) meta.push({label:'Events/year', val:'📅 '+user.eventsPerYear});
+    if (user.budgetRange)   meta.push({label:'Budget',    val:'💰 '+user.budgetRange});
+    if (user.website)   meta.push({label:'Website',      val:'🌐 '+user.website});
+  }
+  document.getElementById('pmMeta').innerHTML = meta.map(m =>
+    `<div class="pm-meta-item"><div class="pm-meta-label">${m.label}</div><div class="pm-meta-val">${m.val}</div></div>`
+  ).join('');
+
+  // Contact details — OTP-gated reveal (99acres style), only for logged-in users
+  const contactEl  = document.getElementById('pmContact');
+  const nudgeEl    = document.getElementById('pmLoginNudge');
+  const msgSection = document.getElementById('pmMessageSection');
+
+  if (!isGuest) {
+    // Build the reveal widget
+    const hasContact = !!(user.phone || user.email);
+    if (hasContact) {
+      contactEl.innerHTML = buildRevealWidget(user.id);
+      contactEl.style.display = 'block';
+      // Kick off a check for daily remaining quota to update the counter
+      updateRevealCounter(user.id);
+    } else {
+      contactEl.style.display = 'none';
+    }
+    // Message form — can't message yourself
+    const myId = (() => { try { return JSON.parse(localStorage.getItem('floox_user') || '{}').id; } catch(_){return '';} })();
+    if (user.id !== myId) {
+      document.getElementById('msgSubject').value   = '';
+      document.getElementById('msgBody').value      = '';
+      document.getElementById('msgEventDate').value = '';
+      document.getElementById('msgBudget').value    = '';
+      document.getElementById('msgStatus').style.display = 'none';
+      document.getElementById('pmMsgForm').style.display = 'block';
+      msgSection.style.display = 'block';
+    } else {
+      msgSection.style.display = 'none';
+    }
+    nudgeEl.style.display = 'none';
+  } else {
+    // Guest: show sign-in nudge, hide contact+form
+    contactEl.style.display  = 'none';
+    msgSection.style.display = 'none';
+    nudgeEl.style.display    = 'block';
+  }
+
+  // Social links
+  const socials = user.socialLinks || {};
+  if (Object.keys(socials).length > 0) {
+    const links = Object.entries(socials).map(([platform, url]) =>
+      url ? `<a href="${url}" target="_blank" rel="noopener" style="font-size:.75rem;font-weight:700;padding:.3rem .75rem;border-radius:100px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem">${platform}</a>` : ''
+    ).filter(Boolean).join('');
+    if (links) {
+      document.getElementById('pmTags').insertAdjacentHTML('afterend',
+        `<div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.9rem">${links}</div>`);
+    }
+  }
+
+  // Follow button state (from likesSet — already loaded from DB)
+  const followBtn = document.getElementById('pmFollowBtn');
+  if (likesSet.has(user.id)) {
+    followBtn.textContent = '❤️ Following';
+    followBtn.classList.add('following');
+  } else {
+    followBtn.textContent = '🤍 Follow';
+    followBtn.classList.remove('following');
+  }
+}
+
+// ── CONTACT REVEAL SYSTEM (99acres style) ────────────────────────────────────
+// State per open modal
+let _revealProfileId   = null;  // set when reveal widget is built
+let _revealState       = 'idle'; // idle | otp_sent | revealed
+let _revealDailyRemain = null;  // cached from server
+
+function buildRevealWidget(profileId) {
+  _revealProfileId = profileId;
+  _revealState     = 'idle';
+  return `
+  <div id="revealWidget" style="background:rgba(255,92,0,.05);border:1.5px solid rgba(255,92,0,.22);border-radius:14px;padding:.9rem 1.1rem">
+    <div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:.6rem">Contact Details</div>
+    <div id="revealIdle" style="display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:.2rem">Phone &amp; email are hidden</div>
+        <div id="revealQuotaLine" style="font-size:.68rem;color:rgba(255,255,255,.28)">Checking your daily quota…</div>
+      </div>
+      <button id="revealBtn" onclick="requestReveal()" style="font-family:inherit;font-size:.82rem;font-weight:800;padding:.6rem 1.3rem;border-radius:100px;background:linear-gradient(135deg,#FF5C00,#FF2D78);color:#fff;border:none;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(255,92,0,.35);transition:all .22s">
+        🔓 Reveal Contact
+      </button>
+    </div>
+    <div id="revealOtpPanel" style="display:none">
+      <div style="font-size:.8rem;color:rgba(255,255,255,.6);margin-bottom:.7rem" id="revealOtpMsg"></div>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <input id="revealOtpInput" type="text" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit OTP"
+          style="flex:1;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,92,0,.3);border-radius:10px;padding:.6rem .9rem;font-family:inherit;font-size:1rem;font-weight:800;color:#fff;outline:none;letter-spacing:4px;min-width:140px"
+          onkeydown="if(event.key==='Enter')verifyRevealOtp()">
+        <button onclick="verifyRevealOtp()" style="font-family:inherit;font-size:.82rem;font-weight:800;padding:.6rem 1.2rem;border-radius:100px;background:linear-gradient(135deg,#00C2A8,#0080ff);color:#fff;border:none;cursor:pointer;white-space:nowrap">
+          ✓ Verify
+        </button>
+      </div>
+      <div style="margin-top:.5rem">
+        <button onclick="requestReveal()" style="font-size:.72rem;color:rgba(255,92,0,.7);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;padding:0">Resend OTP</button>
+        <span style="color:rgba(255,255,255,.2);font-size:.7rem"> · Expires in 10 min</span>
+      </div>
+    </div>
+    <div id="revealResult" style="display:none;display:flex;flex-direction:column;gap:.45rem"></div>
+    <div id="revealErrMsg" style="display:none;font-size:.75rem;color:#FF5C00;margin-top:.5rem;font-weight:700"></div>
+  </div>`;
+}
+
+async function updateRevealCounter(profileId) {
+  try {
+    const token = localStorage.getItem('floox_token');
+    const res   = await fetch('/.netlify/functions/get-reveals-remaining', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    _revealDailyRemain = data.remaining;
+    const el = document.getElementById('revealQuotaLine');
+    if (!el) return;
+    if (data.remaining <= 0) {
+      el.textContent = '⚠️ Daily limit reached (resets midnight IST)';
+      el.style.color = 'rgba(255,92,0,.6)';
+      const btn = document.getElementById('revealBtn');
+      if (btn) { btn.disabled = true; btn.style.opacity = '.45'; btn.style.cursor = 'not-allowed'; }
+    } else {
+      el.textContent = `${data.remaining} of ${data.limit} reveals left today`;
+    }
+  } catch(_) {}
+}
+
+async function requestReveal() {
+  if (!_revealProfileId) return;
+  const btn = document.getElementById('revealBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending OTP…'; }
+  const errEl = document.getElementById('revealErrMsg');
+  if (errEl) errEl.style.display = 'none';
+
+  try {
+    const token = localStorage.getItem('floox_token');
+    const res   = await fetch('/.netlify/functions/reveal-contact', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body:    JSON.stringify({ action: 'request', profileId: _revealProfileId }),
+    });
+    const data = await res.json();
+
+    if (data.status === 'already_revealed') {
+      // Already verified today — fetch and show contact directly
+      await doAutoReveal();
+      return;
+    }
+
+    if (!res.ok) {
+      showRevealError(data.error || data.message || 'Could not send OTP. Try again.');
+      if (btn) { btn.disabled = false; btn.textContent = '🔓 Reveal Contact'; }
+      return;
+    }
+
+    // OTP sent — show OTP panel
+    _revealState = 'otp_sent';
+    document.getElementById('revealIdle').style.display    = 'none';
+    document.getElementById('revealOtpPanel').style.display = 'block';
+    const msgEl = document.getElementById('revealOtpMsg');
+    if (msgEl) msgEl.textContent = data.message || 'OTP sent to your email.';
+    setTimeout(() => {
+      const inp = document.getElementById('revealOtpInput');
+      if (inp) inp.focus();
+    }, 100);
+
+  } catch(err) {
+    showRevealError('Network error. Please try again.');
+    if (btn) { btn.disabled = false; btn.textContent = '🔓 Reveal Contact'; }
+  }
+}
+
+async function verifyRevealOtp() {
+  if (!_revealProfileId) return;
+  const otp = (document.getElementById('revealOtpInput')?.value || '').trim();
+  if (otp.length !== 6) {
+    showRevealError('Enter the 6-digit code from your email.');
+    return;
+  }
+  const errEl = document.getElementById('revealErrMsg');
+  if (errEl) errEl.style.display = 'none';
+
+  const verifyBtn = document.querySelector('#revealWidget button[onclick="verifyRevealOtp()"]');
+  if (verifyBtn) { verifyBtn.disabled = true; verifyBtn.textContent = 'Verifying…'; }
+
+  try {
+    const token = localStorage.getItem('floox_token');
+    const res   = await fetch('/.netlify/functions/reveal-contact', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body:    JSON.stringify({ action: 'verify', profileId: _revealProfileId, otp }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showRevealError(data.error || 'Invalid code. Try again or resend.');
+      if (verifyBtn) { verifyBtn.disabled = false; verifyBtn.textContent = '✓ Verify'; }
+      return;
+    }
+
+    showRevealedContact(data.contact, data.remaining);
+  } catch(err) {
+    showRevealError('Network error. Please try again.');
+    if (verifyBtn) { verifyBtn.disabled = false; verifyBtn.textContent = '✓ Verify'; }
+  }
+}
+
+// For "already_revealed" case — fetch contact directly (OTP already verified before)
+async function doAutoReveal() {
+  try {
+    const token = localStorage.getItem('floox_token');
+    const res   = await fetch('/.netlify/functions/get-profile?id=' + encodeURIComponent(_revealProfileId), {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    const u = data.user || {};
+    const contact = {};
+    if (u.phone) contact.phone = u.phone;
+    if (u.email) contact.email = u.email;
+    showRevealedContact(contact, null);
+  } catch(_) {
+    showRevealError('Could not load contact. Please try again.');
+  }
+}
+
+function showRevealedContact(contact, remaining) {
+  _revealState = 'revealed';
+  document.getElementById('revealIdle').style.display     = 'none';
+  document.getElementById('revealOtpPanel').style.display = 'none';
+
+  const parts = [];
+  if (contact.phone) parts.push(`<a href="tel:${contact.phone}" style="color:var(--o);font-weight:700;text-decoration:none;display:flex;align-items:center;gap:.4rem;font-size:.9rem">📞 ${contact.phone}</a>`);
+  if (contact.email) parts.push(`<a href="mailto:${contact.email}" style="color:var(--t);font-weight:700;text-decoration:none;display:flex;align-items:center;gap:.4rem;font-size:.9rem">✉️ ${contact.email}</a>`);
+
+  const el = document.getElementById('revealResult');
+  if (el) {
+    el.innerHTML = parts.join('');
+    if (remaining !== null && remaining !== undefined) {
+      el.innerHTML += `<div style="font-size:.67rem;color:rgba(255,255,255,.28);margin-top:.3rem">${remaining} reveal${remaining!==1?'s':''} remaining today</div>`;
+    }
+    el.style.display = 'flex';
+    el.style.flexDirection = 'column';
+    el.style.gap = '.4rem';
+  }
+  showToast('✅ Contact details revealed!');
+}
+
+function showRevealError(msg) {
+  const el = document.getElementById('revealErrMsg');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+async function sendMessage() {
+  if (!currentReceiverId) return;
+  const body    = (document.getElementById('msgBody').value    || '').trim();
+  const subject = (document.getElementById('msgSubject').value || '').trim();
+  const eventDate = (document.getElementById('msgEventDate').value || '').trim();
+  const budget    = (document.getElementById('msgBudget').value    || '').trim();
+  const statusEl  = document.getElementById('msgStatus');
+  const btn       = document.querySelector('#pmMsgForm button');
+
+  if (!body || body.length < 10) {
+    statusEl.textContent = '⚠️ Please write at least 10 characters.';
+    statusEl.style.color = '#FF5C00';
+    statusEl.style.display = 'block';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  statusEl.style.display = 'none';
+
+  try {
+    const token = localStorage.getItem('floox_token');
+    const res   = await fetch('/.netlify/functions/send-message', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body:    JSON.stringify({ receiverId: currentReceiverId, subject, body, eventDate, budget }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Send failed');
+
+    // Success — hide form, show confirmation
+    document.getElementById('pmMsgForm').innerHTML = `
+      <div style="text-align:center;padding:1.2rem;background:rgba(0,194,168,.07);border:1.5px solid rgba(0,194,168,.2);border-radius:14px">
+        <div style="font-size:1.6rem;margin-bottom:.5rem">✅</div>
+        <div style="font-weight:800;font-size:.9rem;margin-bottom:.3rem">Message Sent!</div>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.5);line-height:1.5">${data.message}</div>
+      </div>`;
+    showToast('📩 Message sent successfully!');
+  } catch(err) {
+    btn.disabled = false;
+    btn.textContent = '📩 Send Message';
+    statusEl.textContent = '⚠️ ' + (err.message || 'Could not send. Please try again.');
+    statusEl.style.color = '#FF5C00';
+    statusEl.style.display = 'block';
+  }
+}
+
+function closeProfile() {
+  document.getElementById('profileModal').classList.remove('show');
+  document.body.style.overflow = '';
+  currentProfileId = null;
+  // Clean up dynamically inserted social links row
+  const extra = document.querySelector('#pmTags + div:not(.pm-actions)');
+  if (extra && extra.id !== 'pmContact' && extra.id !== 'pmLoginNudge') extra.remove();
+}
+
+async function toggleFollowFromModal() {
+  if (!currentProfileId) return;
+  if (!isLoggedIn()) { showToast('🔒 Sign in to follow profiles'); return; }
+  const followBtn = document.getElementById('pmFollowBtn');
+  const wasLiked  = likesSet.has(currentProfileId);
+  // Optimistic UI
+  if (wasLiked) {
+    likesSet.delete(currentProfileId);
+    followBtn.textContent = '🤍 Follow';
+    followBtn.classList.remove('following');
+  } else {
+    likesSet.add(currentProfileId);
+    followBtn.textContent = '❤️ Following';
+    followBtn.classList.add('following');
+  }
+  // Also update the card heart button if visible
+  const cardHeart = document.querySelector(`.acard-heart[onclick*="${currentProfileId}"]`);
+  if (cardHeart) {
+    cardHeart.textContent = wasLiked ? '🤍' : '❤️';
+    cardHeart.classList.toggle('liked', !wasLiked);
+  }
+  try {
+    const token = localStorage.getItem('floox_token');
+    const res   = await fetch('/.netlify/functions/toggle-like', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body:    JSON.stringify({ likedId: currentProfileId }),
+    });
+    if (!res.ok) throw new Error('failed');
+    const data = await res.json();
+    showToast(data.liked ? '❤️ Added to your likes' : '🤍 Removed from likes');
+  } catch(_) {
+    // Rollback
+    if (wasLiked) { likesSet.add(currentProfileId); followBtn.textContent = '❤️ Following'; followBtn.classList.add('following'); }
+    else          { likesSet.delete(currentProfileId); followBtn.textContent = '🤍 Follow'; followBtn.classList.remove('following'); }
+    showToast('Could not update, please try again');
+  }
+}
+
+document.getElementById('profileModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('profileModal')) closeProfile();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProfile(); });
+</script>
+</body>
+</html>

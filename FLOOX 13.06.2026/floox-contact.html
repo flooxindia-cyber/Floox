@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floox — Plan My Event</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FFFBF4;--white:#FFFFFF;--black:#0D0800;--text:#1C1000;--muted:#7A6A50;--border:#E8DDD0;
+  --orange:#FF5C00;--orange2:#FF8C00;--yellow:#FFD600;--pink:#FF2D78;
+  --teal:#00C2A8;--purple:#7C3AED;--green:#22C55E;
+  --head:'Bricolage Grotesque',sans-serif;--body:'Plus Jakarta Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.65;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#FFF7EC}::-webkit-scrollbar-thumb{background:#FFCFA0;border-radius:3px}
+
+/* ── LOADER ── */
+#loader{position:fixed;inset:0;background:#0D0800;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s,visibility 0.6s}
+#loader.gone{opacity:0;visibility:hidden}
+.loader-orb{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#FF5C00,#FF2D78);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:22px;color:#fff;animation:loaderPulse 1.2s ease infinite;margin-bottom:1.5rem}
+@keyframes loaderPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,92,0,0.4)}50%{transform:scale(1.08);box-shadow:0 0 0 16px rgba(255,92,0,0)}}
+.loader-bar{width:160px;height:3px;background:rgba(255,255,255,0.1);border-radius:100px;overflow:hidden;margin-top:1rem}
+.loader-fill{height:100%;background:linear-gradient(90deg,#FF5C00,#FF2D78);border-radius:100px;animation:loadFill 1.8s ease forwards}
+@keyframes loadFill{from{width:0}to{width:100%}}
+.loader-txt{font-family:var(--head);font-size:0.8rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-top:0.8rem}
+
+/* ── NAVBAR ── */
+#navbar{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:1rem 5%;background:rgba(255,251,244,0.88);backdrop-filter:blur(20px);border-bottom:1.5px solid var(--border);transition:all 0.3s}
+#navbar.scrolled{padding:0.7rem 5%;box-shadow:0 4px 30px rgba(255,92,0,0.1)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-orb{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--orange),var(--pink));display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:15px;color:#fff;box-shadow:0 4px 16px rgba(255,92,0,0.35);flex-shrink:0}
+.logo-name{font-family:var(--head);font-size:1.45rem;font-weight:800;letter-spacing:-0.5px;color:var(--text)}
+.logo-name em{font-style:normal;color:var(--orange)}
+.nav-links{display:flex;align-items:center;gap:2rem;list-style:none}
+.nav-links a{font-family:var(--head);font-size:0.82rem;font-weight:700;letter-spacing:0.02em;color:var(--muted);text-decoration:none;transition:color 0.2s}
+.nav-links a:hover{color:var(--orange)}
+.nav-active{color:var(--orange) !important}
+.nav-cta{background:linear-gradient(135deg,var(--orange),var(--pink)) !important;color:#fff !important;padding:0.6rem 1.5rem;border-radius:100px;box-shadow:0 4px 16px rgba(255,92,0,0.3);transition:transform 0.2s,box-shadow 0.2s !important}
+.nav-cta:hover{transform:translateY(-2px) !important;box-shadow:0 8px 24px rgba(255,92,0,0.4) !important}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:all 0.3s;display:block}
+.mob-menu{display:none;position:fixed;inset:0;background:var(--white);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem}
+.mob-menu.open{display:flex}
+.mob-menu a{font-family:var(--head);font-size:1.8rem;font-weight:800;color:var(--text);text-decoration:none}
+.mob-x{position:absolute;top:1.5rem;right:5%;font-size:2rem;cursor:pointer;color:var(--muted)}
+
+/* ── HERO ── */
+.hero{min-height:60vh;position:relative;overflow:hidden;display:flex;align-items:center;background:#0D0800}
+.hero-anim-bg{position:absolute;inset:0;background:
+  radial-gradient(ellipse 70% 60% at 20% 50%,rgba(124,58,237,0.22) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 80% at 80% 30%,rgba(255,45,120,0.18) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 50% at 50% 90%,rgba(255,92,0,0.15) 0%,transparent 55%),
+  #0D0800;
+  animation:heroPulse 8s ease infinite alternate}
+@keyframes heroPulse{
+  0%{background:radial-gradient(ellipse 70% 60% at 20% 50%,rgba(124,58,237,0.22) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 80% 30%,rgba(255,45,120,0.18) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 50% 90%,rgba(255,92,0,0.15) 0%,transparent 55%),#0D0800}
+  100%{background:radial-gradient(ellipse 70% 60% at 60% 40%,rgba(124,58,237,0.28) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 20% 70%,rgba(255,45,120,0.2) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 80% 20%,rgba(255,92,0,0.2) 0%,transparent 55%),#0D0800}
+}
+.lights{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.light{position:absolute;bottom:-100px;width:2px;transform-origin:bottom center;animation:lightSway 4s ease-in-out infinite}
+.light:nth-child(1){left:10%;height:50vh;animation-delay:0s;background:linear-gradient(to top,rgba(124,58,237,0.6),transparent)}
+.light:nth-child(2){left:28%;height:65vh;animation-delay:0.8s;background:linear-gradient(to top,rgba(255,92,0,0.5),transparent)}
+.light:nth-child(3){left:50%;height:75vh;animation-delay:1.6s;background:linear-gradient(to top,rgba(255,45,120,0.6),transparent)}
+.light:nth-child(4){left:72%;height:55vh;animation-delay:0.4s;background:linear-gradient(to top,rgba(0,194,168,0.5),transparent)}
+.light:nth-child(5){left:90%;height:60vh;animation-delay:2s;background:linear-gradient(to top,rgba(255,214,0,0.5),transparent)}
+@keyframes lightSway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+
+.hero-content{position:relative;z-index:3;padding:9rem 5% 5rem;max-width:720px}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(124,58,237,0.15);border:1.5px solid rgba(124,58,237,0.3);border-radius:100px;padding:0.4rem 1rem 0.4rem 0.6rem;font-size:0.8rem;font-weight:600;color:rgba(255,255,255,0.9);margin-bottom:1.8rem;width:fit-content;backdrop-filter:blur(8px)}
+.pulse-dot{width:7px;height:7px;background:var(--purple);border-radius:50%;animation:pulseDot 2s infinite;flex-shrink:0}
+@keyframes pulseDot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(124,58,237,0.5)}50%{opacity:0.6;box-shadow:0 0 0 6px rgba(124,58,237,0)}}
+.hero h1{font-family:var(--head);font-size:clamp(3rem,5.5vw,5.5rem);font-weight:800;line-height:0.93;letter-spacing:-3px;margin-bottom:1.6rem;color:#fff}
+.h-grad{background:linear-gradient(135deg,var(--yellow),var(--orange),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.h-grad-purple{background:linear-gradient(135deg,#A78BFA,var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.05rem;color:rgba(255,255,255,0.65);line-height:1.8;max-width:560px;margin-bottom:2.5rem}
+.hero-chips{display:flex;flex-wrap:wrap;gap:0.6rem}
+.hchip{font-family:var(--head);font-size:0.72rem;font-weight:700;padding:0.35rem 0.85rem;border-radius:100px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);letter-spacing:0.04em}
+
+/* ── MARQUEE ── */
+.marquee-wrap{background:linear-gradient(135deg,var(--purple),var(--pink));padding:1.1rem 0;overflow:hidden}
+.marquee-inner{display:flex;gap:0;animation:marquee 24s linear infinite;white-space:nowrap}
+.marquee-item{font-family:var(--head);font-size:0.82rem;font-weight:700;color:rgba(255,255,255,0.9);padding:0 1.4rem;border-right:1px solid rgba(255,255,255,0.2);letter-spacing:0.04em;display:flex;align-items:center;gap:6px}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ── MAIN FORM SECTION ── */
+.form-section{padding:6rem 5%;background:var(--bg);position:relative;overflow:hidden}
+.form-section::before{content:'';position:absolute;top:-200px;right:-200px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,0.06) 0%,transparent 65%);pointer-events:none}
+
+.form-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:4rem;align-items:start;max-width:1100px;margin:0 auto}
+
+/* ── LEFT SIDE ── */
+.sec-chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--head);font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.35rem 1rem;border-radius:100px;margin-bottom:1rem}
+.chip-purple{background:rgba(124,58,237,0.1);color:var(--purple);border:1px solid rgba(124,58,237,0.2)}
+.sec-title{font-family:var(--head);font-size:clamp(2rem,3.5vw,3rem);font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin-bottom:1rem}
+.sec-sub{font-size:0.95rem;color:var(--muted);line-height:1.8;margin-bottom:2.5rem}
+
+.why-list{display:flex;flex-direction:column;gap:1.2rem;margin-bottom:2.5rem}
+.why-item{display:flex;align-items:flex-start;gap:1rem}
+.why-icon{width:46px;height:46px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.wi1{background:linear-gradient(135deg,rgba(255,92,0,0.12),rgba(255,45,120,0.08));border:1.5px solid rgba(255,92,0,0.15)}
+.wi2{background:linear-gradient(135deg,rgba(0,194,168,0.12),rgba(124,58,237,0.08));border:1.5px solid rgba(0,194,168,0.15)}
+.wi3{background:linear-gradient(135deg,rgba(255,214,0,0.1),rgba(255,92,0,0.08));border:1.5px solid rgba(255,214,0,0.18)}
+.wi4{background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(255,45,120,0.08));border:1.5px solid rgba(124,58,237,0.18)}
+.why-text h4{font-family:var(--head);font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:0.2rem}
+.why-text p{font-size:0.82rem;color:var(--muted);line-height:1.65}
+
+.contact-quick{background:#fff;border:1.5px solid var(--border);border-radius:22px;padding:1.5rem;display:flex;flex-direction:column;gap:0.85rem}
+.cq-title{font-family:var(--head);font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.2rem}
+.cq-item{display:flex;align-items:center;gap:0.85rem;text-decoration:none}
+.cq-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cq-ig{background:linear-gradient(135deg,#F58529,#DD2A7B,#8134AF)}
+.cq-wa{background:#25D366}
+.cq-em{background:linear-gradient(135deg,var(--orange),var(--pink))}
+.cq-info{flex:1}
+.cq-info span{font-family:var(--head);font-size:0.85rem;font-weight:700;color:var(--text);display:block;transition:color 0.2s}
+.cq-item:hover .cq-info span{color:var(--orange)}
+.cq-info small{font-size:0.74rem;color:var(--muted)}
+
+/* ── RIGHT SIDE — FORM CARD ── */
+.form-card{background:#fff;border:1.5px solid var(--border);border-radius:28px;padding:2.8rem;box-shadow:0 24px 80px rgba(0,0,0,0.07);position:sticky;top:100px}
+.form-card h3{font-family:var(--head);font-size:1.6rem;font-weight:800;letter-spacing:-0.8px;margin-bottom:0.3rem;color:var(--text)}
+.form-card .form-sub{font-size:0.85rem;color:var(--muted);margin-bottom:2rem}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem}
+.field-group{display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.85rem}
+.field-label{font-family:var(--head);font-size:0.7rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted)}
+.finput{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:0.85rem 1rem;font-family:var(--body);font-size:0.9rem;color:var(--text);outline:none;transition:border-color 0.2s,box-shadow 0.2s;width:100%}
+.finput:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,0.1)}
+.finput::placeholder{color:#C0B0A0}
+textarea.finput{resize:vertical;min-height:110px;max-height:220px}
+
+/* Multi-select tags */
+.ms-label{font-family:var(--head);font-size:0.7rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:0.45rem;display:block}
+.ms-wrap{display:flex;flex-wrap:wrap;gap:0.45rem}
+.ms-tag{font-family:var(--head);font-size:0.73rem;font-weight:700;padding:0.38rem 0.9rem;border-radius:100px;border:1.5px solid var(--border);cursor:pointer;transition:all 0.18s;color:var(--muted);background:#fff;user-select:none}
+.ms-tag:hover{border-color:var(--purple);color:var(--purple)}
+.ms-tag.sel{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(124,58,237,0.28)}
+
+/* Budget slider */
+.budget-display{font-family:var(--head);font-size:1.4rem;font-weight:800;color:var(--purple);margin-bottom:0.5rem}
+.slider{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(to right,var(--purple) 0%,var(--pink) 100%);outline:none;cursor:pointer}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--purple);box-shadow:0 2px 8px rgba(124,58,237,0.3);cursor:pointer;transition:transform 0.15s}
+.slider::-webkit-slider-thumb:hover{transform:scale(1.15)}
+.budget-range{display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);font-family:var(--head);font-weight:600;margin-top:0.4rem}
+
+.btn-submit{font-family:var(--head);font-weight:700;font-size:0.95rem;padding:1rem 2rem;border-radius:100px;cursor:pointer;border:none;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;box-shadow:0 8px 28px rgba(124,58,237,0.4);width:100%;justify-content:center;display:flex;align-items:center;gap:8px;transition:all 0.25s;margin-top:1.2rem;letter-spacing:0.02em}
+.btn-submit:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(124,58,237,0.5)}
+
+.form-note{text-align:center;font-size:0.77rem;color:var(--muted);margin-top:0.8rem;line-height:1.6}
+
+/* ── SUCCESS ── */
+.form-suc{display:none;text-align:center;padding:2rem 0}
+.suc-icon{font-size:4rem;margin-bottom:1rem;animation:suckPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both}
+@keyframes suckPop{from{transform:scale(0)}to{transform:scale(1)}}
+.form-suc h3{font-family:var(--head);font-size:1.8rem;font-weight:800;letter-spacing:-0.8px;margin-bottom:0.5rem;background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.form-suc p{font-size:0.92rem;color:var(--muted);line-height:1.75;max-width:300px;margin:0 auto 1.5rem}
+.btn-back{font-family:var(--head);font-weight:700;font-size:0.85rem;padding:0.8rem 2rem;border-radius:100px;cursor:pointer;border:2px solid var(--border);background:#fff;color:var(--muted);transition:all 0.2s}
+.btn-back:hover{border-color:var(--purple);color:var(--purple)}
+
+/* ── EVENT TYPES SHOWCASE ── */
+.types-section{padding:6rem 5%;background:#fff;border-top:1.5px solid var(--border)}
+.types-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-top:3rem}
+.type-card{border-radius:22px;overflow:hidden;position:relative;min-height:220px;cursor:pointer;transition:all 0.3s;border:1.5px solid var(--border)}
+.type-card:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,0.12)}
+.tc-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 0.5s}
+.type-card:hover .tc-bg{transform:scale(1.07)}
+.tc-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,8,0,0.82) 0%,rgba(13,8,0,0.2) 60%,transparent 100%)}
+.tc-body{position:relative;z-index:1;padding:1.3rem;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.tc-emoji{font-size:1.8rem;margin-bottom:0.4rem}
+.tc-name{font-family:var(--head);font-size:1rem;font-weight:800;color:#fff;letter-spacing:-0.3px}
+
+/* ── FOOTER ── */
+footer{background:var(--text);padding:5rem 5% 0;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem}
+.foot-logo-row{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.foot-desc{font-size:0.87rem;line-height:1.75;color:rgba(255,255,255,0.4);max-width:280px;margin-bottom:1.5rem}
+.foot-soc{display:flex;gap:0.7rem}
+.fsoc{width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all 0.2s}
+.fsoc:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.25)}
+.foot-h{font-family:var(--head);font-size:0.7rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:1.2rem}
+.foot-ul{list-style:none;display:flex;flex-direction:column;gap:0.7rem}
+.foot-ul a{font-size:0.87rem;color:rgba(255,255,255,0.45);text-decoration:none;transition:color 0.2s}
+.foot-ul a:hover{color:rgba(255,255,255,0.9)}
+.foot-bottom{border-top:1px solid rgba(255,255,255,0.07);margin-top:3rem;padding:1.5rem 5% 2rem;display:flex;align-items:center;justify-content:space-between;font-size:0.8rem;color:rgba(255,255,255,0.25)}
+.foot-legal{display:flex;gap:1.5rem}
+.foot-legal a{font-family:var(--head);font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.25);text-decoration:none;transition:color 0.2s}
+.foot-legal a:hover{color:rgba(255,255,255,0.55)}
+
+/* ── FLOATING BAR ── */
+.float-bar{position:fixed;bottom:2rem;right:2rem;z-index:900;display:flex;flex-direction:column;gap:0.75rem}
+.fb{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(0,0,0,0.22);transition:all 0.28s;cursor:pointer;text-decoration:none;border:none;position:relative}
+.fb:hover{transform:scale(1.12) translateY(-2px)}
+.fb .tip{position:absolute;right:64px;top:50%;transform:translateY(-50%);background:var(--text);color:#fff;font-family:var(--head);font-size:0.73rem;font-weight:700;padding:0.35rem 0.8rem;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.2s;box-shadow:0 4px 12px rgba(0,0,0,0.2)}
+.fb:hover .tip{opacity:1}
+.fb-ig{background:linear-gradient(135deg,#F58529,#DD2A7B,#8134AF)}
+.fb-wa{background:#25D366}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);z-index:3000;background:var(--text);color:#fff;border-radius:100px;padding:0.85rem 1.6rem;font-size:0.87rem;font-family:var(--body);display:flex;align-items:center;gap:0.6rem;opacity:0;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,0.25)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(32px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal.vis{opacity:1;transform:translateY(0)}
+.reveal-l{opacity:0;transform:translateX(-32px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal-l.vis{opacity:1;transform:translateX(0)}
+.reveal-r{opacity:0;transform:translateX(32px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal-r.vis{opacity:1;transform:translateX(0)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .form-grid{grid-template-columns:1fr}
+  .form-card{position:static}
+  .types-grid{grid-template-columns:repeat(2,1fr)}
+  footer{grid-template-columns:1fr 1fr;gap:2rem}
+  .nav-links{display:none}
+  .hamburger{display:flex}
+}
+@media(max-width:540px){
+  .form-row{grid-template-columns:1fr}
+  footer{grid-template-columns:1fr}
+  .types-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <img src="logo_floox.jpeg" alt="Floox" style="height:72px;width:auto;object-fit:contain;border-radius:16px;animation:loaderPulse 1.2s ease infinite;margin-bottom:1.5rem">
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+  <div class="loader-txt">Your Stage. Your Story.</div>
+</div>
+
+<!-- FLOATING BUTTONS -->
+<div class="float-bar">
+  <a href="https://www.instagram.com/flooxofficial/?utm_source=ig_web_button_share_sheet" target="_blank" class="fb fb-ig" aria-label="Instagram">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" stroke="white" stroke-width="1.8"/><circle cx="12" cy="12" r="4.5" stroke="white" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r="1" fill="white"/></svg>
+    <span class="tip">Instagram</span>
+  </a>
+  <a href="https://wa.me/918580676171?text=Hi!%20I%20want%20to%20plan%20an%20event%20with%20Floox." target="_blank" class="fb fb-wa" aria-label="WhatsApp">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.979-1.383A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm4.29 13.29c-.234-.117-1.387-.685-1.602-.763-.214-.078-.37-.117-.527.117-.156.234-.605.763-.742.919-.136.156-.273.176-.507.059-.234-.117-.988-.364-1.882-1.16-.695-.619-1.165-1.383-1.302-1.617-.136-.234-.015-.36.103-.476.105-.104.234-.273.351-.41.117-.136.156-.234.234-.39.078-.156.039-.293-.02-.41-.058-.117-.527-1.27-.722-1.739-.19-.456-.383-.394-.527-.401l-.449-.008c-.156 0-.41.059-.625.293-.215.234-.82.8-.82 1.951 0 1.152.839 2.265.956 2.422.117.156 1.649 2.52 3.995 3.535.559.24.994.384 1.334.492.56.178 1.07.153 1.473.093.449-.067 1.387-.567 1.582-1.114.195-.547.195-1.016.136-1.114-.058-.098-.214-.156-.449-.273z"/></svg>
+    <span class="tip">WhatsApp</span>
+  </a>
+</div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <a href="index.html" class="logo">
+    <img src="logo_floox.jpeg" alt="Floox" style="height:42px;width:auto;object-fit:contain;border-radius:10px"><span class="logo-name" style="display:none">Floox</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="floox-public.html">Discover Events</a></li>
+    <li><a href="floox-artist-register.html">For Artists</a></li>
+    <li><a href="floox-organiser-register.html">For Organisers</a></li>
+    <li><a href="floox-contact.html" class="nav-active">Plan My Event</a></li>
+    <li><a href="floox-login.html">Login</a></li>
+    <li><a href="floox-artist-register.html" class="nav-cta">Join Free 🎤</a></li>
+  </ul>
+  <div class="hamburger" onclick="toggleMob()"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mob-menu" id="mobMenu">
+  <span class="mob-x" onclick="toggleMob()">✕</span>
+  <a href="floox-public.html" onclick="toggleMob()">Discover Events</a>
+  <a href="floox-artist-register.html" onclick="toggleMob()">For Artists</a>
+  <a href="floox-organiser-register.html" onclick="toggleMob()">For Organisers</a>
+  <a href="floox-contact.html" onclick="toggleMob()" style="color:var(--purple)">Plan My Event</a>
+  <a href="floox-login.html" onclick="toggleMob()">Login</a>
+  <a href="floox-artist-register.html" onclick="toggleMob()" style="color:var(--orange)">Join Free →</a>
+</div>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-anim-bg"></div>
+  <div class="lights">
+    <div class="light"></div><div class="light"></div><div class="light"></div>
+    <div class="light"></div><div class="light"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-eyebrow"><span class="pulse-dot"></span> Event Planning — Handled by Floox</div>
+    <h1><span class="h-grad-purple">Plan.</span> <span class="h-grad">Perform.</span><br>Party Karo.</h1>
+    <p class="hero-sub">Tell us what you're envisioning — we'll curate the perfect artists, manage the bookings, and make your event unforgettable. From intimate gatherings to large-scale productions.</p>
+    <div class="hero-chips">
+      <span class="hchip">🎊 Weddings & Sangeet</span>
+      <span class="hchip">🏢 Corporate Events</span>
+      <span class="hchip">🎓 College Fests</span>
+      <span class="hchip">🎭 Cultural Shows</span>
+      <span class="hchip">🎉 Private Parties</span>
+      <span class="hchip">🎵 Music Festivals</span>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-inner">
+    <span class="marquee-item">🎊 Weddings & Sangeet</span>
+    <span class="marquee-item">🏢 Corporate Events</span>
+    <span class="marquee-item">🎓 College Fests</span>
+    <span class="marquee-item">🎭 Cultural Shows</span>
+    <span class="marquee-item">🎉 Private Parties</span>
+    <span class="marquee-item">🎵 Music Festivals</span>
+    <span class="marquee-item">🍽️ Restaurant Events</span>
+    <span class="marquee-item">✨ Mehfil Nights</span>
+    <span class="marquee-item">🎊 Weddings & Sangeet</span>
+    <span class="marquee-item">🏢 Corporate Events</span>
+    <span class="marquee-item">🎓 College Fests</span>
+    <span class="marquee-item">🎭 Cultural Shows</span>
+    <span class="marquee-item">🎉 Private Parties</span>
+    <span class="marquee-item">🎵 Music Festivals</span>
+    <span class="marquee-item">🍽️ Restaurant Events</span>
+    <span class="marquee-item">✨ Mehfil Nights</span>
+  </div>
+</div>
+
+<!-- ══ FORM SECTION ══ -->
+<section class="form-section" id="contact">
+  <div class="form-grid">
+
+    <!-- LEFT: WHY + QUICK CONTACT -->
+    <div class="reveal-l">
+      <div class="sec-chip chip-purple">✨ Why Choose Floox</div>
+      <h2 class="sec-title">We Handle <span style="background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Every Detail.</span></h2>
+      <p class="sec-sub">You focus on enjoying the moment. We'll take care of finding the right artists, contracts, logistics, and payments — end to end.</p>
+
+      <div class="why-list">
+        <div class="why-item">
+          <div class="why-icon wi1">🎤</div>
+          <div class="why-text">
+            <h4>Curated Artist Matching</h4>
+            <p>We handpick artists from our verified network that perfectly match your event's vibe, genre, and budget.</p>
+          </div>
+        </div>
+        <div class="why-item">
+          <div class="why-icon wi2">⚡</div>
+          <div class="why-text">
+            <h4>Fast Turnaround</h4>
+            <p>Get responses and shortlisted artists within 24–48 hours of submitting your brief. No chasing, no delays.</p>
+          </div>
+        </div>
+        <div class="why-item">
+          <div class="why-icon wi3">💰</div>
+          <div class="why-text">
+            <h4>Transparent Pricing</h4>
+            <p>Know exactly what you're paying — no hidden fees, no middleman markup. Direct deals, fair rates.</p>
+          </div>
+        </div>
+        <div class="why-item">
+          <div class="why-icon wi4">🛡️</div>
+          <div class="why-text">
+            <h4>Fully Managed Booking</h4>
+            <p>Digital contracts, secure payments, and dedicated support before, during, and after your event.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Contact -->
+      <div class="contact-quick">
+        <div class="cq-title">Prefer to reach out directly?</div>
+        <a href="https://wa.me/918580676171?text=Hi!%20I%20want%20to%20plan%20an%20event%20with%20Floox." target="_blank" class="cq-item">
+          <div class="cq-icon cq-wa">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.979-1.383A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm4.29 13.29c-.234-.117-1.387-.685-1.602-.763-.214-.078-.37-.117-.527.117-.156.234-.605.763-.742.919-.136.156-.273.176-.507.059-.234-.117-.988-.364-1.882-1.16-.695-.619-1.165-1.383-1.302-1.617-.136-.234-.015-.36.103-.476.105-.104.234-.273.351-.41.117-.136.156-.234.234-.39.078-.156.039-.293-.02-.41-.058-.117-.527-1.27-.722-1.739-.19-.456-.383-.394-.527-.401l-.449-.008c-.156 0-.41.059-.625.293-.215.234-.82.8-.82 1.951 0 1.152.839 2.265.956 2.422.117.156 1.649 2.52 3.995 3.535.559.24.994.384 1.334.492.56.178 1.07.153 1.473.093.449-.067 1.387-.567 1.582-1.114.195-.547.195-1.016.136-1.114-.058-.098-.214-.156-.449-.273z"/></svg>
+          </div>
+          <div class="cq-info"><span>WhatsApp Us</span><small>+91 85806 76171 ·</small></div>
+        </a>
+        <a href="https://www.instagram.com/flooxofficial/?utm_source=ig_web_button_share_sheet" target="_blank" class="cq-item">
+          <div class="cq-icon cq-ig">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" stroke="white" stroke-width="1.8"/><circle cx="12" cy="12" r="4.5" stroke="white" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r="1" fill="white"/></svg>
+          </div>
+          <div class="cq-info"><span>DM on Instagram</span><small>@flooxofficial</small></div>
+        </a>
+        <a href="mailto:hello@floox.in" class="cq-item">
+          <div class="cq-icon cq-em">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="3" stroke="white" stroke-width="1.8"/><path d="M2 8l10 7 10-7" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div class="cq-info"><span>Email Us</span><small>hello@floox.in ·</small></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- RIGHT: FORM CARD -->
+    <div class="reveal-r">
+      <div class="form-card">
+        <div id="formWrap">
+          <h3>Tell Us About Your Event ✨</h3>
+          <p class="form-sub">Fill in the details below and our team will get back to you.</p>
+
+          <div class="form-row">
+            <div class="field-group">
+              <label class="field-label">Your Name *</label>
+              <input type="text" class="finput" placeholder="Full name" id="fname">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Phone Number *</label>
+              <input type="tel" class="finput" placeholder="+91 XXXXX XXXXX" id="fphone">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Email Address *</label>
+            <input type="email" class="finput" placeholder="you@example.com" id="femail">
+          </div>
+
+          <div class="form-row">
+            <div class="field-group">
+              <label class="field-label">Event City</label>
+              <input type="text" class="finput" placeholder="e.g. Mumbai" id="fcity">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Expected Date</label>
+              <input type="date" class="finput" id="fdate">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <div class="ms-label">Type of Event (choose all that apply)</div>
+            <div class="ms-wrap">
+              <span class="ms-tag" onclick="toggleTag(this)">🎊 Wedding / Sangeet</span>
+              <span class="ms-tag" onclick="toggleTag(this)">🏢 Corporate Event</span>
+              <span class="ms-tag" onclick="toggleTag(this)">🎓 College Fest</span>
+              <span class="ms-tag" onclick="toggleTag(this)">🎭 Cultural Show</span>
+              <span class="ms-tag" onclick="toggleTag(this)">🎉 Private Party</span>
+              <span class="ms-tag" onclick="toggleTag(this)">🎵 Music Festival</span>
+              <span class="ms-tag" onclick="toggleTag(this)">🍽️ Restaurant Event</span>
+              <span class="ms-tag" onclick="toggleTag(this)">✨ Mehfil Night</span>
+              <span class="ms-tag" onclick="toggleTag(this)">🎗️ Other</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <div class="ms-label">Music genre you're looking for (multi-select)</div>
+            <div class="ms-wrap">
+              <span class="ms-tag" onclick="toggleTag(this)">Bollywood</span>
+              <span class="ms-tag" onclick="toggleTag(this)">Classical</span>
+              <span class="ms-tag" onclick="toggleTag(this)">Sufi / Ghazal</span>
+              <span class="ms-tag" onclick="toggleTag(this)">Indie / Folk</span>
+              <span class="ms-tag" onclick="toggleTag(this)">Electronic / DJ</span>
+              <span class="ms-tag" onclick="toggleTag(this)">Devotional</span>
+              <span class="ms-tag" onclick="toggleTag(this)">Rock / Pop</span>
+              <span class="ms-tag" onclick="toggleTag(this)">Jazz</span>
+              <span class="ms-tag" onclick="toggleTag(this)">Open to Suggestions</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Approximate Budget</label>
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.6rem;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:0;background:#fff;border:1.5px solid #E8DDD0;border-radius:12px;overflow:hidden;flex:1;min-width:160px;max-width:220px;transition:border-color 0.2s" id="budgetInputWrap">
+                <span style="padding:0 0.6rem 0 1rem;font-family:var(--head);font-weight:800;font-size:1.1rem;color:#7C3AED">₹</span>
+                <input type="number" id="budgetManual" min="10000" max="2000000" step="1000" value="50000"
+                  style="border:none;outline:none;font-family:var(--head);font-weight:800;font-size:1.1rem;color:#7C3AED;width:100%;padding:0.75rem 0.5rem 0.75rem 0;background:transparent"
+                  oninput="syncBudgetFromInput(this.value)"
+                  onfocus="document.getElementById('budgetInputWrap').style.borderColor='#7C3AED'"
+                  onblur="document.getElementById('budgetInputWrap').style.borderColor='#E8DDD0'">
+              </div>
+              <div class="budget-display" id="budgetDisplay" style="font-size:1rem;color:#7A6A50;font-family:var(--body);font-weight:500">≈ ₹50,000</div>
+            </div>
+            <input type="range" class="slider" min="10000" max="2000000" step="5000" value="50000" id="budgetSlider" oninput="syncBudgetFromSlider(this.value)">
+            <div class="budget-range">
+              <span>₹10K</span><span>₹50K</span><span>₹1L</span><span>₹5L</span><span>₹10L</span><span>₹20L+</span>
+            </div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.7rem">
+              <span onclick="setBudget(25000)" style="font-family:var(--head);font-size:0.7rem;font-weight:700;padding:0.3rem 0.75rem;border-radius:100px;background:#f5f0eb;border:1px solid #E8DDD0;color:#7A6A50;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#7C3AED';this.style.color='#7C3AED'" onmouseout="this.style.borderColor='#E8DDD0';this.style.color='#7A6A50'">₹25K</span>
+              <span onclick="setBudget(50000)" style="font-family:var(--head);font-size:0.7rem;font-weight:700;padding:0.3rem 0.75rem;border-radius:100px;background:#f5f0eb;border:1px solid #E8DDD0;color:#7A6A50;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#7C3AED';this.style.color='#7C3AED'" onmouseout="this.style.borderColor='#E8DDD0';this.style.color='#7A6A50'">₹50K</span>
+              <span onclick="setBudget(100000)" style="font-family:var(--head);font-size:0.7rem;font-weight:700;padding:0.3rem 0.75rem;border-radius:100px;background:#f5f0eb;border:1px solid #E8DDD0;color:#7A6A50;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#7C3AED';this.style.color='#7C3AED'" onmouseout="this.style.borderColor='#E8DDD0';this.style.color='#7A6A50'">₹1L</span>
+              <span onclick="setBudget(250000)" style="font-family:var(--head);font-size:0.7rem;font-weight:700;padding:0.3rem 0.75rem;border-radius:100px;background:#f5f0eb;border:1px solid #E8DDD0;color:#7A6A50;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#7C3AED';this.style.color='#7C3AED'" onmouseout="this.style.borderColor='#E8DDD0';this.style.color='#7A6A50'">₹2.5L</span>
+              <span onclick="setBudget(500000)" style="font-family:var(--head);font-size:0.7rem;font-weight:700;padding:0.3rem 0.75rem;border-radius:100px;background:#f5f0eb;border:1px solid #E8DDD0;color:#7A6A50;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#7C3AED';this.style.color='#7C3AED'" onmouseout="this.style.borderColor='#E8DDD0';this.style.color='#7A6A50'">₹5L</span>
+              <span onclick="setBudget(1000000)" style="font-family:var(--head);font-size:0.7rem;font-weight:700;padding:0.3rem 0.75rem;border-radius:100px;background:#f5f0eb;border:1px solid #E8DDD0;color:#7A6A50;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#7C3AED';this.style.color='#7C3AED'" onmouseout="this.style.borderColor='#E8DDD0';this.style.color='#7A6A50'">₹10L</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Tell Us More (optional)</label>
+            <textarea class="finput" placeholder="Any specific requirements, number of guests, venue type, or anything else we should know..." id="fnotes"></textarea>
+          </div>
+
+          <button class="btn-submit" onclick="submitForm()">Send My Event Brief ✨</button>
+          <p class="form-note">🔒 Your details are safe with us. We'll never share your information. No spam, ever.</p>
+        </div>
+
+        <!-- SUCCESS STATE -->
+        <div class="form-suc" id="formSuc">
+          <div class="suc-icon">🎉</div>
+          <h3>Your Brief is In!</h3>
+          <p>Our team will review your event requirements and reach out within 24 hours with a curated plan just for you.</p>
+          <button class="btn-back" onclick="resetForm()">Submit Another Brief</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ EVENT TYPES ══ -->
+<section class="types-section">
+  <div class="sec-chip chip-purple" style="margin:0 auto 0.5rem;display:flex;width:fit-content">🎭 Events We Handle</div>
+  <h2 class="sec-title" style="text-align:center">Koi Bhi <span style="background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Occasion.</span></h2>
+  <p class="sec-sub" style="margin:0 auto;text-align:center">From grand celebrations to intimate evenings — Floox has artists for every mood, every moment.</p>
+  <div class="types-grid">
+    <div class="type-card reveal">
+      <div class="tc-bg" style="background-image:url('https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop&q=80')"></div>
+      <div class="tc-ov"></div>
+      <div class="tc-body"><div class="tc-emoji">🎊</div><div class="tc-name">Weddings & Sangeet</div></div>
+    </div>
+    <div class="type-card reveal">
+      <div class="tc-bg" style="background-image:url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop&q=80')"></div>
+      <div class="tc-ov"></div>
+      <div class="tc-body"><div class="tc-emoji">🏢</div><div class="tc-name">Corporate Events</div></div>
+    </div>
+    <div class="type-card reveal">
+      <div class="tc-bg" style="background-image:url('https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=600&h=400&fit=crop&q=80')"></div>
+      <div class="tc-ov"></div>
+      <div class="tc-body"><div class="tc-emoji">🎵</div><div class="tc-name">Music Festivals</div></div>
+    </div>
+    <div class="type-card reveal">
+      <div class="tc-bg" style="background-image:url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&h=400&fit=crop&q=80')"></div>
+      <div class="tc-ov"></div>
+      <div class="tc-body"><div class="tc-emoji">🎉</div><div class="tc-name">Private Parties</div></div>
+    </div>
+    <div class="type-card reveal">
+      <div class="tc-bg" style="background-image:url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&h=400&fit=crop&q=80')"></div>
+      <div class="tc-ov"></div>
+      <div class="tc-body"><div class="tc-emoji">🎓</div><div class="tc-name">College Fests</div></div>
+    </div>
+    <div class="type-card reveal">
+      <div class="tc-bg" style="background-image:url('https://images.unsplash.com/photo-1548448487-8d18c0b01da0?w=600&h=400&fit=crop&q=80')"></div>
+      <div class="tc-ov"></div>
+      <div class="tc-body"><div class="tc-emoji">✨</div><div class="tc-name">Mehfil Nights</div></div>
+    </div>
+    <div class="type-card reveal">
+      <div class="tc-bg" style="background-image:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=400&fit=crop&q=80')"></div>
+      <div class="tc-ov"></div>
+      <div class="tc-body"><div class="tc-emoji">🍽️</div><div class="tc-name">Restaurant Events</div></div>
+    </div>
+    <div class="type-card reveal">
+      <div class="tc-bg" style="background-image:url('https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=600&h=400&fit=crop&q=80')"></div>
+      <div class="tc-ov"></div>
+      <div class="tc-body"><div class="tc-emoji">🎭</div><div class="tc-name">Cultural Programmes</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div>
+    <div class="foot-logo-row">
+      <img src="logo_floox.jpeg" alt="Floox" style="height:42px;width:auto;object-fit:contain;border-radius:10px"><span class="logo-name" style="color:#fff;margin-left:4px">Floox</span>
+    </div>
+    <p class="foot-desc">India's platform connecting artists, singers & performers with event organisers — from intimate mehfils to massive concert stages.</p>
+    <div class="foot-soc">
+      <a href="https://www.instagram.com/flooxofficial/?utm_source=ig_web_button_share_sheet" target="_blank" class="fsoc" aria-label="Instagram">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" stroke="rgba(255,255,255,0.6)" stroke-width="1.8"/><circle cx="12" cy="12" r="4.5" stroke="rgba(255,255,255,0.6)" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r="1" fill="rgba(255,255,255,0.6)"/></svg>
+      </a>
+      <a href="https://wa.me/918580676171" target="_blank" class="fsoc" aria-label="WhatsApp">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,0.6)"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.979-1.383A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm4.29 13.29c-.234-.117-1.387-.685-1.602-.763-.214-.078-.37-.117-.527.117-.156.234-.605.763-.742.919-.136.156-.273.176-.507.059-.234-.117-.988-.364-1.882-1.16-.695-.619-1.165-1.383-1.302-1.617-.136-.234-.015-.36.103-.476.105-.104.234-.273.351-.41.117-.136.156-.234.234-.39.078-.156.039-.293-.02-.41-.058-.117-.527-1.27-.722-1.739-.19-.456-.383-.394-.527-.401l-.449-.008c-.156 0-.41.059-.625.293-.215.234-.82.8-.82 1.951 0 1.152.839 2.265.956 2.422.117.156 1.649 2.52 3.995 3.535.559.24.994.384 1.334.492.56.178 1.07.153 1.473.093.449-.067 1.387-.567 1.582-1.114.195-.547.195-1.016.136-1.114-.058-.098-.214-.156-.449-.273z"/></svg>
+      </a>
+      <a href="mailto:hello@floox.in" class="fsoc" aria-label="Email">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="3" stroke="rgba(255,255,255,0.6)" stroke-width="1.8"/><path d="M2 8l10 7 10-7" stroke="rgba(255,255,255,0.6)" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </a>
+    </div>
+  </div>
+  <div>
+    <div class="foot-h">Explore</div>
+    <ul class="foot-ul">
+      <li><a href="floox-public.html">Discover Events</a></li>
+      <li><a href="floox-public.html">Browse Artists</a></li>
+      <li><a href="floox-contact.html">Plan My Event</a></li>
+      <li><a href="floox-login.html">Login / Sign Up</a></li>
+      <li><a href="index.html">Home</a></li>
+    </ul>
+  </div>
+  <div>
+    <div class="foot-h">Platform</div>
+    <ul class="foot-ul">
+      <li><a href="floox-artist-register.html">For Artists</a></li>
+      <li><a href="floox-organiser-register.html">For Organisers</a></li>
+      <li><a href="floox-platform.html">How It Works</a></li>
+      <li><a href="floox-artist-register.html">Join Free</a></li>
+    </ul>
+  </div>
+  <div>
+    <div class="foot-h">Company</div>
+    <ul class="foot-ul">
+      <li><a href="#" onclick="showT('About coming soon!');return false">About Us</a></li>
+      <li><a href="#" onclick="showT('Blog coming soon!');return false">Blog</a></li>
+      <li><a href="#" onclick="showT('Careers coming soon!');return false">Careers</a></li>
+      <li><a href="mailto:hello@floox.in">Contact</a></li>
+    </ul>
+  </div>
+</footer>
+<div style="background:var(--text)">
+  <div class="foot-bottom">
+    <span>© 2025 Floox Technologies Pvt. Ltd. · Made with ♥ in India 🇮🇳</span>
+    <div class="foot-legal">
+      <a href="#" onclick="showT('Privacy Policy coming soon!');return false">Privacy</a>
+      <a href="#" onclick="showT('Terms coming soon!');return false">Terms</a>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-dot"></span>
+  <span id="toastTxt"></span>
+</div>
+
+<script>
+// ── LOADER
+window.addEventListener('load',()=>{setTimeout(()=>{document.getElementById('loader').classList.add('gone')},1800)})
+
+// ── NAVBAR
+window.addEventListener('scroll',()=>{document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>60)})
+
+// ── MOBILE MENU
+function toggleMob(){document.getElementById('mobMenu').classList.toggle('open')}
+
+// ── MULTI-SELECT TAGS
+function toggleTag(el){el.classList.toggle('sel')}
+
+// ── BUDGET SLIDER + MANUAL INPUT (synced)
+function formatBudget(v){
+  v = parseInt(v) || 0;
+  if(v >= 10000000) return '₹' + (v/10000000).toFixed(1) + ' Cr';
+  if(v >= 100000)   return '₹' + (v/100000).toFixed(1) + ' L';
+  if(v >= 1000)     return '₹' + Math.round(v/1000) + 'K';
+  return '₹' + v;
+}
+function syncBudgetFromSlider(val){
+  const v = parseInt(val);
+  document.getElementById('budgetManual').value = v;
+  document.getElementById('budgetDisplay').textContent = '≈ ' + formatBudget(v);
+  updateSliderFill(v);
+}
+function syncBudgetFromInput(val){
+  let v = parseInt(val) || 0;
+  const max = 2000000;
+  if(v > max){ v = max; document.getElementById('budgetManual').value = max; }
+  document.getElementById('budgetSlider').value = Math.min(v, max);
+  document.getElementById('budgetDisplay').textContent = '≈ ' + formatBudget(v);
+  updateSliderFill(Math.min(v, max));
+}
+function setBudget(v){
+  document.getElementById('budgetManual').value = v;
+  document.getElementById('budgetSlider').value = Math.min(v, 2000000);
+  document.getElementById('budgetDisplay').textContent = '≈ ' + formatBudget(v);
+  updateSliderFill(v);
+}
+function updateSliderFill(v){
+  const max = 2000000;
+  const pct = Math.min(v / max * 100, 100);
+  document.getElementById('budgetSlider').style.background =
+    'linear-gradient(to right, var(--purple) 0%, var(--pink) ' + pct + '%, #E8DDD0 ' + pct + '%)';
+}
+// Backwards compat
+function updateBudget(val){ syncBudgetFromSlider(val); }
+// Init on load
+window.addEventListener('DOMContentLoaded', () => { updateSliderFill(50000); });
+
+// ── FORM SUBMIT
+function submitForm(){
+  const name=document.getElementById('fname').value.trim()
+  const phone=document.getElementById('fphone').value.trim()
+  const email=document.getElementById('femail').value.trim()
+  if(!name){showT('Please enter your name!');return}
+  if(!phone){showT('Please enter your phone number!');return}
+  if(!email||!email.includes('@')){showT('Please enter a valid email!');return}
+  document.getElementById('formWrap').style.display='none'
+  document.getElementById('formSuc').style.display='block'
+}
+function resetForm(){
+  document.getElementById('formWrap').style.display='block'
+  document.getElementById('formSuc').style.display='none'
+  // Clear fields
+  ['fname','fphone','femail','fcity','fdate','fnotes'].forEach(id=>document.getElementById(id).value='')
+  document.querySelectorAll('.ms-tag.sel').forEach(t=>t.classList.remove('sel'))
+  setBudget(50000)
+}
+
+// ── TOAST
+let tt
+function showT(msg){
+  const t=document.getElementById('toast')
+  document.getElementById('toastTxt').textContent=msg
+  t.classList.add('show')
+  clearTimeout(tt)
+  tt=setTimeout(()=>t.classList.remove('show'),3200)
+}
+
+// ── SCROLL REVEAL
+const obs=new IntersectionObserver(en=>{en.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target)}})},{threshold:0.1})
+document.querySelectorAll('.reveal,.reveal-l,.reveal-r').forEach((el,i)=>{el.style.transitionDelay=(i%4)*0.1+'s';obs.observe(el)})
+</script>
+<script src="floox-auth.js"></script>
+</body>
+</html>

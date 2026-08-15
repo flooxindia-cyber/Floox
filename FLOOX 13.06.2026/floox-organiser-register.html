@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join as Organiser — Floox | Your Stage. Your Story.</title>
+<link rel="icon" href="logo_floox.jpeg">
+<link rel="stylesheet" href="floox-shared.css">
+<style>
+.hero{min-height:38vh;background:#0D0800;position:relative;overflow:hidden;display:flex;align-items:center;padding:8rem 5% 4rem}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 20% 50%,rgba(255,92,0,0.2) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 80% 30%,rgba(255,45,120,0.15) 0%,transparent 60%),#0D0800}
+.lights{position:absolute;inset:0;pointer-events:none}
+.light{position:absolute;bottom:0;width:2px;transform-origin:bottom center;animation:lSway 4s ease-in-out infinite}
+.light:nth-child(1){left:10%;height:70%;background:linear-gradient(to top,rgba(255,92,0,0.45),transparent);animation-delay:0s}
+.light:nth-child(2){left:30%;height:85%;background:linear-gradient(to top,rgba(255,214,0,0.4),transparent);animation-delay:1.2s}
+.light:nth-child(3){left:55%;height:75%;background:linear-gradient(to top,rgba(255,45,120,0.4),transparent);animation-delay:0.6s}
+.light:nth-child(4){left:80%;height:65%;background:linear-gradient(to top,rgba(124,58,237,0.35),transparent);animation-delay:2s}
+@keyframes lSway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.hero-content{position:relative;z-index:2}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(255,92,0,0.15);border:1px solid rgba(255,92,0,0.3);border-radius:100px;padding:0.35rem 0.9rem;font-size:0.75rem;font-weight:700;color:rgba(255,160,80,0.9);margin-bottom:1.2rem;letter-spacing:0.06em;text-transform:uppercase}
+.badge-dot{width:6px;height:6px;background:#22C55E;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,0.5)}50%{opacity:0.5;box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+.hero h1{font-family:var(--head);font-size:clamp(2.5rem,5vw,4rem);font-weight:800;color:#fff;line-height:1;letter-spacing:-2px;margin-bottom:0.8rem}
+.hero h1 span{background:linear-gradient(135deg,var(--yellow),var(--orange),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:rgba(255,255,255,0.55);font-size:1rem;max-width:500px;line-height:1.7}
+.form-section{padding:4rem 5% 6rem;max-width:860px;margin:0 auto}
+.form-card::before{background:linear-gradient(90deg,var(--teal),var(--purple)) !important}
+.fstep-num.active{background:linear-gradient(135deg,var(--teal),var(--purple)) !important;box-shadow:0 4px 14px rgba(0,194,168,0.35) !important}
+.fstep-label.active{color:var(--teal) !important}
+.progress-fill{background:linear-gradient(90deg,var(--teal),var(--purple)) !important}
+.btn-next{background:linear-gradient(135deg,var(--teal),var(--purple)) !important;box-shadow:0 6px 22px rgba(0,194,168,0.35) !important}
+
+/* Budget slider */
+.budget-wrap{margin-top:0.5rem}
+.budget-top{display:flex;align-items:center;gap:1rem;margin-bottom:0.6rem;flex-wrap:wrap}
+.budget-input-box{display:flex;align-items:center;background:#fff;border:1.5px solid var(--border);border-radius:12px;overflow:hidden;flex:1;min-width:160px;max-width:220px;transition:border-color 0.2s}
+.budget-input-box:focus-within{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,194,168,0.1)}
+.budget-symbol{padding:0 0.5rem 0 1rem;font-family:var(--head);font-weight:800;font-size:1.1rem;color:var(--teal);flex-shrink:0}
+.budget-input-box input{border:none;outline:none;font-family:var(--head);font-weight:800;font-size:1.1rem;color:var(--teal);width:100%;padding:0.75rem 0.5rem 0.75rem 0;background:transparent}
+.budget-label-display{font-size:0.9rem;color:var(--muted);font-weight:500}
+.budget-slider{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;outline:none;cursor:pointer;background:linear-gradient(to right,var(--teal) 2.5%,var(--border) 2.5%)}
+.budget-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--teal);box-shadow:0 2px 8px rgba(0,194,168,0.3);cursor:pointer;transition:transform 0.15s}
+.budget-slider::-webkit-slider-thumb:hover{transform:scale(1.15)}
+.budget-range-labels{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);font-family:var(--head);font-weight:600;margin-top:0.4rem}
+.budget-quick{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.7rem}
+.bq{font-family:var(--head);font-size:0.72rem;font-weight:700;padding:0.28rem 0.7rem;border-radius:100px;border:1.5px solid var(--border);cursor:pointer;color:var(--muted);background:#fff;transition:all 0.18s}
+.bq:hover,.bq.sel{border-color:var(--teal);color:var(--teal);background:rgba(0,194,168,0.06)}
+
+.unlimited-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,194,168,0.1);border:1.5px solid rgba(0,194,168,0.25);border-radius:100px;padding:0.3rem 0.85rem;font-family:var(--head);font-size:0.72rem;font-weight:700;color:var(--teal);margin-bottom:0.8rem;letter-spacing:0.04em}
+
+.logo-circle{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,rgba(0,194,168,0.12),rgba(124,58,237,0.08));border:2.5px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;transition:all 0.3s;flex-shrink:0}
+.logo-circle:hover{border-color:var(--teal)}
+.logo-circle input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.logo-circle img.lp{width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute}
+
+.rev-row{display:flex;align-items:flex-start;gap:1rem;padding:0.7rem 0;border-bottom:1px solid var(--border)}
+.rev-label{font-family:var(--head);font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;min-width:130px;flex-shrink:0}
+.rev-val{font-size:0.88rem;color:var(--text);font-weight:500}
+</style>
+</head>
+<body>
+
+<nav id="navbar">
+  <a href="index.html" class="nav-logo">
+    <img src="logo_floox.jpeg" alt="Floox">
+    <span class="nav-logo-text">Floox</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="floox-public.html">Discover</a></li>
+    <li><a href="floox-platform.html">Platform</a></li>
+    <li><a href="floox-artist-register.html">For Artists</a></li>
+    <li><a href="floox-contact.html">Plan Event</a></li>
+    <li><a href="floox-login.html" class="nav-cta" data-auth="login">Login</a></li>
+    <li style="display:none" data-auth="logout"><a href="#" onclick="FLOOX.logout();return false">Logout</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="lights"><div class="light"></div><div class="light"></div><div class="light"></div><div class="light"></div></div>
+  <div class="hero-content">
+    <div class="hero-badge"><span class="badge-dot"></span>Organiser Registration </div>
+    <h1>Book better talent,<br><span>faster.</span></h1>
+    <p>Join 380+ verified organisers on Floox. Access India's largest curated artist pool, post events, and manage all bookings in one place.</p>
+  </div>
+</div>
+
+<div class="form-section">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:25%"></div></div>
+
+  <div class="form-steps" id="formSteps">
+    <div class="fstep"><div class="fstep-num active" id="sn1">1</div><span class="fstep-label active" id="sl1">Basic Info</span><div class="fstep-line" id="sl1-line"></div></div>
+    <div class="fstep"><div class="fstep-num inactive" id="sn2">2</div><span class="fstep-label" id="sl2">Organisation</span><div class="fstep-line" id="sl2-line"></div></div>
+    <div class="fstep"><div class="fstep-num inactive" id="sn3">3</div><span class="fstep-label" id="sl3">Media Upload</span><div class="fstep-line" id="sl3-line"></div></div>
+    <div class="fstep"><div class="fstep-num inactive" id="sn4">4</div><span class="fstep-label" id="sl4">Review</span></div>
+  </div>
+
+  <!-- STEP 1: BASIC INFO -->
+  <div class="form-card active" id="step1">
+    <div class="card-title">👤 Your Details</div>
+    <div class="card-sub">Tell us about yourself — the person behind the events.</div>
+    <div style="margin-bottom:1.4rem">
+      <div class="ms-label">Organisation Logo / Profile Photo</div>
+      <div style="display:flex;align-items:center;gap:1.5rem">
+        <div class="logo-circle" id="logoCircle">
+          <input type="file" accept="image/*" id="logoInput" onchange="handleLogo(this)">
+          <div id="logoPlaceholder" style="text-align:center"><div style="font-size:1.8rem">🎪</div><div style="font-family:var(--head);font-size:0.65rem;font-weight:700;color:var(--muted);margin-top:4px">Upload Logo</div></div>
+        </div>
+        <div><h4 style="font-family:var(--head);font-size:0.9rem;font-weight:700;margin-bottom:0.3rem">Upload your logo or profile photo</h4><p style="font-size:0.8rem;color:var(--muted);line-height:1.6">Square image works best. JPG or PNG.<br>Helps artists recognise your brand quickly.</p></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0.85rem">
+      <div class="frow2">
+        <div><label class="flabel">Full Name *</label><input type="text" class="finput" id="orgContactName" placeholder="Your full name"></div>
+        <div><label class="flabel">Designation</label><input type="text" class="finput" id="orgDesig" placeholder="e.g. Event Manager, Director"></div>
+      </div>
+      <div class="frow2">
+        <div><label class="flabel">Email Address *</label><input type="email" class="finput" id="orgEmail" placeholder="you@company.com"></div>
+        <div><label class="flabel">Phone Number *</label><input type="tel" class="finput" id="orgPhone" placeholder="+91 XXXXX XXXXX"></div>
+      </div>
+      <div class="frow2">
+        <div><label class="flabel">City *</label><input type="text" class="finput" id="orgCity" placeholder="Primary city"></div>
+        <div><label class="flabel">State</label>
+          <select class="fselect" id="orgState">
+            <option value="" disabled selected>Select state</option>
+            <option>Uttar Pradesh</option><option>Delhi</option><option>Rajasthan</option><option>Punjab</option><option>Haryana</option><option>Uttarakhand</option><option>Maharashtra</option><option>Karnataka</option><option>Tamil Nadu</option><option>Telangana</option><option>Gujarat</option><option>West Bengal</option><option>Madhya Pradesh</option><option>Bihar</option><option>Jharkhand</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="flabel">Password *</label>
+        <div style="position:relative">
+          <input type="password" class="finput" id="orgPass" placeholder="Create a strong password (min 8 characters)">
+          <button type="button" onclick="togglePwVis('orgPass',this)" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:0.9rem">👁️</button>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row"><div></div><button class="btn-next" onclick="goStep(2)">Next: Organisation Details →</button></div>
+  </div>
+
+  <!-- STEP 2: ORGANISATION -->
+  <div class="form-card" id="step2">
+    <div class="card-title">🏢 Organisation Details</div>
+    <div class="card-sub">Tell artists about your events so they know what to expect.</div>
+    <div style="display:flex;flex-direction:column;gap:0.85rem">
+      <div class="frow2">
+        <div><label class="flabel">Organisation Name *</label><input type="text" class="finput" id="orgName" placeholder="Company / brand name"></div>
+        <div><label class="flabel">GST Number (Optional)</label><input type="text" class="finput" id="orgGST" placeholder="For B2B invoicing"></div>
+      </div>
+      <div>
+        <div class="ms-label">Event Types You Organise * (select all that apply)</div>
+        <div class="ms-wrap" id="eventTypeTags">
+          <span class="ms-tag" onclick="toggleT(this)">💼 Corporate Events</span>
+          <span class="ms-tag" onclick="toggleT(this)">💍 Weddings & Sangeet</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎪 Music Festivals</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎭 Cultural Programmes</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎓 College Fests</span>
+          <span class="ms-tag" onclick="toggleT(this)">🎉 Private Parties</span>
+          <span class="ms-tag" onclick="toggleT(this)">🍽️ Restaurant / Lounge</span>
+          <span class="ms-tag" onclick="toggleT(this)">🕌 Mehfil / Intimate Gigs</span>
+          <span class="ms-tag" onclick="toggleT(this)">✨ Other</span>
+        </div>
+      </div>
+      <div>
+        <div class="ms-label">Cities You Operate In</div>
+        <div class="ms-wrap" id="cityTags">
+          <span class="ms-tag" onclick="toggleT(this)">Delhi / NCR</span>
+          <span class="ms-tag" onclick="toggleT(this)">Mumbai</span>
+          <span class="ms-tag" onclick="toggleT(this)">Bangalore</span>
+          <span class="ms-tag" onclick="toggleT(this)">Hyderabad</span>
+          <span class="ms-tag" onclick="toggleT(this)">Chennai</span>
+          <span class="ms-tag" onclick="toggleT(this)">Kolkata</span>
+          <span class="ms-tag" onclick="toggleT(this)">Pune</span>
+          <span class="ms-tag" onclick="toggleT(this)">Jaipur</span>
+          <span class="ms-tag" onclick="toggleT(this)">Lucknow</span>
+          <span class="ms-tag" onclick="toggleT(this)">Ahmedabad</span>
+          <span class="ms-tag" onclick="toggleT(this)">Chandigarh</span>
+          <span class="ms-tag" onclick="toggleT(this)">Pan-India</span>
+        </div>
+      </div>
+
+      <!-- BUDGET SLIDER + MANUAL INPUT -->
+      <div>
+        <label class="flabel">Typical Budget per Event (₹)</label>
+        <div class="budget-wrap">
+          <div class="budget-top">
+            <div class="budget-input-box">
+              <span class="budget-symbol">₹</span>
+              <input type="number" id="budgetManual" min="10000" max="50000000" step="5000" value="100000"
+                placeholder="Enter amount" oninput="syncFromInput(this.value)">
+            </div>
+            <div class="budget-label-display" id="budgetLabel">≈ ₹1 Lakh per event</div>
+          </div>
+          <input type="range" class="budget-slider" id="budgetSlider" min="10000" max="5000000" step="10000" value="100000" oninput="syncFromSlider(this.value)">
+          <div class="budget-range-labels"><span>₹10K</span><span>₹1L</span><span>₹5L</span><span>₹10L</span><span>₹50L+</span></div>
+          <div class="budget-quick">
+            <span class="bq" onclick="setBudget(50000)">₹50K</span>
+            <span class="bq" onclick="setBudget(100000)">₹1L</span>
+            <span class="bq" onclick="setBudget(250000)">₹2.5L</span>
+            <span class="bq" onclick="setBudget(500000)">₹5L</span>
+            <span class="bq" onclick="setBudget(1000000)">₹10L</span>
+            <span class="bq" onclick="setBudget(2500000)">₹25L+</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="flabel">How many events do you organise per year?</label>
+        <select class="fselect" id="orgFreq">
+          <option value="" disabled selected>Select frequency</option>
+          <option>1–5 events</option><option>6–15 events</option><option>16–50 events</option><option>50+ events</option>
+        </select>
+      </div>
+      <div><label class="flabel">Tell Us About Your Organisation</label><textarea class="finput" id="orgBio" placeholder="Describe your organisation — what kind of events you specialise in, past events, notable performances you've hosted, etc." style="min-height:110px"></textarea></div>
+      <div><label class="flabel">Website (Optional)</label><input type="url" class="finput" id="orgWebsite" placeholder="https://yourcompany.com"></div>
+      <div><label class="flabel">Instagram / Social Media (Optional)</label><input type="url" class="finput" id="orgSocial" placeholder="https://instagram.com/yourpage"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(1)">← Back</button>
+      <button class="btn-next" onclick="goStep(3)">Next: Upload Media →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: MEDIA -->
+  <div class="form-card" id="step3">
+    <div class="card-title">📸 Upload Past Event Media</div>
+    <div class="card-sub">Show artists what your events look like. <strong>No upload limit</strong> — add as many photos and videos as you like!</div>
+
+    <div style="margin-bottom:1.8rem">
+      <label class="flabel" style="margin-bottom:0.4rem;display:block">📸 Past Event Photos</label>
+      <div class="unlimited-badge">♾️ Unlimited uploads · No file count limit</div>
+      <div class="upload-zone" id="photoZone" ondragover="dragOver(event,'photoZone')" ondragleave="dragLeave('photoZone')" ondrop="dropFiles(event,'photo')">
+        <input type="file" accept="image/*" multiple id="photoInput" onchange="handleFiles(this,'photo')">
+        <span class="upload-icon">📸</span>
+        <div class="upload-title">Drop past event photos here</div>
+        <div class="upload-sub">Stage setups, crowd shots, artist performances — anything that showcases your events.</div>
+        <div class="upload-types"><span class="utype">JPG</span><span class="utype">PNG</span><span class="utype">WEBP</span><span class="utype">No limit on count</span></div>
+      </div>
+      <div class="preview-grid" id="photoPreview"></div>
+    </div>
+
+    <div style="margin-bottom:1.8rem">
+      <label class="flabel" style="margin-bottom:0.4rem;display:block">🎥 Event Highlight Videos (Optional)</label>
+      <div class="unlimited-badge">♾️ Unlimited uploads · No file count limit</div>
+      <div class="upload-zone" id="videoZone" ondragover="dragOver(event,'videoZone')" ondragleave="dragLeave('videoZone')" ondrop="dropFiles(event,'video')">
+        <input type="file" accept="video/*" multiple id="videoInput" onchange="handleFiles(this,'video')">
+        <span class="upload-icon">🎬</span>
+        <div class="upload-title">Drop event highlight reels here</div>
+        <div class="upload-sub">Show artists the energy and scale of your events.</div>
+        <div class="upload-types"><span class="utype">MP4</span><span class="utype">MOV</span><span class="utype">AVI</span><span class="utype">No limit on count</span></div>
+      </div>
+      <div class="preview-grid" id="videoPreview"></div>
+    </div>
+
+    <div id="uploadStatus" style="display:none;margin-top:1rem;background:rgba(0,194,168,0.06);border:1.5px solid rgba(0,194,168,0.2);border-radius:14px;padding:1rem">
+      <div style="font-family:var(--head);font-size:0.82rem;font-weight:700;color:var(--teal);margin-bottom:0.5rem" id="uploadStatusText">Uploading files…</div>
+      <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div id="uploadFill" style="height:100%;background:linear-gradient(90deg,var(--teal),var(--purple));width:0;border-radius:3px;transition:width 0.3s"></div></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(2)">← Back</button>
+      <button class="btn-next" onclick="goStep(4)">Next: Review & Submit →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: REVIEW -->
+  <div class="form-card" id="step4">
+    <div class="card-title">✅ Review & Submit</div>
+    <div class="card-sub">Almost there! Check your details before we create your organiser account.</div>
+    <div id="reviewContent" style="display:flex;flex-direction:column;margin-bottom:1.5rem"></div>
+    <div style="background:rgba(0,194,168,0.06);border:1.5px solid rgba(0,194,168,0.2);border-radius:16px;padding:1.2rem;margin-bottom:1.2rem">
+      <div style="font-family:var(--head);font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:0.4rem">🔒 Privacy & Terms</div>
+      <div style="font-size:0.8rem;color:var(--muted);line-height:1.65;margin-bottom:0.8rem">Your data is secure. By creating an account you agree to Floox's <a href="floox-contact.html" style="color:var(--teal)">Terms of Service</a> and <a href="floox-contact.html" style="color:var(--teal)">Privacy Policy</a>.</div>
+      <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+        <input type="checkbox" id="termsCheck" style="margin-top:3px;accent-color:var(--teal)">
+        <span style="font-size:0.82rem;color:var(--text);font-weight:500">I agree to Floox's Terms of Service and Privacy Policy</span>
+      </label>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(3)">← Back</button>
+      <button class="btn-next" id="submitBtn" onclick="submitForm()" style="background:linear-gradient(135deg,var(--green),#059669) !important;box-shadow:0 6px 22px rgba(16,185,129,0.35) !important">🚀 Create Organiser Account</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-page" id="successPage">
+    <div class="suc-graphic" style="background:linear-gradient(135deg,var(--teal),var(--purple))">🎪</div>
+    <div class="suc-title">Welcome to Floox! 🎉</div>
+    <div class="suc-sub">Your organiser account is ready! You can now sign in and start booking artists.</div>
+    <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem">
+      <div style="display:flex;align-items:center;gap:6px;font-family:var(--head);font-size:0.78rem;font-weight:700;padding:0.4rem 1rem;border-radius:100px;background:var(--bg);border:1.5px solid var(--border);color:var(--muted)">✅ Account created</div>
+      <div style="display:flex;align-items:center;gap:6px;font-family:var(--head);font-size:0.78rem;font-weight:700;padding:0.4rem 1rem;border-radius:100px;background:var(--bg);border:1.5px solid var(--border);color:var(--muted)">📧 Confirmation sent</div>
+      <div style="display:flex;align-items:center;gap:6px;font-family:var(--head);font-size:0.78rem;font-weight:700;padding:0.4rem 1rem;border-radius:100px;background:var(--bg);border:1.5px solid var(--border);color:var(--muted)">⏳ Review: 24 hrs</div>
+    </div>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+      <a href="floox-public.html" class="btn-next" style="text-decoration:none">🎵 Browse Artists</a>
+      <a href="floox-login.html" class="btn-back" style="text-decoration:none">Sign In to My Account</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="foot-grid">
+    <div><a href="index.html" class="foot-logo-row"><img src="logo_floox.jpeg" alt="Floox"><span>Floox</span></a><p class="foot-desc">India's platform connecting artists and event organisers. Your Stage. Your Story.</p></div>
+    <div><div class="foot-h">Navigate</div><ul class="foot-ul"><li><a href="floox-public.html">Discover Events</a></li><li><a href="floox-platform.html">Platform</a></li><li><a href="floox-artist-register.html">Join as Artist</a></li><li><a href="floox-organiser-register.html">Join as Organiser</a></li></ul></div>
+    <div><div class="foot-h">Support</div><ul class="foot-ul"><li><a href="floox-contact.html">Contact Us</a></li><li><a href="floox-contact.html">Plan My Event</a></li><li><a href="floox-login.html">Login</a></li></ul></div>
+    <div><div class="foot-h">Legal</div><ul class="foot-ul"><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li></ul></div>
+  </div>
+  <div class="foot-bottom"><span>© 2026 Floox · Your Stage. Your Story.</span><div class="foot-legal"><a href="#">Privacy</a><a href="#">Terms</a></div></div>
+</footer>
+
+<script src="floox-auth.js"></script>
+<script>
+let curStep = 1;
+const uploadedFiles = { photo:[], video:[] };
+
+/* ── STEP NAV ── */
+function goStep(n) {
+  if (n > curStep && !validateStep(curStep)) return;
+  document.getElementById('step'+curStep).classList.remove('active');
+  curStep = n;
+  document.getElementById('step'+n).classList.add('active');
+  updateStepUI();
+  if (n === 4) buildReview();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+function updateStepUI() {
+  document.getElementById('progressFill').style.width = ((curStep/4)*100)+'%';
+  for (let i=1; i<=4; i++) {
+    const sn=document.getElementById('sn'+i), sl=document.getElementById('sl'+i), ln=document.getElementById('sl'+i+'-line');
+    if (i<curStep){ sn.className='fstep-num done'; sn.textContent='✓'; sl.className='fstep-label done'; if(ln) ln.className='fstep-line done'; }
+    else if(i===curStep){ sn.className='fstep-num active'; sn.textContent=i; sl.className='fstep-label active'; if(ln) ln.className='fstep-line'; }
+    else{ sn.className='fstep-num inactive'; sn.textContent=i; sl.className='fstep-label'; if(ln) ln.className='fstep-line'; }
+  }
+}
+function validateStep(s) {
+  if (s===1) {
+    if (!document.getElementById('orgContactName').value.trim()) { FLOOX.toast('Please enter your name','error'); return false; }
+    const e=document.getElementById('orgEmail').value.trim();
+    if (!e||!e.includes('@')) { FLOOX.toast('Please enter a valid email','error'); return false; }
+    if (!document.getElementById('orgPhone').value.trim()) { FLOOX.toast('Please enter your phone number','error'); return false; }
+    if (!document.getElementById('orgCity').value.trim()) { FLOOX.toast('Please enter your city','error'); return false; }
+    if (document.getElementById('orgPass').value.length < 8) { FLOOX.toast('Password must be at least 8 characters','error'); return false; }
+  }
+  if (s===2) {
+    if (!document.getElementById('orgName').value.trim()) { FLOOX.toast('Please enter your organisation name','error'); return false; }
+    if (!document.querySelectorAll('#eventTypeTags .ms-tag.sel').length) { FLOOX.toast('Please select at least one event type','error'); return false; }
+  }
+  return true;
+}
+
+/* ── BUDGET ── */
+function formatBudget(v) {
+  v = parseInt(v);
+  if (v >= 10000000) return `≈ ₹${(v/10000000).toFixed(1)} Cr per event`;
+  if (v >= 100000) return `≈ ₹${(v/100000).toFixed(1)} Lakh per event`;
+  if (v >= 1000) return `≈ ₹${(v/1000).toFixed(0)}K per event`;
+  return `≈ ₹${v} per event`;
+}
+function updateSliderBg(v, min, max) {
+  const pct = ((v-min)/(max-min))*100;
+  document.getElementById('budgetSlider').style.background = `linear-gradient(to right,var(--teal) ${pct}%,var(--border) ${pct}%)`;
+}
+function syncFromSlider(v) {
+  document.getElementById('budgetManual').value = v;
+  document.getElementById('budgetLabel').textContent = formatBudget(v);
+  updateSliderBg(v, 10000, 5000000);
+}
+function syncFromInput(v) {
+  const n = parseInt(v) || 10000;
+  const clamped = Math.max(10000, n);
+  const sliderVal = Math.min(clamped, 5000000);
+  document.getElementById('budgetSlider').value = sliderVal;
+  document.getElementById('budgetLabel').textContent = formatBudget(clamped);
+  updateSliderBg(sliderVal, 10000, 5000000);
+}
+function setBudget(v) {
+  document.getElementById('budgetManual').value = v;
+  document.getElementById('budgetSlider').value = Math.min(v, 5000000);
+  document.getElementById('budgetLabel').textContent = formatBudget(v);
+  updateSliderBg(Math.min(v, 5000000), 10000, 5000000);
+  document.querySelectorAll('.bq').forEach(b => b.classList.remove('sel'));
+  event.target.classList.add('sel');
+}
+
+/* ── FILE UPLOAD ── */
+function toggleT(el) { el.classList.toggle('sel'); }
+function togglePwVis(id, btn) { const i=document.getElementById(id); i.type=i.type==='password'?'text':'password'; btn.textContent=i.type==='password'?'👁️':'🔒'; }
+function handleLogo(input) {
+  if (input.files && input.files[0]) {
+    const r=new FileReader(); r.onload=e=>{
+      document.getElementById('logoPlaceholder').style.display='none';
+      let img=document.getElementById('logoCircle').querySelector('img.lp');
+      if(!img){img=document.createElement('img');img.className='lp';document.getElementById('logoCircle').appendChild(img);}
+      img.src=e.target.result;
+    }; r.readAsDataURL(input.files[0]);
+  }
+}
+function handleFiles(input, type) {
+  Array.from(input.files).forEach(file => { uploadedFiles[type].push(file); renderPreview(file, type); });
+  input.value='';
+}
+function dragOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('drag-over'); }
+function dragLeave(id) { document.getElementById(id).classList.remove('drag-over'); }
+function dropFiles(e, type) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  Array.from(e.dataTransfer.files).forEach(f => { uploadedFiles[type].push(f); renderPreview(f, type); });
+}
+function renderPreview(file, type) {
+  const grid=document.getElementById(type+'Preview');
+  const div=document.createElement('div'); div.className='preview-item';
+  const idx=uploadedFiles[type].length-1;
+  if (type==='video') {
+    const vid=document.createElement('video'); vid.src=URL.createObjectURL(file); vid.muted=true;
+    vid.style.cssText='width:100%;height:100%;object-fit:cover'; div.appendChild(vid);
+    const badge=document.createElement('div'); badge.className='preview-badge'; badge.textContent='VIDEO'; div.appendChild(badge);
+  } else {
+    const img=document.createElement('img'); img.src=URL.createObjectURL(file); div.appendChild(img);
+  }
+  const btn=document.createElement('button'); btn.className='preview-remove'; btn.innerHTML='✕';
+  btn.onclick=()=>{ uploadedFiles[type].splice(idx,1); div.remove(); };
+  div.appendChild(btn); grid.appendChild(div);
+}
+
+function buildReview() {
+  const budget = document.getElementById('budgetManual').value;
+  const rows = [
+    { l:'Full Name', v: document.getElementById('orgContactName').value||'—' },
+    { l:'Organisation', v: document.getElementById('orgName').value||'—' },
+    { l:'Email', v: document.getElementById('orgEmail').value||'—' },
+    { l:'Phone', v: document.getElementById('orgPhone').value||'—' },
+    { l:'City', v: document.getElementById('orgCity').value||'—' },
+    { l:'Event Types', v: Array.from(document.querySelectorAll('#eventTypeTags .ms-tag.sel')).map(t=>t.textContent).join(', ')||'—' },
+    { l:'Budget/Event', v: '₹'+parseInt(budget).toLocaleString('en-IN') },
+    { l:'Photos queued', v: uploadedFiles.photo.length+' file(s)' },
+    { l:'Videos queued', v: uploadedFiles.video.length+' file(s)' },
+  ];
+  document.getElementById('reviewContent').innerHTML = rows.map(r=>
+    `<div class="rev-row"><div class="rev-label">${r.l}</div><div class="rev-val">${r.v}</div></div>`
+  ).join('');
+}
+
+async function submitForm() {
+  if (!document.getElementById('termsCheck').checked) { FLOOX.toast('Please agree to Terms & Privacy Policy','error'); return; }
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true; btn.textContent='Creating account…';
+  const payload = {
+    role:'organiser',
+    email: document.getElementById('orgEmail').value.trim(),
+    password: document.getElementById('orgPass').value,
+    name: document.getElementById('orgContactName').value.trim(),
+    phone: document.getElementById('orgPhone').value.trim(),
+    city: document.getElementById('orgCity').value.trim(),
+    state: document.getElementById('orgState').value,
+    data: {
+      orgName: document.getElementById('orgName').value.trim(),
+      designation: document.getElementById('orgDesig').value.trim(),
+      gst: document.getElementById('orgGST').value.trim(),
+      eventTypes: Array.from(document.querySelectorAll('#eventTypeTags .ms-tag.sel')).map(t=>t.textContent.trim()),
+      cities: Array.from(document.querySelectorAll('#cityTags .ms-tag.sel')).map(t=>t.textContent.trim()),
+      budget: parseInt(document.getElementById('budgetManual').value)||100000,
+      frequency: document.getElementById('orgFreq').value,
+      bio: document.getElementById('orgBio').value.trim(),
+      website: document.getElementById('orgWebsite').value.trim(),
+      social: document.getElementById('orgSocial').value.trim()
+    }
+  };
+  try {
+    await FLOOX.register(payload);
+    btn.textContent='Uploading media…';
+    const loginRes = await fetch('/.netlify/functions/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:payload.email,password:payload.password})}).then(r=>r.json());
+    if (loginRes.token) {
+      FLOOX.saveSession(loginRes.token, loginRes.user);
+      const allFiles=[
+        ...(document.getElementById('logoInput').files[0]?[{file:document.getElementById('logoInput').files[0],type:'profile'}]:[]),
+        ...uploadedFiles.photo.map(f=>({file:f,type:'photo'})),
+        ...uploadedFiles.video.map(f=>({file:f,type:'video'}))
+      ];
+      for(let i=0;i<allFiles.length;i++){
+        document.getElementById('uploadStatus').style.display='block';
+        document.getElementById('uploadStatusText').textContent=`Uploading ${i+1} of ${allFiles.length}: ${allFiles[i].file.name}`;
+        document.getElementById('uploadFill').style.width=Math.round(((i+0.5)/allFiles.length)*100)+'%';
+        try{ await FLOOX.uploadFile(allFiles[i].file, allFiles[i].type); }catch(e){console.warn('Upload failed:',e.message);}
+        document.getElementById('uploadFill').style.width=Math.round(((i+1)/allFiles.length)*100)+'%';
+      }
+    }
+    document.getElementById('step4').classList.remove('active');
+    document.getElementById('formSteps').style.display='none';
+    document.getElementById('progressFill').parentElement.style.display='none';
+    document.getElementById('successPage').style.display='block';
+    window.scrollTo({top:0,behavior:'smooth'});
+  } catch(err) {
+    FLOOX.toast(err.message||'Registration failed. Please try again.','error');
+    btn.disabled=false; btn.textContent='🚀 Create Organiser Account';
+  }
+}
+window.addEventListener('scroll',()=>{document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>40)});
+</script>
+</body>
+</html>

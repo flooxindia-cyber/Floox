@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floox — Organiser Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FFFBF4;--white:#fff;--black:#0D0800;--text:#1C1000;--muted:#7A6A50;--border:#E8DDD0;
+  --orange:#FF5C00;--pink:#FF2D78;--teal:#00C2A8;--purple:#7C3AED;--yellow:#FFD600;--green:#22C55E;
+  --head:'Bricolage Grotesque',sans-serif;--body:'Plus Jakarta Sans',sans-serif;
+  --sidebar:260px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.65;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#FFF7EC}::-webkit-scrollbar-thumb{background:#FFCFA0;border-radius:3px}
+
+/* ── LAYOUT ── */
+.dash-wrap{display:flex;min-height:100vh}
+
+/* ── SIDEBAR (teal accent for organiser) ── */
+.sidebar{width:var(--sidebar);background:var(--text);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:200;display:flex;flex-direction:column;transition:transform 0.3s}
+.sb-logo{padding:1.8rem 1.5rem 1.2rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.08);text-decoration:none}
+.sb-orb{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:14px;color:#fff;flex-shrink:0}
+.sb-name{font-family:var(--head);font-weight:800;font-size:1.2rem;letter-spacing:-0.3px;color:#fff}
+.sb-name em{font-style:normal;color:var(--teal)}
+.sb-profile{padding:1.2rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sb-avatar{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:1.2rem;color:#fff;flex-shrink:0;overflow:hidden}
+.sb-profile-row{display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem}
+.sb-username{font-family:var(--head);font-weight:700;font-size:0.9rem;color:#fff;line-height:1.2}
+.sb-orgname{font-size:0.72rem;color:rgba(255,255,255,0.4)}
+.sb-role{font-size:0.72rem;color:rgba(255,255,255,0.4);display:flex;align-items:center;gap:4px;margin-top:0.1rem}
+.sb-role-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.sb-complete{background:rgba(255,255,255,0.06);border-radius:10px;padding:0.7rem}
+.sb-complete-label{font-family:var(--head);font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:0.4rem;display:flex;justify-content:space-between}
+.sb-complete-bar{height:5px;background:rgba(255,255,255,0.1);border-radius:100px;overflow:hidden}
+.sb-complete-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--purple));border-radius:100px;transition:width 0.6s ease}
+.sb-nav{padding:1rem 0.8rem;flex:1}
+.sb-section{font-family:var(--head);font-size:0.6rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.22);padding:0.6rem 0.7rem 0.3rem;margin-top:0.5rem}
+.sb-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.9rem;border-radius:10px;font-family:var(--head);font-weight:700;font-size:0.83rem;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.2s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.sb-link:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85)}
+.sb-link.active{background:rgba(0,194,168,0.18);color:#fff}
+.sb-link.active .sb-icon{color:var(--teal)}
+.sb-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.sb-badge{margin-left:auto;background:var(--pink);color:#fff;font-size:0.6rem;font-weight:700;padding:0.12rem 0.45rem;border-radius:100px}
+.sb-bottom{padding:1rem 0.8rem;border-top:1px solid rgba(255,255,255,0.08)}
+.sb-logout{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.9rem;border-radius:10px;font-family:var(--head);font-weight:700;font-size:0.83rem;color:rgba(255,255,255,0.35);cursor:pointer;transition:all 0.2s;border:none;background:none;width:100%}
+.sb-logout:hover{background:rgba(255,45,120,0.12);color:var(--pink)}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar);flex:1;padding:0;min-height:100vh}
+.topbar{background:rgba(255,251,244,0.95);backdrop-filter:blur(20px);border-bottom:1.5px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:1rem}
+.topbar-left{display:flex;align-items:center;gap:1rem}
+.topbar-title{font-family:var(--head);font-weight:800;font-size:1.15rem;letter-spacing:-0.3px;color:var(--text)}
+.topbar-sub{font-size:0.78rem;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:0.8rem}
+.tb-btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--head);font-weight:700;font-size:0.78rem;padding:0.55rem 1.1rem;border-radius:100px;cursor:pointer;border:none;text-decoration:none;transition:all 0.2s;white-space:nowrap}
+.tb-fire{background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;box-shadow:0 4px 16px rgba(255,92,0,0.35)}
+.tb-fire:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,92,0,0.45)}
+.tb-teal{background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff;box-shadow:0 4px 16px rgba(0,194,168,0.3)}
+.tb-teal:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,194,168,0.4)}
+.tb-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border)}
+.tb-ghost:hover{border-color:var(--teal);color:var(--teal)}
+.notif-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;position:relative;transition:all 0.2s}
+.notif-btn:hover{border-color:var(--teal)}
+.notif-dot{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--teal);border:2px solid #fff}
+.mob-sb-toggle{display:none;background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text)}
+
+/* ── PAGE CONTENT ── */
+.page-content{padding:2rem;display:none}
+.page-content.active{display:block}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.stat-card{background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:1.2rem 1.4rem;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.07)}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.stat-card.c1::after{background:linear-gradient(90deg,var(--teal),var(--purple))}
+.stat-card.c2::after{background:linear-gradient(90deg,var(--orange),var(--pink))}
+.stat-card.c3::after{background:linear-gradient(90deg,var(--yellow),var(--orange))}
+.stat-card.c4::after{background:linear-gradient(90deg,var(--green),var(--teal))}
+.stat-icon{font-size:1.5rem;margin-bottom:0.6rem}
+.stat-val{font-family:var(--head);font-size:2rem;font-weight:800;letter-spacing:-1px;color:var(--text);line-height:1}
+.stat-label{font-size:0.75rem;color:var(--muted);margin-top:0.25rem}
+.stat-change{font-family:var(--head);font-size:0.7rem;font-weight:700;margin-top:0.5rem;display:inline-flex;align-items:center;gap:3px;padding:0.15rem 0.5rem;border-radius:100px}
+.stat-change.up{background:rgba(34,197,94,0.1);color:var(--green)}
+.stat-change.neutral{background:rgba(0,194,168,0.1);color:var(--teal)}
+
+/* ── GRID ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.grid-3-1{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.grid-1-2{display:grid;grid-template-columns:1fr 2fr;gap:1.5rem;margin-bottom:1.5rem}
+
+/* ── CARDS ── */
+.card{background:#fff;border:1.5px solid var(--border);border-radius:18px;overflow:hidden}
+.card-head{padding:1.2rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-family:var(--head);font-weight:800;font-size:0.95rem;letter-spacing:-0.2px;color:var(--text)}
+.card-body{padding:1.4rem}
+.card-link{font-family:var(--head);font-size:0.75rem;font-weight:700;color:var(--teal);text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:gap 0.2s}
+.card-link:hover{gap:8px}
+
+/* ── EVENTS ── */
+.event-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border)}
+.event-item:last-child{border-bottom:none;padding-bottom:0}
+.ev-date{width:50px;height:50px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;line-height:1;flex-shrink:0}
+.ev-date.upcoming{background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff}
+.ev-date.past{background:var(--border);color:var(--muted)}
+.ev-date.draft{background:rgba(255,214,0,0.15);color:#B8860B;border:1.5px dashed #B8860B}
+.ev-date .ev-dd{font-size:1.1rem}
+.ev-date .ev-mm{font-size:0.58rem;letter-spacing:0.06em;text-transform:uppercase}
+.ev-info{flex:1;min-width:0}
+.ev-title{font-family:var(--head);font-weight:700;font-size:0.9rem;color:var(--text)}
+.ev-meta{font-size:0.75rem;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;margin-top:0.2rem}
+.ev-dot{width:3px;height:3px;border-radius:50%;background:var(--muted)}
+.ev-badge{font-family:var(--head);font-size:0.65rem;font-weight:700;padding:0.18rem 0.55rem;border-radius:100px}
+.ev-badge.live{background:rgba(34,197,94,0.12);color:var(--green)}
+.ev-badge.upcoming{background:rgba(0,194,168,0.12);color:var(--teal)}
+.ev-badge.draft{background:rgba(255,214,0,0.15);color:#B8860B}
+.ev-badge.completed{background:rgba(124,58,237,0.1);color:var(--purple)}
+.ev-actions{display:flex;gap:0.4rem;flex-shrink:0;align-items:flex-start}
+.ev-action-btn{font-family:var(--head);font-size:0.68rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:100px;border:1.5px solid var(--border);background:#fff;cursor:pointer;transition:all 0.2s;color:var(--muted);white-space:nowrap}
+.ev-action-btn:hover{border-color:var(--teal);color:var(--teal)}
+.ev-action-btn.primary{background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff;border:none}
+
+/* ── ARTIST CARDS ── */
+.artist-card{background:#fff;border:1.5px solid var(--border);border-radius:16px;overflow:hidden;transition:all 0.2s;cursor:pointer}
+.artist-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.1);border-color:var(--teal)}
+.ac-cover{height:90px;background:linear-gradient(135deg,var(--teal),var(--purple));position:relative}
+.ac-avatar{width:56px;height:56px;border-radius:50%;border:3px solid #fff;background:linear-gradient(135deg,var(--orange),var(--pink));display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:1.2rem;color:#fff;position:absolute;bottom:-28px;left:1rem;overflow:hidden}
+.ac-body{padding:2.2rem 1rem 1rem}
+.ac-name{font-family:var(--head);font-weight:800;font-size:0.92rem;color:var(--text);line-height:1.2}
+.ac-type{font-size:0.72rem;color:var(--muted);margin-top:0.1rem}
+.ac-tags{display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.6rem}
+.ac-tag{font-family:var(--head);font-size:0.62rem;font-weight:700;padding:0.18rem 0.5rem;border-radius:100px;background:rgba(0,194,168,0.08);color:var(--teal);border:1px solid rgba(0,194,168,0.2)}
+.ac-fee{font-family:var(--head);font-weight:800;font-size:0.85rem;color:var(--orange);margin-top:0.6rem}
+.ac-foot{display:flex;gap:0.4rem;margin-top:0.8rem}
+.ac-btn{flex:1;font-family:var(--head);font-weight:700;font-size:0.72rem;padding:0.45rem;border-radius:100px;border:1.5px solid var(--border);background:#fff;cursor:pointer;transition:all 0.2s;color:var(--muted);text-align:center}
+.ac-btn:hover{border-color:var(--teal);color:var(--teal)}
+.ac-btn.book{background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff;border:none}
+.artist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem}
+
+/* ── BOOKINGS ── */
+.booking-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border)}
+.booking-item:last-child{border-bottom:none;padding-bottom:0}
+.bi-date{width:48px;height:48px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;line-height:1;flex-shrink:0}
+.bi-date.upcoming{background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff}
+.bi-date.past{background:var(--border);color:var(--muted)}
+.bi-dd{font-size:1.1rem}
+.bi-mm{font-size:0.58rem;letter-spacing:0.06em;text-transform:uppercase}
+.bi-info{flex:1;min-width:0}
+.bi-title{font-family:var(--head);font-weight:700;font-size:0.88rem;color:var(--text)}
+.bi-meta{font-size:0.75rem;color:var(--muted);display:flex;align-items:center;gap:0.5rem;margin-top:0.2rem;flex-wrap:wrap}
+.bi-dot{width:3px;height:3px;border-radius:50%;background:var(--muted)}
+.bi-badge{font-family:var(--head);font-size:0.65rem;font-weight:700;padding:0.18rem 0.55rem;border-radius:100px}
+.bi-badge.pending{background:rgba(255,214,0,0.15);color:#B8860B}
+.bi-badge.confirmed{background:rgba(34,197,94,0.12);color:var(--green)}
+.bi-badge.completed{background:rgba(0,194,168,0.12);color:var(--teal)}
+.bi-badge.cancelled{background:rgba(255,45,120,0.1);color:var(--pink)}
+.bi-fee{font-family:var(--head);font-weight:800;font-size:0.9rem;color:var(--text);flex-shrink:0}
+
+/* ── NEW EVENT MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(13,8,0,0.6);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:24px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.25)}
+.modal-head{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:10;border-radius:24px 24px 0 0}
+.modal-title{font-family:var(--head);font-weight:800;font-size:1.1rem;letter-spacing:-0.3px}
+.modal-close{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.modal-close:hover{background:var(--border)}
+.modal-body{padding:1.5rem}
+.flabel{font-family:var(--head);font-size:0.7rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.35rem}
+.finput{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:0.78rem 1rem;font-family:var(--body);font-size:0.88rem;color:var(--text);outline:none;transition:all 0.2s;width:100%}
+.finput:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,194,168,0.1)}
+.finput::placeholder{color:#C0B0A0}
+textarea.finput{resize:vertical;min-height:80px}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem}
+.fgroup{margin-bottom:1rem}
+.ms-wrap{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.35rem}
+.ms-tag{font-family:var(--head);font-size:0.75rem;font-weight:700;padding:0.38rem 0.9rem;border-radius:100px;border:1.5px solid var(--border);cursor:pointer;transition:all 0.18s;color:var(--muted);background:#fff;user-select:none}
+.ms-tag:hover{border-color:var(--teal);color:var(--teal)}
+.ms-tag.sel{background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff;border-color:transparent}
+
+/* ── FORMS ── */
+.form-section{background:#fff;border:1.5px solid var(--border);border-radius:18px;margin-bottom:1.5rem;overflow:hidden}
+.form-section-head{padding:1.2rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.8rem}
+.fsh-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.fsh-icon.teal{background:rgba(0,194,168,0.1)}
+.fsh-icon.orange{background:rgba(255,92,0,0.1)}
+.fsh-icon.purple{background:rgba(124,58,237,0.1)}
+.fsh-title{font-family:var(--head);font-weight:800;font-size:0.95rem;color:var(--text)}
+.fsh-sub{font-size:0.75rem;color:var(--muted)}
+.form-body{padding:1.4rem}
+.save-bar{background:rgba(255,251,244,0.95);backdrop-filter:blur(20px);border-top:1.5px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;bottom:0;z-index:50}
+.save-bar-msg{font-size:0.8rem;color:var(--muted);display:flex;align-items:center;gap:0.5rem}
+.unsaved-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);display:none}
+.unsaved-dot.show{display:block}
+
+/* ── SPEND CARD ── */
+.spend-card{background:linear-gradient(135deg,#0D1F2D,#0A2940);border-radius:18px;padding:1.4rem;color:#fff;margin-bottom:1rem;position:relative;overflow:hidden}
+.spend-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(0,194,168,0.15)}
+.spend-label{font-family:var(--head);font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:0.3rem}
+.spend-val{font-family:var(--head);font-size:2.2rem;font-weight:800;letter-spacing:-1px;color:#fff}
+.spend-sub{font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:0.2rem}
+.spend-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:1rem}
+.sb2-item{background:rgba(255,255,255,0.07);border-radius:10px;padding:0.65rem}
+.sb2-val{font-family:var(--head);font-weight:800;font-size:0.95rem;color:#fff}
+.sb2-label{font-size:0.67rem;color:rgba(255,255,255,0.4)}
+
+/* ── SEARCH BAR ── */
+.search-bar{display:flex;gap:0.7rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
+.search-input{flex:1;min-width:200px;background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:0.75rem 1rem;font-family:var(--body);font-size:0.88rem;color:var(--text);outline:none;transition:all 0.2s}
+.search-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,194,168,0.1)}
+.search-select{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:0.75rem 2rem 0.75rem 0.9rem;font-family:var(--body);font-size:0.85rem;color:var(--text);outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C0B0A0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0.7rem center;cursor:pointer}
+.search-select:focus{border-color:var(--teal)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);z-index:9999;background:var(--text);color:#fff;border-radius:100px;padding:0.85rem 1.6rem;font-size:0.85rem;display:flex;align-items:center;gap:0.6rem;opacity:0;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,0.4);font-family:var(--head);font-weight:700}
+
+/* ── MOBILE ── */
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199}
+
+/* ── ACTIVITY ── */
+.activity-item{display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.act-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0}
+.act-icon.teal{background:rgba(0,194,168,0.12)}
+.act-icon.orange{background:rgba(255,92,0,0.12)}
+.act-icon.green{background:rgba(34,197,94,0.12)}
+.act-icon.purple{background:rgba(124,58,237,0.1)}
+.act-text{flex:1;font-size:0.8rem;color:var(--muted);line-height:1.4}
+.act-text strong{color:var(--text);font-weight:600}
+.act-time{font-size:0.68rem;color:var(--muted);white-space:nowrap}
+
+@media(max-width:1100px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){
+  .grid-2,.grid-3-1,.grid-1-2{grid-template-columns:1fr}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .mob-sb-toggle{display:block}
+  .sb-overlay.show{display:block}
+}
+@media(max-width:640px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .frow2{grid-template-columns:1fr}
+  .page-content{padding:1rem}
+  .topbar{padding:0.8rem 1rem}
+  .artist-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <a href="index.html" class="sb-logo">
+    <div class="sb-orb">Fx</div>
+    <span class="sb-name">Fl<em>oo</em>x</span>
+  </a>
+
+  <div class="sb-profile">
+    <div class="sb-profile-row">
+      <div class="sb-avatar" id="sbAvatar">O</div>
+      <div>
+        <div class="sb-username" id="sbUsername">Your Name</div>
+        <div class="sb-orgname" id="sbOrgName">Organisation</div>
+        <div class="sb-role"><span class="sb-role-dot"></span> Organiser · Active</div>
+      </div>
+    </div>
+    <div class="sb-complete">
+      <div class="sb-complete-label">
+        <span>Profile Complete</span>
+        <span id="completePercent">65%</span>
+      </div>
+      <div class="sb-complete-bar"><div class="sb-complete-fill" style="width:65%"></div></div>
+    </div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section">Main</div>
+    <button class="sb-link active" onclick="showPage('overview')">
+      <span class="sb-icon">📊</span> Overview
+    </button>
+    <button class="sb-link" onclick="showPage('events')">
+      <span class="sb-icon">🎪</span> My Events
+    </button>
+    <button class="sb-link" onclick="showPage('bookings')">
+      <span class="sb-icon">📅</span> Bookings
+      <span class="sb-badge" id="pendingBadge">3</span>
+    </button>
+    <button class="sb-link" onclick="showPage('spend')">
+      <span class="sb-icon">💸</span> Spend & Budget
+    </button>
+    <div class="sb-section">Discover</div>
+    <button class="sb-link" onclick="showPage('artists')">
+      <span class="sb-icon">🎤</span> Find Artists
+    </button>
+    <button class="sb-link" onclick="showPage('saved')">
+      <span class="sb-icon">❤️</span> Saved Artists
+      <span class="sb-badge" id="followingBadge" style="display:none">0</span>
+    </button>
+    <div class="sb-section">Account</div>
+    <button class="sb-link" onclick="showPage('profile')">
+      <span class="sb-icon">✏️</span> Edit Profile
+    </button>
+    <button class="sb-link" onclick="showPage('settings')">
+      <span class="sb-icon">⚙️</span> Settings
+    </button>
+  </nav>
+
+  <div class="sb-bottom">
+    <button class="tb-btn tb-teal" style="width:100%;justify-content:center;margin-bottom:0.7rem" onclick="openNewEventModal()">＋ New Event</button>
+    <button class="sb-logout" onclick="doLogout()">
+      <span class="sb-icon">🚪</span> Sign Out
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="mob-sb-toggle" onclick="openSidebar()">☰</button>
+      <div>
+        <div class="topbar-title" id="pageTitle">Overview</div>
+        <div class="topbar-sub" id="pageSubtitle">Manage your events & artist bookings</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <a href="floox-search-results.html" class="tb-btn tb-ghost">🔍 Browse Artists</a>
+      <button class="tb-btn tb-teal" onclick="openNewEventModal()">＋ New Event</button>
+      <div class="notif-btn" title="Notifications">🔔<span class="notif-dot"></span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ OVERVIEW -->
+  <div class="page-content active" id="page-overview">
+    <div class="stat-grid">
+      <div class="stat-card c1">
+        <div class="stat-icon">🎪</div>
+        <div class="stat-val" id="totalEvents">5</div>
+        <div class="stat-label">Total Events</div>
+        <span class="stat-change up">↑ 2 upcoming</span>
+      </div>
+      <div class="stat-card c2">
+        <div class="stat-icon">🎤</div>
+        <div class="stat-val" id="totalArtistsBooked">12</div>
+        <div class="stat-label">Artists Booked</div>
+        <span class="stat-change up">↑ 3 pending</span>
+      </div>
+      <div class="stat-card c3">
+        <div class="stat-icon">💰</div>
+        <div class="stat-val" id="totalSpent">₹0</div>
+        <div class="stat-label">Total Spent</div>
+        <span class="stat-change neutral">This year</span>
+      </div>
+      <div class="stat-card c4">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-val">4.7</div>
+        <div class="stat-label">Avg Artist Rating</div>
+        <span class="stat-change up">↑ Great track record</span>
+      </div>
+    </div>
+
+    <div class="grid-3-1">
+      <!-- Upcoming Events -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Upcoming Events</span>
+          <a href="#" class="card-link" onclick="showPage('events');return false">See all →</a>
+        </div>
+        <div class="card-body" id="upcomingEventsOverview"></div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-head"><span class="card-title">Quick Actions</span></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:0.6rem">
+            <button class="tb-btn tb-teal" style="width:100%;justify-content:center" onclick="openNewEventModal()">＋ Create Event</button>
+            <a href="floox-search-results.html" class="tb-btn tb-ghost" style="width:100%;justify-content:center">🔍 Find Artists</a>
+            <button class="tb-btn tb-ghost" style="width:100%;justify-content:center" onclick="showPage('bookings')">📋 Review Bookings</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Budget Overview</span></div>
+          <div class="card-body">
+            <div style="margin-bottom:0.8rem">
+              <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.3rem">
+                <span style="color:var(--muted);font-family:var(--head);font-weight:700">Monthly Budget</span>
+                <span style="font-family:var(--head);font-weight:800">₹0 / ₹1,00,000</span>
+              </div>
+              <div style="height:8px;background:var(--border);border-radius:100px;overflow:hidden">
+                <div id="budgetBar" style="height:100%;background:linear-gradient(90deg,var(--teal),var(--purple));border-radius:100px;width:0%;transition:width 0.6s ease"></div>
+              </div>
+            </div>
+            <div style="font-size:0.75rem;color:var(--muted)">Set your monthly budget in profile settings</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Recent Bookings</span>
+          <a href="#" class="card-link" onclick="showPage('bookings');return false">See all →</a>
+        </div>
+        <div class="card-body" id="recentBookingsOverview"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Recent Activity</span></div>
+        <div class="card-body" id="activityList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ EVENTS -->
+  <div class="page-content" id="page-events">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+      <div style="display:flex;gap:0.5rem">
+        <button class="tb-btn tb-teal" id="fevAll" onclick="filterEvents('all')">All</button>
+        <button class="tb-btn tb-ghost" id="fevUpcoming" onclick="filterEvents('upcoming')">Upcoming</button>
+        <button class="tb-btn tb-ghost" id="fevDraft" onclick="filterEvents('draft')">Drafts</button>
+        <button class="tb-btn tb-ghost" id="fevCompleted" onclick="filterEvents('completed')">Completed</button>
+      </div>
+      <button class="tb-btn tb-teal" onclick="openNewEventModal()">＋ New Event</button>
+    </div>
+    <div id="eventsListFull"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ BOOKINGS -->
+  <div class="page-content" id="page-bookings">
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem">
+      <button class="tb-btn tb-teal" id="fbAll" onclick="filterBookings('all')">All</button>
+      <button class="tb-btn tb-ghost" id="fbPending" onclick="filterBookings('pending')">Pending</button>
+      <button class="tb-btn tb-ghost" id="fbConfirmed" onclick="filterBookings('confirmed')">Confirmed</button>
+      <button class="tb-btn tb-ghost" id="fbCompleted" onclick="filterBookings('completed')">Completed</button>
+    </div>
+    <div class="card">
+      <div class="card-body" id="allBookingsList" style="padding:0"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SPEND -->
+  <div class="page-content" id="page-spend">
+    <div class="grid-3-1">
+      <div>
+        <div class="spend-card">
+          <div class="spend-label">Total Spent (All Time)</div>
+          <div class="spend-val" id="totalSpentBig">₹0</div>
+          <div class="spend-sub">Across all artist bookings</div>
+          <div class="spend-breakdown">
+            <div class="sb2-item">
+              <div class="sb2-val" id="spendThisMonth">₹0</div>
+              <div class="sb2-label">This Month</div>
+            </div>
+            <div class="sb2-item">
+              <div class="sb2-val" id="pendingPayment">₹0</div>
+              <div class="sb2-label">Pending Payments</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Payment History</span></div>
+          <div class="card-body" id="paymentHistory"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-body" style="text-align:center;padding:2rem">
+            <div style="font-size:2.5rem;margin-bottom:0.5rem">📊</div>
+            <div style="font-family:var(--head);font-weight:700;font-size:0.9rem;margin-bottom:0.4rem">Set Monthly Budget</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem">Track your event spending against your budget</div>
+            <input class="finput" placeholder="₹ Monthly budget" type="number" id="monthlyBudget" style="margin-bottom:0.7rem">
+            <button class="tb-btn tb-teal" style="width:100%;justify-content:center" onclick="saveBudget()">Save Budget</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Spend by Genre</span></div>
+          <div class="card-body" id="genreSpend" style="font-size:0.82rem;color:var(--muted)">No data yet — confirm bookings to see breakdowns.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ FIND ARTISTS -->
+  <div class="page-content" id="page-artists">
+    <div class="search-bar">
+      <input class="search-input" id="artistSearch" placeholder="🔍 Search by name, genre, city..." oninput="filterArtists()">
+      <select class="search-select" id="genreFilter" onchange="filterArtists()">
+        <option value="">All Genres</option>
+        <option>Bollywood</option><option>Punjabi</option><option>Hip-Hop</option>
+        <option>Rock</option><option>Classical</option><option>Jazz</option><option>EDM</option>
+      </select>
+      <select class="search-select" id="cityFilter" onchange="filterArtists()">
+        <option value="">All Cities</option>
+        <option>Mumbai</option><option>Delhi</option><option>Bengaluru</option>
+        <option>Pune</option><option>Hyderabad</option><option>Chennai</option>
+      </select>
+    </div>
+    <div class="artist-grid" id="artistGrid"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SAVED / FOLLOWING -->
+  <div class="page-content" id="page-saved">
+    <div style="margin-bottom:1.5rem">
+      <div style="font-family:var(--head);font-size:1.3rem;font-weight:800;letter-spacing:-.5px;margin-bottom:.25rem">Following</div>
+      <div style="font-size:.85rem;color:var(--muted)">Artists and organisers you've saved. Click any card to view their full profile.</div>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap" id="followingFilters">
+      <button onclick="filterFollowing('all',this)" class="tb-btn tb-teal">All</button>
+      <button onclick="filterFollowing('artist',this)" class="tb-btn tb-ghost">🎤 Artists</button>
+      <button onclick="filterFollowing('organiser',this)" class="tb-btn tb-ghost">🎪 Organisers</button>
+    </div>
+    <div id="followingGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ PROFILE -->
+  <div class="page-content" id="page-profile">
+    <div class="form-section">
+      <div class="form-section-head">
+        <div class="fsh-icon teal">🏢</div>
+        <div><div class="fsh-title">Organisation Info</div><div class="fsh-sub">How you appear to artists</div></div>
+      </div>
+      <div class="form-body">
+        <div class="frow2 fgroup">
+          <div><label class="flabel">Your Name</label><input class="finput" id="pName" placeholder="Full name" oninput="markUnsaved()"></div>
+          <div><label class="flabel">Organisation Name</label><input class="finput" id="pOrgName" placeholder="Company / Brand name" oninput="markUnsaved()"></div>
+        </div>
+        <div class="frow2 fgroup">
+          <div><label class="flabel">Email</label><input class="finput" id="pEmail" type="email" placeholder="you@company.com" oninput="markUnsaved()"></div>
+          <div><label class="flabel">Phone</label><input class="finput" id="pPhone" placeholder="+91 98765 43210" oninput="markUnsaved()"></div>
+        </div>
+        <div class="frow2 fgroup">
+          <div><label class="flabel">City</label><input class="finput" id="pCity" placeholder="Mumbai, Delhi..." oninput="markUnsaved()"></div>
+          <div><label class="flabel">Organisation Type</label>
+            <select class="finput" id="pOrgType" onchange="markUnsaved()" style="appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C0B0A0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 1rem center">
+              <option value="">Select type</option>
+              <option>Event Management Company</option><option>Club / Venue</option><option>Corporate</option>
+              <option>Wedding Planner</option><option>College / Institution</option><option>Individual</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="frow2 fgroup">
+          <div><label class="flabel">Website</label><input class="finput" id="pWebsite" placeholder="https://yourcompany.com" oninput="markUnsaved()"></div>
+          <div><label class="flabel">GST Number (optional)</label><input class="finput" id="pGst" placeholder="27AAPFU0939F1ZV" oninput="markUnsaved()"></div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">About / Description</label>
+          <textarea class="finput" id="pBio" rows="3" placeholder="Tell artists about your events and company..." oninput="markUnsaved()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-head">
+        <div class="fsh-icon orange">🎭</div>
+        <div><div class="fsh-title">Event Preferences</div><div class="fsh-sub">What kind of events do you organize?</div></div>
+      </div>
+      <div class="form-body">
+        <div class="frow2 fgroup">
+          <div><label class="flabel">Events Per Year</label>
+            <select class="finput" id="pEventsPerYear" onchange="markUnsaved()" style="appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C0B0A0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 1rem center">
+              <option value="">Select range</option>
+              <option>1-5</option><option>5-12</option><option>12-24</option><option>24-50</option><option>50+</option>
+            </select>
+          </div>
+          <div><label class="flabel">Typical Budget Range</label>
+            <select class="finput" id="pBudgetRange" onchange="markUnsaved()" style="appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C0B0A0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 1rem center">
+              <option value="">Select range</option>
+              <option>Under ₹25,000</option><option>₹25,000 – ₹1,00,000</option>
+              <option>₹1,00,000 – ₹5,00,000</option><option>₹5,00,000+</option>
+            </select>
+          </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Preferred Genres</label>
+          <div class="ms-wrap" id="preferredGenres"></div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Venue Types</label>
+          <div class="ms-wrap" id="venueTypes"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="save-bar">
+      <div class="save-bar-msg">
+        <span class="unsaved-dot" id="unsavedDot"></span>
+        <span id="saveMsg">All changes saved</span>
+      </div>
+      <button class="tb-btn tb-teal" onclick="saveProfile()">💾 Save Profile</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SETTINGS -->
+  <div class="page-content" id="page-settings">
+    <div class="grid-2">
+      <div>
+        <div class="form-section">
+          <div class="form-section-head">
+            <div class="fsh-icon teal">🔒</div>
+            <div><div class="fsh-title">Change Password</div></div>
+          </div>
+          <div class="form-body">
+            <div class="fgroup"><label class="flabel">Current Password</label><input class="finput" id="curPwd" type="password" placeholder="••••••••"></div>
+            <div class="fgroup"><label class="flabel">New Password</label><input class="finput" id="newPwd" type="password" placeholder="••••••••"></div>
+            <div class="fgroup"><label class="flabel">Confirm Password</label><input class="finput" id="conPwd" type="password" placeholder="••••••••"></div>
+            <button class="tb-btn tb-teal" onclick="changePassword()">Update Password</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="form-section">
+          <div class="form-section-head">
+            <div class="fsh-icon orange">🔔</div>
+            <div><div class="fsh-title">Notifications</div></div>
+          </div>
+          <div class="form-body">
+            <div style="display:flex;flex-direction:column;gap:1rem">
+              <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+                <span style="font-size:0.85rem">Artist responses to enquiries</span>
+                <input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--teal)">
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+                <span style="font-size:0.85rem">Booking confirmations</span>
+                <input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--teal)">
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+                <span style="font-size:0.85rem">New artist recommendations</span>
+                <input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--teal)">
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+                <span style="font-size:0.85rem">Marketing & tips</span>
+                <input type="checkbox" style="width:16px;height:16px;accent-color:var(--teal)">
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-section" style="border-color:rgba(255,45,120,0.25)">
+          <div class="form-section-head">
+            <div class="fsh-icon" style="background:rgba(255,45,120,0.1)">⚠️</div>
+            <div><div class="fsh-title" style="color:var(--pink)">Danger Zone</div></div>
+          </div>
+          <div class="form-body">
+            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem">Deleting your account is permanent.</div>
+            <button class="tb-btn" style="background:rgba(255,45,120,0.1);color:var(--pink);border:1px solid rgba(255,45,120,0.2)">Delete Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- NEW EVENT MODAL -->
+<div class="modal-overlay" id="newEventModal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">✨ Create New Event</span>
+      <button class="modal-close" onclick="closeNewEventModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fgroup"><label class="flabel">Event Name *</label><input class="finput" id="evName" placeholder="e.g. Pulse Nightclub — Saturday Night"></div>
+      <div class="frow2 fgroup">
+        <div><label class="flabel">Event Date *</label><input class="finput" id="evDate" type="date"></div>
+        <div><label class="flabel">Venue / Location *</label><input class="finput" id="evVenue" placeholder="Club, city"></div>
+      </div>
+      <div class="frow2 fgroup">
+        <div><label class="flabel">Event Type</label>
+          <select class="finput" id="evType" style="appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C0B0A0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 1rem center">
+            <option>Club Night</option><option>Corporate</option><option>Wedding</option>
+            <option>College Festival</option><option>Concert</option><option>Private Party</option><option>Other</option>
+          </select>
+        </div>
+        <div><label class="flabel">Budget (₹)</label><input class="finput" id="evBudget" type="number" placeholder="25000"></div>
+      </div>
+      <div class="fgroup"><label class="flabel">Description</label><textarea class="finput" id="evDesc" rows="3" placeholder="Tell artists about the event, crowd, vibe..."></textarea></div>
+      <div class="fgroup">
+        <label class="flabel">Genres Needed</label>
+        <div class="ms-wrap" id="evGenreTags"></div>
+      </div>
+      <div style="display:flex;gap:0.7rem;margin-top:1rem">
+        <button class="tb-btn tb-ghost" onclick="createEvent('draft')" style="flex:1;justify-content:center">Save as Draft</button>
+        <button class="tb-btn tb-teal" onclick="createEvent('upcoming')" style="flex:1;justify-content:center">Publish Event ✨</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="floox-auth.js"></script>
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const GENRES = ['Bollywood','Punjabi','Hip-Hop','Rock','Classical','Jazz','EDM','Folk','Sufi','R&B','Pop','Indie'];
+const VENUES = ['Club / Lounge','Concert Hall','Outdoor Stage','Hotel Banquet','Restaurant','Private Venue','Corporate Space'];
+
+const demoEvents = [
+  {id:1, name:'Pulse Nightclub — Saturday Night', date:'2026-06-14', venue:'Pulse, Mumbai', type:'Club Night', budget:30000, status:'upcoming', artistsBooked:2},
+  {id:2, name:'TechSummit 2026 Afterparty', date:'2026-06-22', venue:'JW Marriott, Bengaluru', type:'Corporate', budget:80000, status:'upcoming', artistsBooked:1},
+  {id:3, name:'NYE Gala 2027', date:'2026-12-31', venue:'TBA, Goa', type:'Concert', budget:150000, status:'draft', artistsBooked:0},
+  {id:4, name:'Spring Music Festival', date:'2026-04-10', venue:'Mahalaxmi, Mumbai', type:'Concert', budget:200000, status:'completed', artistsBooked:5},
+  {id:5, name:'IIT Techfest Afterparty', date:'2026-05-10', venue:'IIT Campus, Mumbai', type:'College Festival', budget:40000, status:'completed', artistsBooked:2},
+];
+
+const demoBookings = [
+  {id:1, artist:'DJ Arjun', event:'Pulse Nightclub — Saturday Night', date:'2026-06-14', fee:18000, status:'confirmed', city:'Mumbai'},
+  {id:2, artist:'Neha Saxena', event:'TechSummit 2026 Afterparty', date:'2026-06-22', fee:25000, status:'pending', city:'Bengaluru'},
+  {id:3, artist:'The Jazz Collective', event:'NYE Gala 2027', date:'2026-12-31', fee:45000, status:'pending', city:'Goa'},
+  {id:4, artist:'Aditya Kumar', event:'Spring Music Festival', date:'2026-04-10', fee:15000, status:'completed', city:'Mumbai'},
+  {id:5, artist:'Priya Sharma', event:'IIT Techfest', date:'2026-05-10', fee:8000, status:'completed', city:'Mumbai'},
+];
+
+const demoArtists = [
+  {id:'da1', name:'DJ Arjun', stage:'DJ Arjun', type:'artist', performerType:'DJ', city:'Mumbai', genres:['EDM','Bollywood'], minFee:10000, maxFee:35000, avatar:'A', color:'linear-gradient(135deg,#FF5C00,#FF2D78)', rating:4.8, reviews:52, photo:'https://images.unsplash.com/photo-1493676304819-0d7a8d026dcf?w=500&q=80&auto=format&fit=crop', bio:'Mumbai\'s top DJ with 5+ years of experience. Specialises in Bollywood remixes and EDM sets for clubs and corporate events.', tags:['dj','edm','bollywood','club','corporate','mumbai']},
+  {id:'da2', name:'Neha Saxena', stage:'Neha Saxena Live', type:'artist', performerType:'Solo Vocalist', city:'Bangalore', genres:['Pop','Indie'], minFee:15000, maxFee:50000, avatar:'N', color:'linear-gradient(135deg,#00C2A8,#7C3AED)', rating:4.9, reviews:38, photo:'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=500&q=80&auto=format&fit=crop', bio:'Award-winning indie-pop vocalist based in Bangalore. Known for soulful live performances at concerts and private events.', tags:['pop','indie','vocalist','singer','bangalore','concert']},
+  {id:'da3', name:'The Jazz Collective', stage:'The Jazz Collective', type:'artist', performerType:'Band', city:'Delhi', genres:['Jazz','Classical'], minFee:25000, maxFee:80000, avatar:'J', color:'linear-gradient(135deg,#7C3AED,#FF2D78)', rating:4.7, reviews:29, photo:'https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=500&q=80&auto=format&fit=crop', bio:'Delhi\'s finest jazz ensemble. 6-piece band performing original compositions and jazz standards at premium venues.', tags:['jazz','classical','band','live music','premium','delhi']},
+  {id:'da4', name:'Aditya Kumar', stage:'Aditya MC', type:'artist', performerType:'Emcee / Host', city:'Mumbai', genres:['Hip-Hop','Bollywood'], minFee:8000, maxFee:20000, avatar:'A', color:'linear-gradient(135deg,#FFD600,#FF5C00)', rating:4.6, reviews:61, photo:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&q=80&auto=format&fit=crop', bio:'Professional emcee and event host with 200+ events. Keeps crowds engaged at corporate events, weddings and college fests.', tags:['emcee','host','hip-hop','corporate','wedding','college']},
+  {id:'da5', name:'Priya Sharma', stage:'Priya Unplugged', type:'artist', performerType:'Solo Vocalist', city:'Pune', genres:['Sufi','Folk'], minFee:12000, maxFee:40000, avatar:'P', color:'linear-gradient(135deg,#22C55E,#00C2A8)', rating:4.8, reviews:44, photo:'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=500&q=80&auto=format&fit=crop', bio:'Sufi and folk singer with a distinctive voice. Creates intimate, soulful atmospheres perfect for weddings and cultural events.', tags:['sufi','folk','vocalist','wedding','cultural','pune']},
+  {id:'da6', name:'Rahul Beats', stage:'RB Drops', type:'artist', performerType:'DJ', city:'Hyderabad', genres:['EDM','Hip-Hop'], minFee:20000, maxFee:60000, avatar:'R', color:'linear-gradient(135deg,#FF2D78,#7C3AED)', rating:4.5, reviews:33, photo:'https://images.unsplash.com/photo-1468164016595-6108e4c60c8b?w=500&q=80&auto=format&fit=crop', bio:'Hyderabad-based DJ and music producer specialising in EDM and Hip-Hop. Known for high-energy club nights and festival sets.', tags:['dj','edm','hip-hop','festival','nightlife','hyderabad']},
+];
+
+const demoActivity = [
+  {icon:'✅', type:'green', text:'Booking confirmed — <strong>DJ Arjun</strong> for Pulse Nightclub', time:'1h ago'},
+  {icon:'💬', type:'teal', text:'<strong>Neha Saxena</strong> responded to your enquiry', time:'3h ago'},
+  {icon:'🎪', type:'purple', text:'Event created — <strong>TechSummit 2026 Afterparty</strong>', time:'1d ago'},
+  {icon:'❤️', type:'orange', text:'You saved <strong>The Jazz Collective</strong> to your list', time:'2d ago'},
+  {icon:'💸', type:'teal', text:'Payment of <strong>₹8,000</strong> confirmed for Priya Sharma', time:'5d ago'},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let user = null;
+let savedArtists = [];
+let evSelectedGenres = [];
+let prefGenres = [];
+let selVenueTypes = [];
+let allEvents = [...demoEvents];
+let unsaved = false;
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof FLOOX !== 'undefined') {
+    user = FLOOX.getUser();
+    if (!user) { window.location.href = 'floox-login.html'; return; }
+    if (user.role !== 'organiser') { window.location.href = 'index.html'; return; }
+  } else {
+    user = { name:'Rahul Mehta', role:'organiser', email:'rahul@events.com', org_name:'Mehta Events Pvt Ltd', city:'Mumbai', org_type:'Event Management Company', preferred_genres:['Bollywood','EDM'], venue_types:['Club / Lounge','Concert Hall'] };
+  }
+  populateUI();
+  renderOverview();
+  renderAllEvents();
+  renderAllBookings();
+  renderArtists();
+  renderSpend();
+  prefillForm();
+  initModalTags();
+  initProfileTags();
+});
+
+function populateUI() {
+  const name = user.name || 'Organiser';
+  document.getElementById('sbUsername').textContent = name;
+  document.getElementById('sbOrgName').textContent = user.org_name || 'Your Organisation';
+  document.getElementById('sbAvatar').textContent = name.charAt(0).toUpperCase();
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────────────
+function renderOverview() {
+  const upcoming = allEvents.filter(e => e.status === 'upcoming').slice(0,3);
+  document.getElementById('upcomingEventsOverview').innerHTML = upcoming.length
+    ? upcoming.map(eventHTML).join('')
+    : '<div style="text-align:center;color:var(--muted);font-size:0.85rem;padding:1.5rem">No upcoming events.<br><button class="tb-btn tb-ghost" style="margin-top:0.8rem" onclick="openNewEventModal()">Create one →</button></div>';
+
+  const recent = demoBookings.slice(0,3);
+  document.getElementById('recentBookingsOverview').innerHTML = recent.map(bookingHTML).join('');
+
+  document.getElementById('activityList').innerHTML = demoActivity.map(a => `
+    <div class="activity-item">
+      <div class="act-icon ${a.type}">${a.icon}</div>
+      <div class="act-text">${a.text}</div>
+      <div class="act-time">${a.time}</div>
+    </div>`).join('');
+
+  const completed = demoBookings.filter(b => b.status === 'completed');
+  const total = completed.reduce((s,b)=>s+b.fee,0);
+  document.getElementById('totalSpent').textContent = '₹' + total.toLocaleString();
+  document.getElementById('totalEvents').textContent = allEvents.length;
+  document.getElementById('totalArtistsBooked').textContent = demoBookings.length;
+}
+
+// ── EVENTS ────────────────────────────────────────────────────────────────────
+function eventHTML(e) {
+  const d = new Date(e.date);
+  return `<div class="event-item">
+    <div class="ev-date ${e.status}">
+      <span class="ev-dd">${d.getDate()}</span>
+      <span class="ev-mm">${d.toLocaleString('default',{month:'short'})}</span>
+    </div>
+    <div class="ev-info">
+      <div class="ev-title">${e.name}</div>
+      <div class="ev-meta">${e.venue} <span class="ev-dot"></span> ${e.type} <span class="ev-dot"></span> <span class="ev-badge ${e.status}">${e.status}</span> <span class="ev-dot"></span> ${e.artistsBooked} artist${e.artistsBooked!==1?'s':''}</div>
+    </div>
+    <div class="ev-actions">
+      <button class="ev-action-btn" onclick="showToast('Finding artists for this event...','info')">Find Artists</button>
+      <button class="ev-action-btn primary" onclick="showToast('Event details coming soon','info')">View</button>
+    </div>
+  </div>`;
+}
+
+function renderAllEvents(filter='all') {
+  const filtered = filter === 'all' ? allEvents : allEvents.filter(e => e.status === filter);
+  document.getElementById('eventsListFull').innerHTML = filtered.length
+    ? `<div class="card"><div class="card-body">${filtered.map(eventHTML).join('')}</div></div>`
+    : '<div style="text-align:center;color:var(--muted);font-size:0.85rem;padding:3rem">No events found</div>';
+}
+
+function filterEvents(f) {
+  ['All','Upcoming','Draft','Completed'].forEach(s => {
+    const el = document.getElementById('fev'+s);
+    if (el) { el.classList.remove('tb-teal'); el.classList.add('tb-ghost'); }
+  });
+  const key = f.charAt(0).toUpperCase() + f.slice(1);
+  const el = document.getElementById('fev'+key);
+  if (el) { el.classList.add('tb-teal'); el.classList.remove('tb-ghost'); }
+  renderAllEvents(f);
+}
+
+// ── BOOKINGS ──────────────────────────────────────────────────────────────────
+function bookingHTML(b) {
+  const d = new Date(b.date);
+  const isPast = b.status === 'completed';
+  return `<div class="booking-item">
+    <div class="bi-date ${isPast?'past':'upcoming'}">
+      <span class="bi-dd">${d.getDate()}</span>
+      <span class="bi-mm">${d.toLocaleString('default',{month:'short'})}</span>
+    </div>
+    <div class="bi-info">
+      <div class="bi-title">${b.artist} — ${b.event}</div>
+      <div class="bi-meta">${b.city} <span class="bi-dot"></span> <span class="bi-badge ${b.status}">${b.status}</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0">
+      <div class="bi-fee">₹${b.fee.toLocaleString()}</div>
+      ${b.status==='pending' ? `<button class="ev-action-btn primary" onclick="confirmBooking(${b.id})">Confirm</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderAllBookings(filter='all') {
+  const filtered = filter==='all' ? demoBookings : demoBookings.filter(b=>b.status===filter);
+  document.getElementById('allBookingsList').innerHTML = `<div style="padding:1rem">${filtered.map(bookingHTML).join('') || '<div style="text-align:center;color:var(--muted);font-size:0.85rem;padding:1.5rem">No bookings found</div>'}</div>`;
+}
+
+function filterBookings(f) {
+  ['All','Pending','Confirmed','Completed'].forEach(s => {
+    const el = document.getElementById('fb'+s);
+    if (el) { el.classList.remove('tb-teal'); el.classList.add('tb-ghost'); }
+  });
+  const el = document.getElementById('fb'+f.charAt(0).toUpperCase()+f.slice(1));
+  if (el) { el.classList.add('tb-teal'); el.classList.remove('tb-ghost'); }
+  renderAllBookings(f);
+}
+
+function confirmBooking(id) { showToast('Booking confirmed! ✅', 'success'); }
+
+// ── ARTISTS ───────────────────────────────────────────────────────────────────
+function renderArtists(filtered=demoArtists) {
+  const likes = JSON.parse(localStorage.getItem('floox_likes') || '{}');
+  document.getElementById('artistGrid').innerHTML = filtered.map(a => {
+    const isLiked = !!likes[a.id];
+    const feeStr  = `₹${a.minFee.toLocaleString()} – ₹${a.maxFee.toLocaleString()}`;
+    return `
+    <div class="artist-card" onclick="openArtistProfile('${a.id}')">
+      <div class="ac-cover" style="position:relative;overflow:hidden">
+        ${a.photo ? `<img src="${a.photo}" alt="${a.stage}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.2);" loading="lazy">` : ''}
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%)"></div>
+        <div class="ac-avatar" style="position:relative;z-index:2">${a.photo ? '' : a.avatar}</div>
+        <button class="ac-heart-btn ${isLiked ? 'liked' : ''}" data-id="${a.id}"
+          onclick="event.stopPropagation(); toggleArtistLike('${a.id}')"
+          title="${isLiked ? 'Unfollow' : 'Follow'}"
+          style="position:absolute;top:.65rem;right:.65rem;z-index:3;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.25);font-size:.9rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s">
+          ${isLiked ? '❤️' : '🤍'}
+        </button>
+        <div style="position:absolute;bottom:.55rem;left:.65rem;z-index:3;font-family:var(--head);font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:.18rem .55rem;border-radius:100px;background:rgba(0,194,168,.25);border:1px solid rgba(0,194,168,.4);color:#00E8CC">${a.performerType}</div>
+      </div>
+      <div class="ac-body">
+        <div class="ac-name">${a.stage}</div>
+        <div class="ac-type">📍 ${a.city}</div>
+        <div class="ac-tags">${a.genres.map(g=>`<span class="ac-tag">${g}</span>`).join('')}</div>
+        <div class="ac-fee">💰 ${feeStr}</div>
+        <div style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;color:var(--muted);margin-bottom:.5rem">
+          <span style="color:#FFD600">${'★'.repeat(Math.round(a.rating))}</span>
+          <span>${a.rating} (${a.reviews} reviews)</span>
+        </div>
+        <div class="ac-foot">
+          <button class="ac-btn" onclick="event.stopPropagation(); openArtistProfile('${a.id}')">View Profile</button>
+          <button class="ac-btn book" onclick="event.stopPropagation(); window.location.href='floox-contact.html?artist=${encodeURIComponent(a.stage)}'">Book Now</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted)">No artists found for your search.</div>';
+}
+
+function filterArtists() {
+  const q     = document.getElementById('artistSearch').value.toLowerCase();
+  const genre = document.getElementById('genreFilter').value;
+  const city  = document.getElementById('cityFilter').value;
+  const filtered = demoArtists.filter(a => {
+    const matchQ = !q || a.stage.toLowerCase().includes(q) || a.genres.join(' ').toLowerCase().includes(q) || a.city.toLowerCase().includes(q) || (a.bio||'').toLowerCase().includes(q);
+    const matchG = !genre || a.genres.includes(genre);
+    const matchC = !city  || a.city === city;
+    return matchQ && matchG && matchC;
+  });
+  renderArtists(filtered);
+}
+
+function toggleArtistLike(id) {
+  const likes = JSON.parse(localStorage.getItem('floox_likes') || '{}');
+  const a = demoArtists.find(x => x.id === id);
+  if (!a) return;
+  if (likes[id]) {
+    delete likes[id];
+    showToast(`Unfollowed ${a.stage}`, 'info');
+  } else {
+    likes[id] = {
+      id: a.id, name: a.stage, type: 'artist',
+      genre: a.genres[0] || '', city: a.city,
+      photo: a.photo || '', emoji: '🎤',
+      rating: a.rating, reviews: a.reviews,
+      fee: `₹${a.minFee.toLocaleString()} – ₹${a.maxFee.toLocaleString()}`,
+      tags: a.tags || a.genres, bio: a.bio || '',
+      badge: 'ver', badgeLabel: 'Verified',
+      performerType: a.performerType || a.type,
+      ts: Date.now()
+    };
+    showToast(`${a.stage} saved to Following ❤️`, 'success');
+  }
+  localStorage.setItem('floox_likes', JSON.stringify(likes));
+  // Update all heart buttons for this artist
+  document.querySelectorAll(`.ac-heart-btn[data-id="${id}"]`).forEach(btn => {
+    btn.textContent = likes[id] ? '❤️' : '🤍';
+    btn.classList.toggle('liked', !!likes[id]);
+  });
+  // Refresh saved page badge
+  updateFollowingBadge();
+}
+
+// Legacy saveArtist kept for compatibility
+function saveArtist(id, name) { toggleArtistLike(String(id)); }
+
+function renderSavedArtists() { renderFollowing('all'); }
+
+function updateFollowingBadge() {
+  const count = Object.keys(JSON.parse(localStorage.getItem('floox_likes') || '{}')).length;
+  const b = document.getElementById('followingBadge');
+  if (b) { b.style.display = count > 0 ? 'inline' : 'none'; b.textContent = count; }
+}
+
+function openArtistProfile(id) {
+  const a = demoArtists.find(x => x.id === id);
+  if (!a) return;
+  const item = {
+    id: a.id, name: a.stage, type: 'artist',
+    genre: a.genres.join(' / '), city: a.city,
+    photo: a.photo || '', emoji: '🎤',
+    rating: a.rating, reviews: a.reviews,
+    fee: `₹${a.minFee.toLocaleString()} – ₹${a.maxFee.toLocaleString()}`,
+    tags: a.tags || a.genres, bio: a.bio || '',
+    performerType: a.performerType || a.type,
+    ts: Date.now()
+  };
+  openProfileModal(item);
+}
+
+// ── FOLLOWING / SAVED ──────────────────────────────────────────────────────────
+let followingFilterType = 'all';
+
+function filterFollowing(type, btn) {
+  followingFilterType = type;
+  document.querySelectorAll('#followingFilters button').forEach(b => {
+    b.classList.remove('tb-teal'); b.classList.add('tb-ghost');
+  });
+  btn.classList.add('tb-teal'); btn.classList.remove('tb-ghost');
+  renderFollowing(type);
+}
+
+function renderFollowing(filter) {
+  const grid  = document.getElementById('followingGrid');
+  if (!grid) return;
+  const likes = JSON.parse(localStorage.getItem('floox_likes') || '{}');
+  let items   = Object.values(likes);
+  if (filter && filter !== 'all') items = items.filter(x => x.type === filter);
+  items.sort((a,b) => (b.ts||0) - (a.ts||0));
+
+  updateFollowingBadge();
+
+  if (!items.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:4rem 2rem;color:var(--muted)">
+      <div style="font-size:2.5rem;margin-bottom:1rem">❤️</div>
+      <div style="font-size:.9rem;line-height:1.7;margin-bottom:1.2rem">
+        ${filter==='all' ? "You haven't followed anyone yet." : "No "+filter+"s followed yet."}<br>
+        Browse artists and tap 🤍 to save them here.
+      </div>
+      <button class="tb-btn tb-teal" onclick="showPage('artists')">Browse Artists →</button>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map(item => {
+    const isOrg = item.type === 'organiser';
+    return `
+    <div onclick="openProfileModal(${JSON.stringify(item).replace(/"/g,'&quot;')})"
+      style="background:#fff;border:1.5px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .25s"
+      onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 40px rgba(0,0,0,.1)';this.style.borderColor='var(--teal)'"
+      onmouseout="this.style.transform='';this.style.boxShadow='';this.style.borderColor='var(--border)'">
+      <div style="position:relative;aspect-ratio:16/9;overflow:hidden;background:${isOrg?'linear-gradient(135deg,rgba(0,194,168,.15),rgba(124,58,237,.1))':'linear-gradient(135deg,rgba(255,92,0,.12),rgba(255,45,120,.08))'}">
+        ${item.photo ? `<img src="${item.photo}" style="width:100%;height:100%;object-fit:cover;filter:saturate(1.2)" loading="lazy">` : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.8rem">${item.emoji||'🎤'}</div>`}
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.65) 0%,transparent 60%)"></div>
+        <span style="position:absolute;top:.6rem;right:.6rem;font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:.18rem .55rem;border-radius:100px;backdrop-filter:blur(8px);${isOrg?'background:rgba(255,214,0,.2);border:1px solid rgba(255,214,0,.4);color:#FFD600':'background:rgba(0,194,168,.2);border:1px solid rgba(0,194,168,.4);color:#00C2A8'}">${isOrg?'🎪 Organiser':'🎤 Artist'}</span>
+      </div>
+      <div style="padding:.9rem 1rem">
+        <div style="font-family:var(--head);font-size:.92rem;font-weight:800;letter-spacing:-.3px;margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">${item.name}</div>
+        <div style="font-size:.73rem;color:var(--muted);margin-bottom:.75rem">${item.city?'📍 '+item.city:''}${item.genre?' · '+item.genre:''}</div>
+        <div style="display:flex;gap:.5rem">
+          <a href="${isOrg?'floox-contact.html?organiser=':'floox-contact.html?artist='}${encodeURIComponent(item.name)}" onclick="event.stopPropagation()" style="flex:1;font-family:var(--head);font-size:.72rem;font-weight:700;padding:.4rem;border-radius:8px;border:1.5px solid var(--teal);color:var(--teal);text-align:center;text-decoration:none">${isOrg?'Contact':'Book'}</a>
+          <button onclick="event.stopPropagation();unfollowItem('${item.id}')" style="font-family:var(--head);font-size:.72rem;font-weight:700;padding:.4rem .7rem;border-radius:8px;border:1.5px solid rgba(255,45,120,.3);color:var(--pink);background:transparent;cursor:pointer">Unfollow</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function unfollowItem(id) {
+  const likes = JSON.parse(localStorage.getItem('floox_likes') || '{}');
+  const name  = likes[id]?.name || '';
+  delete likes[id];
+  localStorage.setItem('floox_likes', JSON.stringify(likes));
+  renderFollowing(followingFilterType);
+  renderArtists(); // refresh hearts in artist grid
+  if (name) showToast(`Unfollowed ${name}`, 'info');
+}
+
+// ── PROFILE MODAL ───────────────────────────────────────────────────────────────
+(function buildProfileModal() {
+  if (document.getElementById('flooxProfileModal')) return;
+  const el = document.createElement('div');
+  el.id = 'flooxProfileModal';
+  el.style.cssText = 'position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,.75);backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;padding:1.2rem';
+  el.innerHTML = `
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:24px;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;position:relative;box-shadow:0 32px 80px rgba(0,0,0,.2);animation:pmIn .35s cubic-bezier(.34,1.56,.64,1)">
+      <style>@keyframes pmIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}</style>
+      <div id="fpmCover" style="position:relative;height:200px;overflow:hidden;border-radius:24px 24px 0 0;background:linear-gradient(135deg,rgba(0,194,168,.15),rgba(124,58,237,.12))">
+        <img id="fpmCoverImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;filter:saturate(1.3) brightness(.85)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(255,251,244,1) 0%,transparent 55%)"></div>
+        <div id="fpmAvatar" style="position:absolute;bottom:-36px;left:1.8rem;width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;font-size:1.9rem;border:3px solid #fff;overflow:hidden;z-index:4;box-shadow:0 4px 16px rgba(0,0,0,.15)">
+          <span id="fpmEmoji">🎤</span>
+          <img id="fpmAvatarImg" src="" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+        </div>
+        <button onclick="closeProfileModal()" style="position:absolute;top:1rem;right:1rem;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border:1px solid var(--border);color:var(--muted);font-size:1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;transition:all .2s">✕</button>
+      </div>
+      <div style="padding:3rem 2rem 2rem">
+        <div id="fpmName" style="font-family:var(--head);font-size:1.5rem;font-weight:800;letter-spacing:-.8px;color:var(--text);margin-bottom:.3rem"></div>
+        <div id="fpmChip" style="display:inline-flex;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:.22rem .7rem;border-radius:100px;margin-bottom:1rem"></div>
+        <p id="fpmBio" style="display:none;font-size:.88rem;color:var(--muted);line-height:1.75;margin-bottom:1.2rem"></p>
+        <div id="fpmTags" style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:1.2rem"></div>
+        <div id="fpmMeta" style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:1.6rem"></div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+          <a id="fpmBook" href="#" style="flex:1;font-family:var(--head);font-weight:800;font-size:.88rem;padding:.88rem;border-radius:12px;background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff;border:none;text-align:center;text-decoration:none;display:block;box-shadow:0 5px 16px rgba(0,194,168,.3)">📩 Book / Enquire</a>
+          <button id="fpmFollowBtn" onclick="toggleFollowFromModal()" style="font-family:var(--head);font-weight:700;font-size:.88rem;padding:.88rem 1.4rem;border-radius:12px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s">🤍 Follow</button>
+        </div>
+      </div>
+    </div>`;
+  el.addEventListener('click', e => { if (e.target === el) closeProfileModal(); });
+  document.body.appendChild(el);
+})();
+
+let currentModalItem = null;
+
+function openProfileModal(item) {
+  if (!item) return;
+  if (typeof item === 'string') { try { item = JSON.parse(item); } catch { return; } }
+  currentModalItem = item;
+  const isOrg = item.type === 'organiser';
+  const el = document.getElementById('flooxProfileModal');
+
+  const cImg = document.getElementById('fpmCoverImg');
+  const aImg = document.getElementById('fpmAvatarImg');
+  if (item.photo) {
+    cImg.src = item.photo; cImg.style.display = 'block';
+    aImg.src = item.photo; aImg.style.display = 'block';
+    document.getElementById('fpmEmoji').style.display = 'none';
+  } else {
+    cImg.style.display = 'none'; aImg.style.display = 'none';
+    document.getElementById('fpmEmoji').textContent = item.emoji||(isOrg?'🎪':'🎤');
+    document.getElementById('fpmEmoji').style.display = 'inline';
+  }
+  document.getElementById('fpmName').textContent = item.name||'';
+  const chip = document.getElementById('fpmChip');
+  chip.textContent = isOrg ? '🎪 Event Organiser' : '🎤 '+(item.performerType||'Artist');
+  chip.style.cssText = isOrg
+    ? 'display:inline-flex;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:.22rem .7rem;border-radius:100px;background:rgba(255,214,0,.12);border:1px solid rgba(255,214,0,.25);color:#B8860B'
+    : 'display:inline-flex;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:.22rem .7rem;border-radius:100px;background:rgba(0,194,168,.1);border:1px solid rgba(0,194,168,.25);color:var(--teal)';
+
+  const bio = item.bio||item.desc||'';
+  const bioEl = document.getElementById('fpmBio');
+  bioEl.textContent = bio; bioEl.style.display = bio ? 'block' : 'none';
+
+  const tags = item.tags||[];
+  document.getElementById('fpmTags').innerHTML = tags.slice(0,6).map(t =>
+    `<span style="font-size:.72rem;font-weight:600;padding:.26rem .75rem;border-radius:100px;background:rgba(0,194,168,.08);border:1px solid rgba(0,194,168,.18);color:var(--teal)">${t.charAt(0).toUpperCase()+t.slice(1)}</span>`
+  ).join('');
+
+  const meta = [];
+  if (item.city)    meta.push(['City',    '📍 '+item.city]);
+  if (item.rating)  meta.push(['Rating',  '⭐ '+item.rating+' ('+(item.reviews||0)+' reviews)']);
+  if (item.fee)     meta.push(['Fee Range','💰 '+item.fee]);
+  if (item.genre)   meta.push(['Genre',   '🎵 '+item.genre]);
+  document.getElementById('fpmMeta').innerHTML = meta.map(([l,v]) =>
+    `<div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:.75rem 1rem"><div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.2rem">${l}</div><div style="font-family:var(--head);font-size:.88rem;font-weight:700;color:var(--text)">${v}</div></div>`
+  ).join('');
+
+  document.getElementById('fpmBook').href = isOrg
+    ? `floox-contact.html?organiser=${encodeURIComponent(item.name)}`
+    : `floox-contact.html?artist=${encodeURIComponent(item.name)}`;
+
+  const liked = JSON.parse(localStorage.getItem('floox_likes') || '{}');
+  const followBtn = document.getElementById('fpmFollowBtn');
+  if (liked[item.id]) {
+    followBtn.textContent = '❤️ Following';
+    followBtn.style.borderColor = 'rgba(255,45,120,.35)';
+    followBtn.style.color = 'var(--pink)';
+  } else {
+    followBtn.textContent = '🤍 Follow';
+    followBtn.style.borderColor = 'var(--border)';
+    followBtn.style.color = 'var(--muted)';
+  }
+
+  el.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProfileModal() {
+  document.getElementById('flooxProfileModal').style.display = 'none';
+  document.body.style.overflow = '';
+  currentModalItem = null;
+}
+
+function toggleFollowFromModal() {
+  if (!currentModalItem) return;
+  const id    = currentModalItem.id;
+  const likes = JSON.parse(localStorage.getItem('floox_likes') || '{}');
+  const btn   = document.getElementById('fpmFollowBtn');
+  if (likes[id]) {
+    delete likes[id];
+    btn.textContent = '🤍 Follow';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--muted)';
+    showToast('Unfollowed', 'info');
+  } else {
+    likes[id] = { ...currentModalItem, ts: Date.now() };
+    btn.textContent = '❤️ Following';
+    btn.style.borderColor = 'rgba(255,45,120,.35)';
+    btn.style.color = 'var(--pink)';
+    showToast(`${currentModalItem.name} saved to Following ❤️`, 'success');
+  }
+  localStorage.setItem('floox_likes', JSON.stringify(likes));
+  updateFollowingBadge();
+  renderArtists(); // refresh hearts
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProfileModal(); });
+
+// ── UPDATE showPage to trigger following render + badge on load ──────────────
+const _origShowPage = typeof showPage === 'function' ? showPage : null;
+function showPage(name) {
+  document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-'+name);
+  if (pg) pg.classList.add('active');
+  document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+  if (event && event.currentTarget) event.currentTarget.classList.add('active');
+  if (typeof pageTitles !== 'undefined') {
+    document.getElementById('pageTitle').textContent    = pageTitles[name]||name;
+    document.getElementById('pageSubtitle').textContent = (typeof pageSubs !== 'undefined' ? pageSubs[name] : '')||'';
+  }
+  if (name === 'saved') renderFollowing(followingFilterType);
+  closeSidebar();
+}
+
+// Init badge on load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(updateFollowingBadge, 500);
+});
+function renderSpend() {
+  const completed = demoBookings.filter(b=>b.status==='completed');
+  const total = completed.reduce((s,b)=>s+b.fee,0);
+  const pending = demoBookings.filter(b=>b.status==='pending').reduce((s,b)=>s+b.fee,0);
+  document.getElementById('totalSpentBig').textContent = '₹' + total.toLocaleString();
+  document.getElementById('spendThisMonth').textContent = '₹' + total.toLocaleString();
+  document.getElementById('pendingPayment').textContent = '₹' + pending.toLocaleString();
+  document.getElementById('paymentHistory').innerHTML = completed.map(b => `
+    <div class="booking-item">
+      <div class="bi-info">
+        <div class="bi-title">${b.artist}</div>
+        <div class="bi-meta">${b.event} <span class="bi-dot"></span> <span class="bi-badge completed">Paid</span></div>
+      </div>
+      <div class="bi-fee" style="color:var(--pink)">−₹${b.fee.toLocaleString()}</div>
+    </div>`).join('') || '<div style="text-align:center;color:var(--muted);font-size:0.85rem;padding:1.5rem">No payments yet</div>';
+}
+
+function saveBudget() {
+  const val = parseFloat(document.getElementById('monthlyBudget').value) || 0;
+  if (val) { showToast('Budget saved! ✅', 'success'); }
+  else showToast('Enter a valid budget amount', 'error');
+}
+
+// ── TAGS ──────────────────────────────────────────────────────────────────────
+function initModalTags() {
+  const el = document.getElementById('evGenreTags');
+  el.innerHTML = GENRES.map(g => `<span class="ms-tag" onclick="toggleEvGenre(this,'${g}')">${g}</span>`).join('');
+}
+
+function toggleEvGenre(el, val) {
+  const idx = evSelectedGenres.indexOf(val);
+  if (idx > -1) { evSelectedGenres.splice(idx,1); el.classList.remove('sel'); }
+  else { evSelectedGenres.push(val); el.classList.add('sel'); }
+}
+
+function initProfileTags() {
+  const userPrefGenres = user.preferred_genres || [];
+  const userVenueTypes = user.venue_types || [];
+  prefGenres = [...userPrefGenres];
+  selVenueTypes = [...userVenueTypes];
+
+  const genreEl = document.getElementById('preferredGenres');
+  genreEl.innerHTML = GENRES.map(g => `<span class="ms-tag ${prefGenres.includes(g)?'sel':''}" onclick="togglePrefGenre(this,'${g}')">${g}</span>`).join('');
+
+  const venueEl = document.getElementById('venueTypes');
+  venueEl.innerHTML = VENUES.map(v => `<span class="ms-tag ${selVenueTypes.includes(v)?'sel':''}" onclick="toggleVenueType(this,'${v}')">${v}</span>`).join('');
+}
+
+function togglePrefGenre(el, val) {
+  const idx = prefGenres.indexOf(val);
+  if (idx>-1) { prefGenres.splice(idx,1); el.classList.remove('sel'); }
+  else { prefGenres.push(val); el.classList.add('sel'); }
+  markUnsaved();
+}
+function toggleVenueType(el, val) {
+  const idx = selVenueTypes.indexOf(val);
+  if (idx>-1) { selVenueTypes.splice(idx,1); el.classList.remove('sel'); }
+  else { selVenueTypes.push(val); el.classList.add('sel'); }
+  markUnsaved();
+}
+
+// ── PROFILE ───────────────────────────────────────────────────────────────────
+function prefillForm() {
+  if (!user) return;
+  const sv = (id, val) => { const el=document.getElementById(id); if(el&&val) el.value=val; };
+  sv('pName', user.name); sv('pOrgName', user.org_name); sv('pEmail', user.email);
+  sv('pPhone', user.phone); sv('pCity', user.city); sv('pOrgType', user.org_type);
+  sv('pWebsite', user.website); sv('pGst', user.gst_number); sv('pBio', user.bio);
+  sv('pEventsPerYear', user.events_per_year); sv('pBudgetRange', user.budget_range);
+}
+
+function markUnsaved() {
+  unsaved = true;
+  document.getElementById('unsavedDot').classList.add('show');
+  document.getElementById('saveMsg').textContent = 'Unsaved changes';
+}
+
+async function saveProfile() {
+  const fields = {
+    name: document.getElementById('pName').value,
+    org_name: document.getElementById('pOrgName').value,
+    phone: document.getElementById('pPhone').value,
+    city: document.getElementById('pCity').value,
+    org_type: document.getElementById('pOrgType').value,
+    website: document.getElementById('pWebsite').value,
+    gst_number: document.getElementById('pGst').value,
+    bio: document.getElementById('pBio').value,
+    events_per_year: document.getElementById('pEventsPerYear').value,
+    budget_range: document.getElementById('pBudgetRange').value,
+    preferred_genres: prefGenres,
+    venue_types: selVenueTypes,
+  };
+  try {
+    if (typeof FLOOX !== 'undefined') await FLOOX.saveOrganiserProfile(fields);
+    user = {...user,...fields};
+    populateUI();
+    unsaved = false;
+    document.getElementById('unsavedDot').classList.remove('show');
+    document.getElementById('saveMsg').textContent = 'All changes saved';
+    showToast('Profile saved! ✅', 'success');
+  } catch(e) { showToast(e.message || 'Save failed', 'error'); }
+}
+
+// ── EVENT MODAL ───────────────────────────────────────────────────────────────
+function openNewEventModal() {
+  document.getElementById('newEventModal').classList.add('open');
+  evSelectedGenres = [];
+  document.querySelectorAll('#evGenreTags .ms-tag').forEach(t=>t.classList.remove('sel'));
+}
+function closeNewEventModal() { document.getElementById('newEventModal').classList.remove('open'); }
+
+function createEvent(status) {
+  const name = document.getElementById('evName').value.trim();
+  const date = document.getElementById('evDate').value;
+  const venue = document.getElementById('evVenue').value.trim();
+  if (!name || !date) { showToast('Event name and date are required', 'error'); return; }
+  const newEv = {
+    id: allEvents.length + 1,
+    name, date, venue: venue || 'TBA',
+    type: document.getElementById('evType').value,
+    budget: parseFloat(document.getElementById('evBudget').value) || 0,
+    status, artistsBooked: 0
+  };
+  allEvents.unshift(newEv);
+  renderAllEvents();
+  renderOverview();
+  document.getElementById('totalEvents').textContent = allEvents.length;
+  closeNewEventModal();
+  document.getElementById('evName').value = '';
+  document.getElementById('evDate').value = '';
+  document.getElementById('evVenue').value = '';
+  document.getElementById('evBudget').value = '';
+  document.getElementById('evDesc').value = '';
+  showToast(status === 'draft' ? 'Event saved as draft 📝' : 'Event published! 🎉', 'success');
+}
+
+// ── PASSWORD ──────────────────────────────────────────────────────────────────
+async function changePassword() {
+  const cur = document.getElementById('curPwd').value;
+  const nw  = document.getElementById('newPwd').value;
+  const con = document.getElementById('conPwd').value;
+  if (!cur || !nw) return showToast('Fill in all fields', 'error');
+  if (nw !== con) return showToast('Passwords do not match', 'error');
+  try {
+    if (typeof FLOOX !== 'undefined') await FLOOX.changePassword(cur, nw);
+    showToast('Password updated ✅', 'success');
+    ['curPwd','newPwd','conPwd'].forEach(id => document.getElementById(id).value = '');
+  } catch(e) { showToast(e.message || 'Update failed', 'error'); }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+const pageTitles = {
+  overview:'Overview', events:'My Events', bookings:'Bookings',
+  spend:'Spend & Budget', artists:'Find Artists', saved:'Saved Artists',
+  profile:'Edit Profile', settings:'Settings'
+};
+const pageSubs = {
+  overview:'Manage your events & artist bookings', events:'All your events',
+  bookings:'Artist bookings across all events', spend:'Track your event budget & payments',
+  artists:'Discover and book the perfect artist', saved:'Your shortlisted artists',
+  profile:'Update your organiser profile', settings:'Account & notification settings'
+};
+
+function showPage(name) {
+  document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+  if (event && event.currentTarget) event.currentTarget.classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[name]||name;
+  document.getElementById('pageSubtitle').textContent = pageSubs[name]||'';
+  closeSidebar();
+}
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sbOverlay').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sbOverlay').classList.remove('show');
+}
+function doLogout() {
+  if (typeof FLOOX !== 'undefined') FLOOX.logout('index.html');
+  else window.location.href = 'index.html';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg, type='info') {
+  if (typeof FLOOX !== 'undefined') { FLOOX.toast(msg, type); return; }
+  const el = document.getElementById('toast');
+  const colors = {success:'#22C55E', error:'#FF2D78', info:'#00C2A8'};
+  el.style.cssText = `position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(0);z-index:9999;background:#1C1000;color:#fff;border-radius:100px;padding:0.85rem 1.6rem;font-size:0.85rem;display:flex;align-items:center;gap:0.6rem;opacity:1;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,0.4);font-family:'Bricolage Grotesque',sans-serif;font-weight:700`;
+  el.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${colors[type]||colors.info};flex-shrink:0;display:inline-block"></span> ${msg}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.opacity = '0', 3500);
+}
+
+// Close modal on overlay click
+document.getElementById('newEventModal').addEventListener('click', function(e) {
+  if (e.target === this) closeNewEventModal();
+});
+</script>
+</body>
+</html>

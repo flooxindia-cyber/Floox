@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floox — Where Artists Meet Their Stage</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FFFBF4;
+  --white:#FFFFFF;
+  --black:#0D0800;
+  --text:#1C1000;
+  --muted:#7A6A50;
+  --border:#E8DDD0;
+  --orange:#FF5C00;
+  --orange2:#FF8C00;
+  --yellow:#FFD600;
+  --pink:#FF2D78;
+  --teal:#00C2A8;
+  --purple:#7C3AED;
+  --green:#22C55E;
+  --head:'Bricolage Grotesque',sans-serif;
+  --body:'Plus Jakarta Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.65;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#FFF7EC}
+::-webkit-scrollbar-thumb{background:#FFCFA0;border-radius:3px}
+
+/* ── LOADER ── */
+#loader{position:fixed;inset:0;background:#0D0800;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s,visibility 0.6s}
+#loader.gone{opacity:0;visibility:hidden}
+.loader-orb{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#FF5C00,#FF2D78);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:22px;color:#fff;animation:loaderPulse 1.2s ease infinite;margin-bottom:1.5rem}
+@keyframes loaderPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,92,0,0.4)}50%{transform:scale(1.08);box-shadow:0 0 0 16px rgba(255,92,0,0)}}
+.loader-bar{width:160px;height:3px;background:rgba(255,255,255,0.1);border-radius:100px;overflow:hidden;margin-top:1rem}
+.loader-fill{height:100%;background:linear-gradient(90deg,#FF5C00,#FF2D78);border-radius:100px;animation:loadFill 1.8s ease forwards}
+@keyframes loadFill{from{width:0}to{width:100%}}
+.loader-txt{font-family:var(--head);font-size:0.8rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-top:0.8rem}
+
+/* ── NAVBAR ── */
+#navbar{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:1rem 5%;background:rgba(255,251,244,0.88);backdrop-filter:blur(20px);border-bottom:1.5px solid var(--border);transition:all 0.3s}
+#navbar.scrolled{padding:0.7rem 5%;box-shadow:0 4px 30px rgba(255,92,0,0.1)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-orb{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--orange),var(--pink));display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:15px;color:#fff;box-shadow:0 4px 16px rgba(255,92,0,0.35);flex-shrink:0}
+.logo-name{font-family:var(--head);font-size:1.45rem;font-weight:800;letter-spacing:-0.5px;color:var(--text)}
+.logo-name em{font-style:normal;color:var(--orange)}
+.nav-links{display:flex;align-items:center;gap:2rem;list-style:none}
+.nav-links a{font-family:var(--head);font-size:0.82rem;font-weight:700;letter-spacing:0.02em;color:var(--muted);text-decoration:none;transition:color 0.2s}
+.nav-links a:hover{color:var(--orange)}
+.nav-cta{background:linear-gradient(135deg,var(--orange),var(--pink)) !important;color:#fff !important;padding:0.6rem 1.5rem;border-radius:100px;box-shadow:0 4px 16px rgba(255,92,0,0.3);transition:transform 0.2s,box-shadow 0.2s !important}
+.nav-cta:hover{transform:translateY(-2px) !important;box-shadow:0 8px 24px rgba(255,92,0,0.4) !important}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:all 0.3s;display:block}
+.mob-menu{display:none;position:fixed;inset:0;background:var(--white);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem}
+.mob-menu.open{display:flex}
+.mob-menu a{font-family:var(--head);font-size:1.8rem;font-weight:800;color:var(--text);text-decoration:none}
+.mob-x{position:absolute;top:1.5rem;right:5%;font-size:2rem;cursor:pointer;color:var(--muted)}
+
+/* ── BUTTONS ── */
+.btn{font-family:var(--head);font-weight:700;font-size:0.88rem;letter-spacing:0.02em;padding:0.9rem 2.1rem;border-radius:100px;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all 0.25s}
+.btn-fire{background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;box-shadow:0 6px 22px rgba(255,92,0,0.38)}
+.btn-fire:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(255,92,0,0.48)}
+.btn-teal{background:var(--teal);color:#fff;box-shadow:0 6px 20px rgba(0,194,168,0.32)}
+.btn-teal:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,194,168,0.42)}
+.btn-ghost{background:rgba(255,255,255,0.85);color:var(--text);border:2px solid var(--border);backdrop-filter:blur(8px)}
+.btn-ghost:hover{border-color:var(--orange);color:var(--orange)}
+.btn-wa{background:#25D366;color:#fff;box-shadow:0 6px 20px rgba(37,211,102,0.32)}
+.btn-wa:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(37,211,102,0.42)}
+.btn-ig{background:linear-gradient(135deg,#F58529,#DD2A7B,#8134AF);color:#fff;box-shadow:0 6px 20px rgba(221,42,123,0.3)}
+.btn-ig:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(221,42,123,0.4)}
+
+/* ── HERO ── */
+.hero{min-height:100vh;position:relative;overflow:hidden;display:flex;align-items:center}
+.hero-bg{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=1800&h=1000&fit=crop&q=85');background-size:cover;background-position:center;transform:scale(1.06);transition:transform 8s ease}
+.hero-bg.loaded{transform:scale(1)}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(13,8,0,0.82) 0%,rgba(13,8,0,0.55) 50%,rgba(255,92,0,0.08) 100%)}
+.hero-content{position:relative;z-index:2;padding:10rem 5% 6rem;max-width:760px}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.2);border-radius:100px;padding:0.4rem 1rem 0.4rem 0.6rem;font-size:0.8rem;font-weight:600;color:rgba(255,255,255,0.9);margin-bottom:1.8rem;width:fit-content;backdrop-filter:blur(8px)}
+.live-dot{width:7px;height:7px;background:#22C55E;border-radius:50%;animation:ldot 2s infinite;flex-shrink:0}
+@keyframes ldot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,0.5)}50%{opacity:0.5;box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+.hero h1{font-family:var(--head);font-size:clamp(3.4rem,6vw,6.5rem);font-weight:800;line-height:0.93;letter-spacing:-3px;margin-bottom:1.8rem;color:#fff}
+.h-grad{background:linear-gradient(135deg,var(--yellow),var(--orange),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.1rem;color:rgba(255,255,255,0.72);line-height:1.75;max-width:520px;margin-bottom:2.5rem}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap}
+.hero-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;animation:bounce 2.5s ease infinite}
+.hero-scroll span{font-size:0.72rem;font-family:var(--head);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.4)}
+.scroll-arrow{width:2px;height:32px;background:linear-gradient(to bottom,rgba(255,255,255,0.5),transparent);border-radius:2px;position:relative}
+.scroll-arrow::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:6px;height:6px;border-right:2px solid rgba(255,255,255,0.5);border-bottom:2px solid rgba(255,255,255,0.5);transform:translateX(-50%) rotate(45deg)}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
+
+/* ── FLOATING CARDS (hero) ── */
+.hero-float{position:absolute;right:5%;top:50%;transform:translateY(-50%);z-index:3;display:flex;flex-direction:column;gap:1rem;width:280px}
+.hfc{background:rgba(255,255,255,0.95);border:1.5px solid rgba(255,255,255,0.6);border-radius:20px;padding:1.1rem 1.3rem;display:flex;align-items:center;gap:0.9rem;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,0.15);animation:floatCard 0.6s ease both}
+.hfc:nth-child(1){animation-delay:0.3s;animation-name:floatCard}
+.hfc:nth-child(2){animation-delay:0.5s}
+.hfc:nth-child(3){animation-delay:0.7s;background:linear-gradient(135deg,rgba(255,92,0,0.95),rgba(255,45,120,0.95));border-color:transparent}
+@keyframes floatCard{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+.hfc-av{width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2.5px solid rgba(255,255,255,0.5)}
+.hfc-av-icon{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.hfc-info{flex:1;min-width:0}
+.hfc-name{font-family:var(--head);font-weight:700;font-size:0.88rem;color:var(--text)}
+.hfc-sub{font-size:0.73rem;color:var(--muted);margin-top:1px}
+.hfc:nth-child(3) .hfc-name,.hfc:nth-child(3) .hfc-sub{color:rgba(255,255,255,0.9)}
+.hfc:nth-child(3) .hfc-sub{color:rgba(255,255,255,0.7)}
+.hfc-badge{font-family:var(--head);font-size:0.65rem;font-weight:700;padding:0.25rem 0.65rem;border-radius:100px;white-space:nowrap}
+.bd-orange{background:rgba(255,92,0,0.12);color:var(--orange)}
+.bd-teal{background:rgba(0,194,168,0.12);color:#007A6D}
+.bd-white{background:rgba(255,255,255,0.25);color:#fff}
+
+/* ── MARQUEE (trust) ── */
+.marquee-wrap{background:linear-gradient(135deg,var(--orange),var(--pink));padding:1.2rem 0;overflow:hidden}
+.marquee-inner{display:flex;gap:0;animation:marquee 24s linear infinite;white-space:nowrap}
+.marquee-item{font-family:var(--head);font-size:0.85rem;font-weight:700;color:rgba(255,255,255,0.9);padding:0 1.4rem;border-right:1px solid rgba(255,255,255,0.25);letter-spacing:0.04em;display:flex;align-items:center;gap:6px}
+.marquee-dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.5);flex-shrink:0}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ── HOW IT WORKS ── */
+.how-section{background:var(--text);padding:8rem 5%;position:relative;overflow:hidden}
+.how-bg-art{position:absolute;top:-100px;right:-200px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(255,92,0,0.08) 0%,transparent 65%);pointer-events:none}
+.sec-chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--head);font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.35rem 1rem;border-radius:100px;margin-bottom:1rem}
+.chip-light{background:rgba(255,214,0,0.15);color:var(--yellow);border:1px solid rgba(255,214,0,0.25)}
+.chip-orange{background:rgba(255,92,0,0.1);color:var(--orange);border:1px solid rgba(255,92,0,0.2)}
+.chip-pink{background:rgba(255,45,120,0.1);color:var(--pink);border:1px solid rgba(255,45,120,0.2)}
+.chip-teal{background:rgba(0,194,168,0.1);color:var(--teal);border:1px solid rgba(0,194,168,0.2)}
+.chip-purple{background:rgba(124,58,237,0.1);color:var(--purple);border:1px solid rgba(124,58,237,0.2)}
+.sec-title{font-family:var(--head);font-size:clamp(2.2rem,4vw,3.6rem);font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin-bottom:1rem}
+.sec-title-light{color:#fff}
+.sec-sub-light{color:rgba(255,255,255,0.5);font-size:1rem;line-height:1.75;max-width:500px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3.5rem}
+.step{background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:24px;padding:2.2rem;position:relative;overflow:hidden;transition:all 0.3s;cursor:default}
+.step::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:opacity 0.3s}
+.step:nth-child(1)::before{background:linear-gradient(90deg,var(--yellow),var(--orange))}
+.step:nth-child(2)::before{background:linear-gradient(90deg,var(--orange),var(--pink))}
+.step:nth-child(3)::before{background:linear-gradient(90deg,var(--teal),var(--purple))}
+.step:hover{background:rgba(255,255,255,0.07);transform:translateY(-6px)}
+.step:hover::before{opacity:1}
+.step-n{font-family:var(--head);font-size:5rem;font-weight:800;line-height:1;letter-spacing:-4px;-webkit-text-stroke:1px rgba(255,255,255,0.1);color:transparent;margin-bottom:0.3rem}
+.step-img{width:100%;height:155px;object-fit:cover;border-radius:14px;margin-bottom:1.5rem;opacity:0.8;transition:opacity 0.3s}
+.step:hover .step-img{opacity:1}
+.step h3{font-family:var(--head);font-size:1.15rem;font-weight:700;color:#fff;margin-bottom:0.6rem}
+.step p{font-size:0.87rem;color:rgba(255,255,255,0.45);line-height:1.7}
+
+/* ── FOR WHOM (background image cards) ── */
+.for-section{padding:8rem 5%;background:var(--bg)}
+.sec-sub{font-size:1rem;color:var(--muted);max-width:500px;line-height:1.75}
+.whom-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:3rem}
+.whom-card{border-radius:28px;overflow:hidden;position:relative;min-height:460px;display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer}
+.wc-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 0.6s}
+.whom-card:hover .wc-bg{transform:scale(1.05)}
+.wc-grad-a{position:absolute;inset:0;background:linear-gradient(to top,rgba(255,60,0,0.9) 0%,rgba(255,60,0,0.4) 40%,rgba(0,0,0,0.1) 100%)}
+.wc-grad-o{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,130,110,0.92) 0%,rgba(0,194,168,0.35) 40%,rgba(0,0,0,0.1) 100%)}
+.wc-top{position:absolute;top:1.5rem;left:1.5rem;z-index:2}
+.wc-body{position:relative;z-index:1;padding:2rem}
+.wc-body h3{font-family:var(--head);font-size:1.9rem;font-weight:800;letter-spacing:-1px;color:#fff;margin-bottom:0.6rem}
+.wc-body p{font-size:0.9rem;color:rgba(255,255,255,0.8);margin-bottom:1.3rem;line-height:1.65}
+.perk-row{display:flex;flex-direction:column;gap:0.5rem}
+.perk{display:flex;align-items:center;gap:8px;font-size:0.84rem;color:rgba(255,255,255,0.85)}
+.pck{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:0.6rem;flex-shrink:0}
+.badge{font-family:var(--head);font-size:0.68rem;font-weight:700;padding:0.3rem 0.85rem;border-radius:100px;white-space:nowrap;letter-spacing:0.04em}
+.bd-fire{background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.3);backdrop-filter:blur(8px)}
+.bd-emt{background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.3);backdrop-filter:blur(8px)}
+
+/* ── STATS BAND ── */
+.stats-section{padding:5rem 5%;background:#fff;border-top:1.5px solid var(--border);border-bottom:1.5px solid var(--border)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:2.5rem}
+.stat-card{background:var(--bg);border:1.5px solid var(--border);border-radius:22px;padding:2rem;text-align:center;transition:all 0.3s;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;border-radius:0 0 22px 22px}
+.stat-card:nth-child(1)::after{background:linear-gradient(90deg,var(--orange),var(--yellow))}
+.stat-card:nth-child(2)::after{background:linear-gradient(90deg,var(--pink),var(--purple))}
+.stat-card:nth-child(3)::after{background:linear-gradient(90deg,var(--teal),#00E5D4)}
+.stat-card:nth-child(4)::after{background:linear-gradient(90deg,var(--purple),var(--pink))}
+.stat-card:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(0,0,0,0.08)}
+.stat-num{font-family:var(--head);font-size:3.2rem;font-weight:800;letter-spacing:-2px;line-height:1;margin-bottom:0.4rem}
+.sn1{background:linear-gradient(135deg,var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sn2{background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sn3{background:linear-gradient(135deg,var(--teal),#00E5D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sn4{background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-family:var(--head);font-size:0.82rem;font-weight:600;color:var(--muted)}
+
+/* ── ARTISTS SECTION ── */
+.artists-section{padding:8rem 5%;background:var(--bg);position:relative;overflow:hidden}
+.artists-section::before{content:'';position:absolute;top:-200px;right:-200px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,0,0.08) 0%,transparent 65%);pointer-events:none}
+.artists-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-top:3rem}
+.acard{background:#fff;border:1.5px solid var(--border);border-radius:22px;overflow:hidden;transition:all 0.35s;cursor:pointer;position:relative}
+.acard::after{content:'Book →';position:absolute;bottom:0;left:0;right:0;background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;font-family:var(--head);font-weight:700;font-size:0.82rem;text-align:center;padding:0.7rem;transform:translateY(100%);transition:transform 0.3s;letter-spacing:0.04em}
+.acard:hover{transform:translateY(-8px);box-shadow:0 24px 50px rgba(0,0,0,0.12);border-color:var(--orange)}
+.acard:hover::after{transform:translateY(0)}
+.acard-photo{width:100%;height:200px;object-fit:cover;display:block;transition:transform 0.4s}
+.acard:hover .acard-photo{transform:scale(1.06)}
+.acard-body{padding:1.1rem 1.2rem}
+.acard-name{font-family:var(--head);font-weight:700;font-size:1rem;color:var(--text);margin-bottom:3px}
+.acard-genre{font-size:0.78rem;color:var(--muted);margin-bottom:0.8rem}
+.acard-foot{display:flex;align-items:center;justify-content:space-between}
+.acard-city{font-size:0.74rem;color:var(--muted)}
+.acard-rate{font-family:var(--head);font-size:0.82rem;font-weight:700;color:var(--orange)}
+
+/* ── EVENTS ── */
+.events-section{padding:8rem 5%;background:#FFF7EC;border-top:1.5px solid var(--border)}
+.events-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+.ecard{background:#fff;border:1.5px solid var(--border);border-radius:22px;overflow:hidden;transition:all 0.3s;cursor:pointer}
+.ecard:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(0,0,0,0.1)}
+.ecard-img{width:100%;height:185px;object-fit:cover;display:block;transition:transform 0.4s}
+.ecard:hover .ecard-img{transform:scale(1.04)}
+.ecard-body{padding:1.3rem}
+.edate{font-family:var(--head);font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--orange);margin-bottom:0.5rem}
+.ename{font-family:var(--head);font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:0.4rem}
+.evenue{font-size:0.82rem;color:var(--muted);margin-bottom:1rem}
+.efoot{display:flex;align-items:center;justify-content:space-between}
+.eslots{font-size:0.78rem;color:var(--muted)}
+.eslots strong{color:var(--green)}
+.ebtn{font-family:var(--head);font-size:0.72rem;font-weight:700;padding:0.42rem 1rem;border-radius:100px;background:rgba(255,92,0,0.08);color:var(--orange);border:1px solid rgba(255,92,0,0.15);cursor:pointer;transition:all 0.2s}
+.ebtn:hover{background:var(--orange);color:#fff}
+
+/* ── TESTIMONIALS ── */
+.testi-section{padding:8rem 5%;background:var(--text);position:relative;overflow:hidden}
+.testi-section::before{content:'';position:absolute;top:-200px;left:-200px;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(255,45,120,0.06) 0%,transparent 65%);pointer-events:none}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+.tcard{background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:22px;padding:1.8rem;transition:all 0.3s;position:relative}
+.tcard:hover{background:rgba(255,255,255,0.07);transform:translateY(-4px)}
+.tcard-q{font-family:var(--head);font-size:5rem;line-height:1;color:var(--orange);opacity:0.15;position:absolute;top:0.5rem;right:1.2rem;font-weight:800}
+.tcard-stars{font-size:0.88rem;letter-spacing:2px;margin-bottom:0.9rem;color:var(--yellow)}
+.tcard-text{font-size:0.92rem;color:rgba(255,255,255,0.6);line-height:1.8;margin-bottom:1.4rem;font-style:italic}
+.tcard-author{display:flex;align-items:center;gap:0.8rem}
+.tcard-av{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.15)}
+.tcard-name{font-family:var(--head);font-weight:700;font-size:0.9rem;color:#fff}
+.tcard-role{font-size:0.74rem;color:rgba(255,255,255,0.4);margin-top:1px}
+
+/* ── CONNECT SECTION ── */
+.connect-section{padding:8rem 5%;position:relative;overflow:hidden}
+.connect-bg{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=1800&h=1000&fit=crop&q=80');background-size:cover;background-position:center;background-attachment:fixed}
+.connect-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(13,8,0,0.88),rgba(255,92,0,0.15))}
+.connect-content{position:relative;z-index:1}
+.connect-title{font-family:var(--head);font-size:clamp(2.2rem,4vw,3.6rem);font-weight:800;letter-spacing:-1.5px;color:#fff;margin-bottom:0.8rem}
+.connect-sub{font-size:1rem;color:rgba(255,255,255,0.55);max-width:500px;line-height:1.75;margin-bottom:3rem}
+.connect-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.cc{border-radius:24px;padding:2.5rem;text-align:center;transition:transform 0.3s;cursor:pointer;position:relative;overflow:hidden;backdrop-filter:blur(12px)}
+.cc:hover{transform:translateY(-8px)}
+.cc-ig{background:linear-gradient(135deg,rgba(245,133,41,0.9),rgba(221,42,123,0.9),rgba(129,52,175,0.9));border:1px solid rgba(255,255,255,0.15)}
+.cc-wa{background:linear-gradient(135deg,rgba(18,140,126,0.9),rgba(37,211,102,0.9));border:1px solid rgba(255,255,255,0.15)}
+.cc-em{background:linear-gradient(135deg,rgba(255,92,0,0.9),rgba(255,60,100,0.9));border:1px solid rgba(255,255,255,0.15)}
+.cc-icon{margin-bottom:1.2rem;display:flex;align-items:center;justify-content:center}
+.cc h3{font-family:var(--head);font-size:1.35rem;font-weight:800;color:#fff;margin-bottom:0.5rem;letter-spacing:-0.4px}
+.cc p{font-size:0.87rem;color:rgba(255,255,255,0.75);margin-bottom:1.5rem;line-height:1.65}
+.cc-link{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);color:#fff;border:1.5px solid rgba(255,255,255,0.3);padding:0.65rem 1.4rem;border-radius:100px;font-family:var(--head);font-size:0.8rem;font-weight:700;text-decoration:none;transition:all 0.2s}
+.cc-link:hover{background:rgba(255,255,255,0.3)}
+
+/* ── JOIN SECTION ── */
+.join-section{padding:8rem 5%;background:#fff;text-align:center}
+.join-wrap{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:780px;margin:3rem auto 0;text-align:left}
+.jcard{background:var(--bg);border:2px solid var(--border);border-radius:24px;padding:2.5rem;transition:all 0.3s}
+.jcard:hover{border-color:var(--orange);box-shadow:0 16px 50px rgba(255,92,0,0.1)}
+.jcard-icon{font-size:2.5rem;margin-bottom:1rem;display:block}
+.jcard h3{font-family:var(--head);font-size:1.3rem;font-weight:800;letter-spacing:-0.5px;color:var(--text);margin-bottom:0.4rem}
+.jcard p{font-size:0.87rem;color:var(--muted);line-height:1.65;margin-bottom:1.5rem}
+.frow{display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1rem}
+.finput{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:0.85rem 1rem;font-family:var(--body);font-size:0.9rem;color:var(--text);outline:none;transition:border-color 0.2s,box-shadow 0.2s;width:100%}
+.finput:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,92,0,0.1)}
+.finput::placeholder{color:#C0B0A0}
+.fselect{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:0.85rem 2.5rem 0.85rem 1rem;font-family:var(--body);font-size:0.9rem;color:var(--text);outline:none;width:100%;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C0B0A0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;transition:border-color 0.2s}
+.fselect:focus{border-color:var(--orange)}
+.fselect option{background:#fff}
+
+/* ── FOOTER ── */
+footer{background:var(--text);padding:5rem 5% 0;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem}
+.foot-logo-row{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.foot-desc{font-size:0.87rem;line-height:1.75;color:rgba(255,255,255,0.4);max-width:280px;margin-bottom:1.5rem}
+.foot-soc{display:flex;gap:0.7rem}
+.fsoc{width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all 0.2s}
+.fsoc:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.25)}
+.foot-h{font-family:var(--head);font-size:0.7rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:1.2rem}
+.foot-ul{list-style:none;display:flex;flex-direction:column;gap:0.7rem}
+.foot-ul a{font-size:0.87rem;color:rgba(255,255,255,0.45);text-decoration:none;transition:color 0.2s}
+.foot-ul a:hover{color:rgba(255,255,255,0.9)}
+.foot-bottom{border-top:1px solid rgba(255,255,255,0.07);margin-top:3rem;padding:1.5rem 5% 2rem;display:flex;align-items:center;justify-content:space-between;font-size:0.8rem;color:rgba(255,255,255,0.25)}
+.foot-legal{display:flex;gap:1.5rem}
+.foot-legal a{font-family:var(--head);font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.25);text-decoration:none;transition:color 0.2s}
+.foot-legal a:hover{color:rgba(255,255,255,0.55)}
+
+/* ── FLOATING BAR ── */
+.float-bar{position:fixed;bottom:2rem;right:2rem;z-index:900;display:flex;flex-direction:column;gap:0.75rem}
+.fb{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(0,0,0,0.22);transition:all 0.28s;cursor:pointer;text-decoration:none;border:none;position:relative}
+.fb:hover{transform:scale(1.12) translateY(-2px)}
+.fb .tip{position:absolute;right:64px;top:50%;transform:translateY(-50%);background:var(--text);color:#fff;font-family:var(--head);font-size:0.73rem;font-weight:700;padding:0.35rem 0.8rem;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.2s;box-shadow:0 4px 12px rgba(0,0,0,0.2)}
+.fb:hover .tip{opacity:1}
+.fb-ig{background:linear-gradient(135deg,#F58529,#DD2A7B,#8134AF)}
+.fb-wa{background:#25D366}
+.fb-em{background:linear-gradient(135deg,var(--orange),var(--pink))}
+
+/* ── MULTI-SELECT TAGS ── */
+.ms-label{font-family:var(--head);font-size:0.7rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:0.45rem;display:block}
+.ms-wrap{display:flex;flex-wrap:wrap;gap:0.45rem}
+.ms-tag{font-family:var(--head);font-size:0.75rem;font-weight:700;padding:0.38rem 0.9rem;border-radius:100px;border:1.5px solid var(--border);cursor:pointer;transition:all 0.18s;color:var(--muted);background:#fff;user-select:none}
+.ms-tag:hover{border-color:var(--orange);color:var(--orange)}
+.ms-tag.sel-fire{background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(255,92,0,0.28)}
+.ms-tag.sel-teal{background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(0,194,168,0.28)}
+
+/* ── MODAL ── */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(13,8,0,0.7);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(14px)}
+.modal-ov.open{display:flex}
+.modal{background:#fff;border-radius:28px;width:min(480px,92vw);padding:2.5rem;position:relative;animation:mPop 0.26s ease;box-shadow:0 40px 100px rgba(0,0,0,0.25)}
+@keyframes mPop{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}}
+.modal-x{position:absolute;top:1.2rem;right:1.2rem;width:34px;height:34px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all 0.2s}
+.modal-x:hover{background:var(--border)}
+.modal h2{font-family:var(--head);font-size:1.7rem;font-weight:800;letter-spacing:-0.8px;margin-bottom:0.3rem;color:var(--text)}
+.modal-sub{font-size:0.87rem;color:var(--muted);margin-bottom:1.8rem}
+.modal-tabs{display:flex;gap:0.4rem;background:var(--bg);border-radius:100px;padding:0.3rem;border:1.5px solid var(--border);margin-bottom:1.8rem}
+.mtab{flex:1;text-align:center;padding:0.55rem;border-radius:100px;font-family:var(--head);font-size:0.78rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;color:var(--muted);border:none;background:transparent}
+.mtab.on{background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;box-shadow:0 4px 14px rgba(255,92,0,0.3)}
+.mform{display:none;flex-direction:column;gap:0.85rem}
+.mform.on{display:flex}
+.suc{display:none;text-align:center;padding:2rem 0}
+.suc-icon{font-size:3.5rem;margin-bottom:1rem}
+.suc h3{font-family:var(--head);font-size:1.5rem;font-weight:800;margin-bottom:0.5rem;color:var(--text)}
+.suc p{font-size:0.9rem;color:var(--muted)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);z-index:3000;background:var(--text);color:#fff;border-radius:100px;padding:0.85rem 1.6rem;font-size:0.87rem;font-family:var(--body);display:flex;align-items:center;gap:0.6rem;opacity:0;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,0.25)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;animation:ldot 1.5s infinite}
+
+/* ── FADE REVEAL ── */
+.reveal{opacity:0;transform:translateY(32px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal.vis{opacity:1;transform:translateY(0)}
+.reveal-l{opacity:0;transform:translateX(-32px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal-l.vis{opacity:1;transform:translateX(0)}
+.reveal-r{opacity:0;transform:translateX(32px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal-r.vis{opacity:1;transform:translateX(0)}
+
+/* ── PARALLAX NOTE ── */
+.par{background-attachment:fixed;background-size:cover;background-position:center}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  .hero{min-height:90vh}
+  .hero-float{display:none}
+  .steps{grid-template-columns:1fr}
+  .whom-grid{grid-template-columns:1fr}
+  .artists-grid{grid-template-columns:repeat(2,1fr)}
+  .events-grid{grid-template-columns:1fr}
+  .testi-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .connect-cards{grid-template-columns:1fr}
+  .join-wrap{grid-template-columns:1fr}
+  footer{grid-template-columns:1fr 1fr;gap:2rem}
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .connect-bg{background-attachment:scroll}
+}
+@media(max-width:540px){
+  .stats-grid{grid-template-columns:1fr}
+  footer{grid-template-columns:1fr}
+  .artists-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <img src="logo_floox.jpeg" alt="Floox" style="height:72px;width:auto;object-fit:contain;border-radius:16px;animation:loaderPulse 1.2s ease infinite;margin-bottom:1.5rem">
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+  <div class="loader-txt">Your Stage. Your Story.</div>
+</div>
+
+<!-- FLOATING BUTTONS -->
+<div class="float-bar">
+  <a href="https://www.instagram.com/flooxofficial/?utm_source=ig_web_button_share_sheet" target="_blank" class="fb fb-ig" aria-label="Instagram">
+    <!-- Real Instagram SVG -->
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2" width="20" height="20" rx="6" stroke="white" stroke-width="1.8"/>
+      <circle cx="12" cy="12" r="4.5" stroke="white" stroke-width="1.8"/>
+      <circle cx="17.5" cy="6.5" r="1" fill="white"/>
+    </svg>
+    <span class="tip">Instagram</span>
+  </a>
+  <a href="https://wa.me/918580676171?text=Hi!%20I%20found%20Floox%20and%20want%20to%20know%20more." target="_blank" class="fb fb-wa" aria-label="WhatsApp">
+    <!-- Real WhatsApp SVG -->
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.979-1.383A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.946 7.946 0 01-4.073-1.118l-.292-.173-3.027.84.855-3.117-.19-.302A7.944 7.944 0 014 12c0-4.418 3.582-8 8-8s8 3.582 8 8-3.582 8-8 8zm4.29-5.71c-.234-.117-1.387-.685-1.602-.763-.214-.078-.37-.117-.527.117-.156.234-.605.763-.742.919-.136.156-.273.176-.507.059-.234-.117-.988-.364-1.882-1.16-.695-.619-1.165-1.383-1.302-1.617-.136-.234-.015-.36.103-.476.105-.104.234-.273.351-.41.117-.136.156-.234.234-.39.078-.156.039-.293-.02-.41-.058-.117-.527-1.27-.722-1.739-.19-.456-.383-.394-.527-.401l-.449-.008c-.156 0-.41.059-.625.293-.215.234-.82.8-.82 1.951 0 1.152.839 2.265.956 2.422.117.156 1.649 2.52 3.995 3.535.559.24 .994.384 1.334.492.56.178 1.07.153 1.473.093.449-.067 1.387-.567 1.582-1.114.195-.547.195-1.016.136-1.114-.058-.098-.214-.156-.449-.273z"/>
+    </svg>
+    <span class="tip">WhatsApp</span>
+  </a>
+  <a href="mailto:hello@floox.in" class="fb fb-em" aria-label="Email">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="4" width="20" height="16" rx="3" stroke="white" stroke-width="1.8"/>
+      <path d="M2 8l10 7 10-7" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+    <span class="tip">Email Us</span>
+  </a>
+</div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <a href="index.html" class="logo">
+    <img src="logo_floox.jpeg" alt="Floox" style="height:42px;width:auto;object-fit:contain;border-radius:10px"><span class="logo-name" style="display:none">Floox</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="floox-public.html">Discover</a></li>
+    <li><a href="floox-artist-register.html">For Artists</a></li>
+    <li><a href="floox-organiser-register.html">For Organisers</a></li>
+    <li><a href="floox-contact.html">Plan My Event</a></li>
+    <li><a href="floox-login.html" data-auth="login">Login</a></li>
+    <li><a href="floox-login.html" class="nav-cta" data-auth="login">Join Free 🎤</a></li>
+    <li style="display:none"><a href="#" data-auth="dashboard">My Dashboard</a></li>
+    <li style="display:none"><span data-auth="username" style="font-family:var(--head);font-size:0.82rem;font-weight:700;color:var(--muted)"></span></li>
+    <li style="display:none"><a href="#" data-auth="logout" onclick="FLOOX.logout('index.html');return false" class="nav-cta">Logout</a></li>
+  </ul>
+  <div class="hamburger" onclick="toggleMob()" id="hbg"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mob-menu" id="mobMenu">
+  <span class="mob-x" onclick="toggleMob()">✕</span>
+  <a href="floox-public.html" onclick="toggleMob()">Discover</a>
+  <a href="floox-artist-register.html" onclick="toggleMob()">For Artists</a>
+  <a href="floox-organiser-register.html" onclick="toggleMob()">For Organisers</a>
+  <a href="floox-contact.html" onclick="toggleMob()">Plan My Event</a>
+  <a href="floox-login.html" data-auth="login" onclick="toggleMob()">Login</a>
+  <a href="floox-login.html" data-auth="login" style="color:var(--orange)" onclick="toggleMob()">Join Free →</a>
+  <a href="#" data-auth="dashboard" style="color:var(--orange);display:none" onclick="toggleMob()">My Dashboard →</a>
+  <a href="#" data-auth="logout" style="color:var(--orange);display:none" onclick="FLOOX.logout('index.html');toggleMob();return false">Logout →</a>
+</div>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow"><span class="live-dot"></span> India's Artist Platform — Now Live</div>
+    <h1><span class="h-grad">Karo Perform.</span><br>Karo Connect.</h1>
+    <p class="hero-sub">Floox bridges talented artists, singers & bands with event organisers — from intimate rooftop mehfils to massive stadium concerts. No middlemen. No drama. Pure music.</p>
+    <div class="hero-btns">
+      <button class="btn btn-fire" onclick="location.href='floox-artist-register.html'">🎤 Join as Artist</button>
+      <button class="btn btn-ghost" onclick="location.href='floox-organiser-register.html'">🎪 I'm an Organiser</button>
+    </div>
+  </div>
+  <!-- Floating profile cards -->
+  <div class="hero-float">
+    <div class="hfc">
+      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face&q=80" class="hfc-av" alt="Arjun">
+      <div class="hfc-info"><div class="hfc-name">Arjun Sharma</div><div class="hfc-sub">Indie Folk · Delhi</div></div>
+      <span class="hfc-badge bd-orange">Artist</span>
+    </div>
+    <div class="hfc">
+      <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face&q=80" class="hfc-av" alt="Rajeev">
+      <div class="hfc-info"><div class="hfc-name">Rajeev Events</div><div class="hfc-sub">Organiser · Mumbai</div></div>
+      <span class="hfc-badge bd-teal">Organiser</span>
+    </div>
+    <div class="hfc">
+      <div class="hfc-av-icon">✦</div>
+      <div class="hfc-info"><div class="hfc-name">Match Confirmed!</div><div class="hfc-sub">Dec 14 · Bandra, Mumbai</div></div>
+      <span class="hfc-badge bd-white">Booked</span>
+    </div>
+  </div>
+  <div class="hero-scroll" onclick="document.getElementById('how-anchor').scrollIntoView({behavior:'smooth'})">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+<div id="how-anchor"></div>
+
+<!-- MARQUEE TRUST STRIP -->
+<div class="marquee-wrap">
+  <div class="marquee-inner">
+    <span class="marquee-item"><span class="marquee-dot"></span>Mumbai</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Delhi</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Agra</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Lucknow</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Jaipur</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Chandigarh</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Bengaluru</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Mathura</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Hyderabad</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Pune</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Varanasi</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Amritsar</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Dehradun</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Ahmedabad</span>
+    <!-- duplicate for seamless -->
+    <span class="marquee-item"><span class="marquee-dot"></span>Mumbai</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Delhi</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Agra</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Lucknow</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Jaipur</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Chandigarh</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Bengaluru</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Mathura</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Hyderabad</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Pune</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Varanasi</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Amritsar</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Dehradun</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Ahmedabad</span>
+  </div>
+</div>
+
+<!-- ══ HOW IT WORKS ══ -->
+<section class="how-section" id="how">
+  <div class="how-bg-art"></div>
+  <div class="sec-chip chip-light">⚡ How Floox Works</div>
+  <h2 class="sec-title sec-title-light">Teen Steps. <span style="background:linear-gradient(135deg,var(--yellow),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Ek Stage.</span></h2>
+  <p class="sec-sub-light">From profile to first performance — get booked in days, not months.</p>
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-n">01</div>
+      <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&h=320&fit=crop&q=80" class="step-img" alt="Create Profile">
+      <h3>Create Your Profile</h3>
+      <p>Artists add their genre, media reel, rates & availability. Organisers list event type, city & budget — takes under 5 minutes.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-n">02</div>
+      <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=320&fit=crop&q=80" class="step-img" alt="Discover">
+      <h3>Discover & Connect</h3>
+      <p>Browse verified artists or post your event listing. Send booking requests or respond to inbound interest — all within Floox.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-n">03</div>
+      <img src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&h=320&fit=crop&q=80" class="step-img" alt="Perform">
+      <h3>Book & Perform</h3>
+      <p>Confirm the terms, sign digitally, and receive secure payments. Floox handles paperwork — you own the stage.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOR WHOM ══ -->
+<section class="for-section">
+  <div class="sec-chip chip-orange">🎯 Built for Both</div>
+  <h2 class="sec-title">Do Artists. <span style="background:linear-gradient(135deg,var(--teal),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Organiser bhi.</span></h2>
+  <p class="sec-sub">Two sides of the same stage — both deserve a platform built exactly for them.</p>
+  <div class="whom-grid">
+    <div class="whom-card reveal-l">
+      <div class="wc-bg" style="background-image:url('https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=900&h=700&fit=crop&q=80')"></div>
+      <div class="wc-grad-a"></div>
+      <div class="wc-top"><span class="badge bd-fire">For Artists & Singers</span></div>
+      <div class="wc-body">
+        <h3>Stop chasing gigs. Let gigs find you.</h3>
+        <p>Build your Floox profile once — get discovered by verified organisers looking for artists exactly like you.</p>
+        <div class="perk-row">
+          <div class="perk"><span class="pck">✓</span>Verified booking requests only</div>
+          <div class="perk"><span class="pck">✓</span>Set your own rates & availability</div>
+          <div class="perk"><span class="pck">✓</span>Showcase your portfolio & media reel</div>
+          <div class="perk"><span class="pck">✓</span>Secure payments via Floox</div>
+        </div>
+      </div>
+    </div>
+    <div class="whom-card reveal-r">
+      <div class="wc-bg" style="background-image:url('https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=900&h=700&fit=crop&q=80')"></div>
+      <div class="wc-grad-o"></div>
+      <div class="wc-top"><span class="badge bd-emt">For Event Organisers</span></div>
+      <div class="wc-body">
+        <h3>Find the right talent. Every time.</h3>
+        <p>Search a curated pool of verified artists by genre, city, budget & availability. No middlemen. No cold calls.</p>
+        <div class="perk-row">
+          <div class="perk"><span class="pck">✓</span>Filter by genre, city & budget</div>
+          <div class="perk"><span class="pck">✓</span>View portfolios & past events</div>
+          <div class="perk"><span class="pck">✓</span>Send booking requests instantly</div>
+          <div class="perk"><span class="pck">✓</span>Manage all bookings in one dashboard</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STATS ══ -->
+<section class="stats-section">
+  <div style="text-align:center"><div class="sec-chip chip-purple" style="margin:0 auto">📊 Floox in Numbers</div></div>
+  <div class="stats-grid">
+    <div class="stat-card reveal"><div class="stat-num sn1">2,400+</div><div class="stat-label">Artists Onboarded</div></div>
+    <div class="stat-card reveal"><div class="stat-num sn2">380+</div><div class="stat-label">Event Organisers</div></div>
+    <div class="stat-card reveal"><div class="stat-num sn3">1,100+</div><div class="stat-label">Bookings Completed</div></div>
+    <div class="stat-card reveal"><div class="stat-num sn4">28</div><div class="stat-label">Indian Cities</div></div>
+  </div>
+</section>
+
+<!-- ══ FEATURED ARTISTS ══ -->
+<section class="artists-section" id="artists">
+  <div class="sec-chip chip-pink">🎤 Featured Artists</div>
+  <h2 class="sec-title">India ki <span style="background:linear-gradient(135deg,var(--orange),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Awaaz</span>, Floox pe.</h2>
+  <p class="sec-sub">Classical to EDM, Bollywood to Sufi — discover artists across every genre, every city.</p>
+  <div class="artists-grid" id="featuredArtistsGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,255,255,.3);font-size:.85rem">Loading artists…</div>
+  </div>
+</section>
+
+<!-- ══ EVENTS ══ -->
+<section class="events-section" id="events">
+  <div class="sec-chip chip-teal">🎪 Upcoming Events</div>
+  <h2 class="sec-title">Aapke <span style="background:linear-gradient(135deg,var(--teal),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Sheher</span> Mein.</h2>
+  <p class="sec-sub">Live listings from organisers actively looking for artists right now. Apply before slots fill up.</p>
+  <div class="events-grid">
+    <div class="ecard reveal">
+      <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&h=360&fit=crop&q=80" class="ecard-img" alt="Sangeet Night">
+      <div class="ecard-body"><div class="edate">Dec 14 · Mumbai</div><div class="ename">Bandra Sangeet Night 2025</div><div class="evenue">📍 Mehboob Studio, Bandra West</div><div class="efoot"><span class="eslots"><strong>3</strong> slots open</span><button class="ebtn" onclick="location.href='floox-artist-register.html'">Apply Now</button></div></div>
+    </div>
+    <div class="ecard reveal">
+      <img src="https://images.unsplash.com/photo-1506157786151-b8491531f063?w=600&h=360&fit=crop&q=80" class="ecard-img" alt="NYE Delhi">
+      <div class="ecard-body"><div class="edate">Dec 31 · Delhi</div><div class="ename">NYE Countdown Bash</div><div class="evenue">📍 Jawaharlal Nehru Stadium</div><div class="efoot"><span class="eslots"><strong>5</strong> slots open</span><button class="ebtn" onclick="location.href='floox-artist-register.html'">Apply Now</button></div></div>
+    </div>
+    <div class="ecard reveal">
+      <img src="https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=600&h=360&fit=crop&q=80" class="ecard-img" alt="Sufi Jaipur">
+      <div class="ecard-body"><div class="edate">Jan 5 · Jaipur</div><div class="ename">Pink City Sufi Evening</div><div class="evenue">📍 Amer Fort Lawns</div><div class="efoot"><span class="eslots"><strong>2</strong> slots open</span><button class="ebtn" onclick="location.href='floox-artist-register.html'">Apply Now</button></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TESTIMONIALS ══ -->
+<section class="testi-section">
+  <div class="sec-chip" style="background:rgba(255,214,0,0.12);color:var(--yellow);border:1px solid rgba(255,214,0,0.2)">💬 Real Stories</div>
+  <h2 class="sec-title sec-title-light">Real Artists. <span style="background:linear-gradient(135deg,var(--yellow),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Real Results.</span></h2>
+  <p class="sec-sub-light">From first-timers to seasoned professionals — what the Floox community says.</p>
+  <div class="testi-grid">
+    <div class="tcard reveal">
+      <div class="tcard-q">"</div>
+      <div class="tcard-stars">★★★★★</div>
+      <p class="tcard-text">Maine Floox se apna pehla corporate gig book kiya. Process itni smooth thi ki believe hi nahi hua — within a week, confirmed booking aur advance payment bhi!</p>
+      <div class="tcard-author"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face&q=80" class="tcard-av" alt="Arjun"><div><div class="tcard-name">Arjun Mehta</div><div class="tcard-role">Singer-Songwriter · Pune</div></div></div>
+    </div>
+    <div class="tcard reveal">
+      <div class="tcard-q">"</div>
+      <div class="tcard-stars">★★★★★</div>
+      <p class="tcard-text">Finding quality artists used to take weeks of cold networking. Floox changed everything — found three amazing performers for our annual day in 48 hours. Incredible platform!</p>
+      <div class="tcard-author"><img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face&q=80" class="tcard-av" alt="Vikram"><div><div class="tcard-name">Vikram Kapoor</div><div class="tcard-role">Event Director · Mumbai</div></div></div>
+    </div>
+    <div class="tcard reveal">
+      <div class="tcard-q">"</div>
+      <div class="tcard-stars">★★★★★</div>
+      <p class="tcard-text">As a classical dancer I always struggled to find the right platform. Floox understood our niche — I was booked for a cultural festival in Bengaluru within my very first month!</p>
+      <div class="tcard-author"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&crop=face&q=80" class="tcard-av" alt="Meera"><div><div class="tcard-name">Meera Krishnan</div><div class="tcard-role">Bharatanatyam Artist · Chennai</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CONNECT / SOCIAL ══ -->
+<section class="connect-section" id="connect">
+  <div class="connect-bg par"></div>
+  <div class="connect-overlay"></div>
+  <div class="connect-content">
+    <div class="sec-chip" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.2)">🌐 Find Us Everywhere</div>
+    <h2 class="connect-title">Hum Hain Yahan. <br><span style="background:linear-gradient(135deg,var(--yellow),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Har Jagah.</span></h2>
+    <p class="connect-sub">Follow us for artist spotlights, event previews, and all the backstage magic. Or just DM us — we reply fast!</p>
+    <div class="connect-cards">
+      <!-- INSTAGRAM -->
+      <div class="cc cc-ig reveal" onclick="window.open('https://www.instagram.com/flooxofficial/?utm_source=ig_web_button_share_sheet','_blank')">
+        <div class="cc-icon">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="44" height="44" rx="14" fill="white" fill-opacity="0.2"/>
+            <rect x="4" y="4" width="44" height="44" rx="14" stroke="white" stroke-width="2"/>
+            <circle cx="26" cy="26" r="9" stroke="white" stroke-width="2.2"/>
+            <circle cx="37" cy="15" r="2.5" fill="white"/>
+          </svg>
+        </div>
+        <h3>Instagram</h3>
+        <p>Artist spotlights, event reels, behind-the-scenes stories & daily music content. Join 10K+ followers!</p>
+        <a href="https://www.instagram.com/flooxofficial/?utm_source=ig_web_button_share_sheet" target="_blank" class="cc-link" onclick="e=>e.stopPropagation()">@flooxofficial →</a>
+      </div>
+      <!-- WHATSAPP -->
+      <div class="cc cc-wa reveal" onclick="window.open('https://wa.me/918580676171?text=Hi!%20I%20found%20Floox%20and%20want%20to%20know%20more.','_blank')">
+        <div class="cc-icon">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="44" height="44" rx="14" fill="white" fill-opacity="0.2"/>
+            <rect x="4" y="4" width="44" height="44" rx="14" stroke="white" stroke-width="2"/>
+            <path d="M26 13C18.82 13 13 18.82 13 26c0 2.92.98 5.62 2.62 7.77L13 39l5.46-1.59A12.93 12.93 0 0026 39c7.18 0 13-5.82 13-13S33.18 13 26 13zm0 23.8a10.74 10.74 0 01-5.5-1.51l-.4-.23-4.07 1.13 1.15-4.19-.26-.41A10.74 10.74 0 0115.2 26c0-5.96 4.84-10.8 10.8-10.8S36.8 20.04 36.8 26 31.96 36.8 26 36.8zm5.8-7.72c-.32-.16-1.87-.92-2.16-1.03-.29-.1-.5-.16-.71.16-.21.32-.81 1.03-1 1.24-.18.21-.37.24-.68.08-.32-.16-1.33-.49-2.54-1.57-.94-.84-1.57-1.87-1.76-2.18-.18-.32-.02-.49.14-.64.14-.14.32-.37.47-.55.16-.18.21-.32.32-.53.1-.21.05-.4-.03-.55-.08-.16-.71-1.71-.97-2.35-.26-.61-.52-.53-.71-.54l-.6-.01c-.21 0-.55.08-.84.4-.29.32-1.1 1.08-1.1 2.63 0 1.55 1.13 3.05 1.29 3.26.16.21 2.23 3.4 5.4 4.77.75.32 1.34.52 1.8.66.76.24 1.44.21 1.98.13.6-.09 1.87-.77 2.13-1.5.26-.74.26-1.37.18-1.5-.08-.13-.29-.21-.6-.37z" fill="white"/>
+          </svg>
+        </div>
+        <h3>WhatsApp</h3>
+        <p>Quickest way to reach us. Ask anything about onboarding, pricing, or bookings. We reply within the hour!</p>
+        <a href="https://wa.me/918580676171?text=Hi!%20I%20found%20Floox%20and%20want%20to%20know%20more." target="_blank" class="cc-link">Chat Now →</a>
+      </div>
+      <!-- EMAIL -->
+      <div class="cc cc-em reveal" onclick="window.location.href='mailto:hello@floox.in'">
+        <div class="cc-icon">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="44" height="44" rx="14" fill="white" fill-opacity="0.2"/>
+            <rect x="4" y="4" width="44" height="44" rx="14" stroke="white" stroke-width="2"/>
+            <rect x="13" y="17" width="26" height="18" rx="4" stroke="white" stroke-width="2"/>
+            <path d="M13 21l13 9 13-9" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Email Us</h3>
+        <p>For partnerships, press queries, or detailed collaboration requests — drop us a line. Reply within 24 hours!</p>
+        <a href="mailto:hello@floox.in" class="cc-link">hello@floox.in →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ JOIN ══ -->
+<section class="join-section" id="join">
+  <div class="sec-chip chip-orange" style="margin:0 auto 1rem">🚀 Get Started — It's Free</div>
+  <h2 class="sec-title" style="text-align:center">Apna <span style="background:linear-gradient(135deg,var(--orange),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Stage</span> Dhundo.</h2>
+  <p class="sec-sub" style="margin:0 auto;text-align:center">Join thousands of artists and organisers already shaping India's most vibrant live events ecosystem.</p>
+  <div class="join-wrap">
+    <div class="jcard reveal-l">
+      <span class="jcard-icon">🎤</span>
+      <h3>I'm an Artist</h3>
+      <p>Create your profile and start getting discovered by event organisers across India — completely free.</p>
+      <div class="frow">
+        <input type="text" class="finput" placeholder="Full name" id="aN">
+        <input type="email" class="finput" placeholder="Email address" id="aE">
+        <input type="text" class="finput" placeholder="Your city" id="aC">
+        <div>
+          <div class="ms-label">Select your genres (choose all that apply)</div>
+          <div class="ms-wrap" id="joinArtistGenres">
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Bollywood / Hindi Pop</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Classical / Semi-Classical</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Indie / Folk</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Sufi / Ghazal</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Devotional / Bhajan</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Electronic / DJ</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Rock / Metal</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Jazz / Blues</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Rap / Hip-Hop</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Other</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-fire" style="width:100%;justify-content:center" onclick="window.location.href='floox-artist-register.html'">Join as Artist →</button>
+    </div>
+    <div class="jcard reveal-r">
+      <span class="jcard-icon">🎪</span>
+      <h3>I'm an Organiser</h3>
+      <p>Post your events and connect with the perfect verified artists — from college fests to grand weddings.</p>
+      <div class="frow">
+        <input type="text" class="finput" placeholder="Name / Organisation" id="oN">
+        <input type="email" class="finput" placeholder="Email address" id="oE">
+        <input type="text" class="finput" placeholder="Your city" id="oC">
+        <div>
+          <div class="ms-label">Event types you organise (choose all that apply)</div>
+          <div class="ms-wrap" id="joinOrganiserTypes">
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Corporate Events</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Weddings & Sangeet</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Music Festivals</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Cultural Programmes</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">College Fests</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Private Parties</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Restaurant / Lounge</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Mehfil / Intimate Gigs</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Other</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-teal" style="width:100%;justify-content:center" onclick="window.location.href='floox-organiser-register.html'">Join as Organiser →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div>
+    <div class="foot-logo-row">
+      <img src="logo_floox.jpeg" alt="Floox" style="height:42px;width:auto;object-fit:contain;border-radius:10px"><span class="logo-name" style="color:#fff;margin-left:4px">Floox</span>
+    </div>
+    <p class="foot-desc">India's platform connecting artists, singers & performers with event organisers — from intimate mehfils to massive concert stages.</p>
+    <div class="foot-soc">
+      <!-- Instagram -->
+      <a href="https://www.instagram.com/flooxofficial/?utm_source=ig_web_button_share_sheet" target="_blank" class="fsoc" aria-label="Instagram">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" stroke="rgba(255,255,255,0.6)" stroke-width="1.8"/><circle cx="12" cy="12" r="4.5" stroke="rgba(255,255,255,0.6)" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r="1" fill="rgba(255,255,255,0.6)"/></svg>
+      </a>
+      <!-- WhatsApp -->
+      <a href="https://wa.me/918580676171" target="_blank" class="fsoc" aria-label="WhatsApp">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,0.6)"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.979-1.383A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm4.29 13.29c-.234-.117-1.387-.685-1.602-.763-.214-.078-.37-.117-.527.117-.156.234-.605.763-.742.919-.136.156-.273.176-.507.059-.234-.117-.988-.364-1.882-1.16-.695-.619-1.165-1.383-1.302-1.617-.136-.234-.015-.36.103-.476.105-.104.234-.273.351-.41.117-.136.156-.234.234-.39.078-.156.039-.293-.02-.41-.058-.117-.527-1.27-.722-1.739-.19-.456-.383-.394-.527-.401l-.449-.008c-.156 0-.41.059-.625.293-.215.234-.82.8-.82 1.951 0 1.152.839 2.265.956 2.422.117.156 1.649 2.52 3.995 3.535.559.24.994.384 1.334.492.56.178 1.07.153 1.473.093.449-.067 1.387-.567 1.582-1.114.195-.547.195-1.016.136-1.114-.058-.098-.214-.156-.449-.273z"/></svg>
+      </a>
+      <!-- Email -->
+      <a href="mailto:hello@floox.in" class="fsoc" aria-label="Email">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="3" stroke="rgba(255,255,255,0.6)" stroke-width="1.8"/><path d="M2 8l10 7 10-7" stroke="rgba(255,255,255,0.6)" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </a>
+      <!-- YouTube -->
+      <a href="#" onclick="showT('YouTube coming soon!');return false" class="fsoc" aria-label="YouTube">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="4" stroke="rgba(255,255,255,0.6)" stroke-width="1.8"/><path d="M10 9.5l5 2.5-5 2.5V9.5z" fill="rgba(255,255,255,0.6)"/></svg>
+      </a>
+    </div>
+  </div>
+  <div>
+    <div class="foot-h">Platform</div>
+    <ul class="foot-ul">
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="floox-public.html">Browse Artists</a></li>
+      <li><a href="#events">Browse Events</a></li>
+      <li><a href="floox-artist-register.html">Join as Artist</a></li>
+    </ul>
+  </div>
+  <div>
+    <div class="foot-h">Artists</div>
+    <ul class="foot-ul">
+      <li><a href="floox-artist-register.html">Create Profile</a></li>
+      <li><a href="#" onclick="showT('Pricing coming soon!');return false">Pricing</a></li>
+      <li><a href="#" onclick="showT('Blog coming soon!');return false">Success Stories</a></li>
+      <li><a href="#" onclick="showT('FAQ coming soon!');return false">FAQ</a></li>
+    </ul>
+  </div>
+  <div>
+    <div class="foot-h">Company</div>
+    <ul class="foot-ul">
+      <li><a href="#" onclick="showT('About coming soon!');return false">About Us</a></li>
+      <li><a href="#" onclick="showT('Blog coming soon!');return false">Blog</a></li>
+      <li><a href="#" onclick="showT('Careers coming soon!');return false">Careers</a></li>
+      <li><a href="mailto:hello@floox.in">Contact</a></li>
+      <li><a href="floox-login.html">Login / Sign Up</a></li>
+      <li><a href="floox-contact.html">Plan My Event</a></li>
+      <li><a href="floox-organiser-register.html">Join as Organiser</a></li>
+    </ul>
+  </div>
+</footer>
+<div style="background:var(--text)">
+  <div class="foot-bottom">
+    <span>© 2025 Floox Technologies Pvt. Ltd. · Made with ♥ in India 🇮🇳</span>
+    <div class="foot-legal">
+      <a href="#" onclick="showT('Privacy Policy coming soon!');return false">Privacy</a>
+      <a href="#" onclick="showT('Terms coming soon!');return false">Terms</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL ══ -->
+<div class="modal-ov" id="mOv" onclick="closeM(event)">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <h2>Join Floox 🎉</h2>
+    <p class="modal-sub">India's platform for artists & organisers. Free to get started.</p>
+    <div class="modal-tabs">
+      <button class="mtab on" id="mtA" onclick="switchMTab('artist')">🎤 Artist</button>
+      <button class="mtab" id="mtO" onclick="switchMTab('organiser')">🎪 Organiser</button>
+    </div>
+    <div id="mWrap">
+      <div class="mform on" id="mAF">
+        <input type="text" class="finput" placeholder="Your full name" id="mAN">
+        <input type="email" class="finput" placeholder="Email address" id="mAE">
+        <input type="tel" class="finput" placeholder="Phone number" id="mAP">
+        <div>
+          <div class="ms-label">Select your genres (choose all that apply)</div>
+          <div class="ms-wrap" id="modalArtistGenres">
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Bollywood / Hindi Pop</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Classical / Semi-Classical</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Indie / Folk</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Sufi / Ghazal</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Devotional / Bhajan</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Electronic / DJ</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Rock / Metal</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Jazz / Blues</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Rap / Hip-Hop</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'fire')">Other</span>
+          </div>
+        </div>
+        <button class="btn btn-fire" style="width:100%;justify-content:center" onclick="window.location.href='floox-artist-register.html'">Create Artist Profile →</button>
+      </div>
+      <div class="mform" id="mOF">
+        <input type="text" class="finput" placeholder="Name / Organisation" id="mON">
+        <input type="email" class="finput" placeholder="Email address" id="mOE">
+        <input type="tel" class="finput" placeholder="Phone number" id="mOP">
+        <div>
+          <div class="ms-label">Event types you organise (choose all that apply)</div>
+          <div class="ms-wrap" id="modalOrganiserTypes">
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Corporate Events</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Weddings & Sangeet</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Music Festivals</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Cultural Programmes</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">College Fests</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Private Parties</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Restaurant / Lounge</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Mehfil / Intimate Gigs</span>
+            <span class="ms-tag" onclick="toggleMsTag(this,'teal')">Other</span>
+          </div>
+        </div>
+        <button class="btn btn-teal" style="width:100%;justify-content:center" onclick="window.location.href='floox-organiser-register.html'">Create Organiser Account →</button>
+      </div>
+    </div>
+    <div class="suc" id="mSuc">
+      <div class="suc-icon">🎉</div>
+      <h3>You're on the list!</h3>
+      <p>We'll be in touch within 24 hours to get you set up. Welcome to Floox!</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast">
+  <span class="toast-dot"></span>
+  <span id="toastTxt"></span>
+</div>
+
+<!-- Supabase config for Realtime (replace with your values) -->
+<script>
+  const FLOOX_SUPABASE_URL  = 'YOUR_SUPABASE_URL';
+  const FLOOX_SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
+</script>
+<script>
+// ── MULTI-SELECT TAGS
+function toggleMsTag(el, style){el.classList.toggle('sel-'+style)}
+
+// ── LOADER
+window.addEventListener('load',()=>{setTimeout(()=>{document.getElementById('loader').classList.add('gone')},1800)})
+
+// ── HERO BG
+window.addEventListener('load',()=>{
+  const b=document.getElementById('heroBg')
+  b.style.backgroundImage="url('https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=1800&h=1000&fit=crop&q=85')"
+  setTimeout(()=>b.classList.add('loaded'),100)
+})
+
+// ── NAVBAR SCROLL
+window.addEventListener('scroll',()=>{document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>60)})
+
+// ── MOBILE MENU
+function toggleMob(){document.getElementById('mobMenu').classList.toggle('open')}
+
+// ── REGISTER REDIRECTS
+function openM(t){ window.location.href = t==='organiser' ? 'floox-organiser-register.html' : 'floox-artist-register.html'; }
+function closeModal(){}
+function closeM(){}
+function doSignup(t){ openM(t); }
+function submitM(){ openM('artist'); }
+
+// ── TOAST
+let tt
+function showT(msg){
+  const t=document.getElementById('toast')
+  document.getElementById('toastTxt').textContent=msg
+  t.classList.add('show')
+  clearTimeout(tt)
+  tt=setTimeout(()=>t.classList.remove('show'),3200)
+}
+
+// ── SCROLL REVEAL
+const obs=new IntersectionObserver(en=>{en.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target)}})},{threshold:0.1})
+document.querySelectorAll('.reveal,.reveal-l,.reveal-r').forEach((el,i)=>{el.style.transitionDelay=(i%4)*0.1+'s';obs.observe(el)})
+
+// ── DYNAMIC FEATURED ARTISTS ────────────────────────────────────────────────
+async function loadFeaturedArtists() {
+  const grid = document.getElementById('featuredArtistsGrid');
+  if (!grid) return;
+  try {
+    const res  = await fetch('/.netlify/functions/artists?limit=8');
+    const data = await res.json();
+    const artists = data.artists || [];
+    if (!artists.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,255,255,.3);font-size:.85rem">No artists yet — be the first to join!</div>';
+      return;
+    }
+    grid.innerHTML = artists.map(a => {
+      const name  = a.stageName || a.name;
+      const genre = (a.genres || []).join(' · ') || 'Artist';
+      const fee   = (a.minFee) ? '₹'+Number(a.minFee).toLocaleString('en-IN')+' / event' : '';
+      const photo = a.avatar || '';
+      return `
+      <div class="acard reveal" onclick="location.href='floox-search-results.html?q=${encodeURIComponent(name)}'">
+        ${photo
+          ? `<img src="${photo}" class="acard-photo" alt="${name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&h=400&fit=crop&q=80'">`
+          : `<div class="acard-photo" style="background:linear-gradient(135deg,rgba(255,92,0,.2),rgba(255,45,120,.15));display:flex;align-items:center;justify-content:center;font-size:3rem">🎤</div>`}
+        <div class="acard-body">
+          <div class="acard-name">${name}</div>
+          <div class="acard-genre">${genre}</div>
+          <div class="acard-foot">
+            <span class="acard-city">📍 ${a.city || '—'}</span>
+            ${fee ? `<span class="acard-rate">${fee}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    // Re-run reveal observer on new cards
+    grid.querySelectorAll('.reveal').forEach((el,i)=>{
+      el.style.transitionDelay=(i%4)*0.07+'s';
+      obs.observe(el);
+    });
+  } catch(e) {
+    console.warn('Could not load artists', e);
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,255,255,.3);font-size:.85rem"><a href="floox-search-results.html" style="color:#FF5C00">Browse all artists →</a></div>';
+  }
+}
+
+// ── SUPABASE REALTIME — auto-refresh featured artists ────────────────────────
+(function initHomepageRealtime() {
+  const supaUrl = (typeof FLOOX_SUPABASE_URL !== 'undefined') ? FLOOX_SUPABASE_URL : '';
+  const supaKey = (typeof FLOOX_SUPABASE_ANON !== 'undefined') ? FLOOX_SUPABASE_ANON : '';
+  if (!supaUrl || !supaKey) return;
+  try {
+    const wsUrl = supaUrl.replace('https://','wss://') + '/realtime/v1/websocket?apikey='+supaKey+'&vsn=1.0.0';
+    const ws = new WebSocket(wsUrl);
+    let hb;
+    ws.onopen = () => {
+      ws.send(JSON.stringify({topic:'realtime:public:users',event:'phx_join',payload:{config:{broadcast:{self:false}},access_token:supaKey},ref:'1'}));
+      hb = setInterval(()=>ws.readyState===1&&ws.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:'hb'})),25000);
+    };
+    ws.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if ((msg.event==='INSERT'||msg.event==='UPDATE') && msg.payload?.record?.role==='artist') {
+          clearTimeout(window._homertRefresh);
+          window._homertRefresh = setTimeout(loadFeaturedArtists, 1500);
+        }
+      } catch(_) {}
+    };
+    ws.onclose = () => { clearInterval(hb); setTimeout(initHomepageRealtime,6000); };
+    ws.onerror = () => ws.close();
+  } catch(_) {}
+})();
+
+loadFeaturedArtists();
+
+// ── SMOOTH ANCHOR
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',function(e){
+    const t=document.querySelector(this.getAttribute('href'))
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'})}
+  })
+})
+</script>
+<script src="floox-auth.js"></script>
+</body>
+</html>
