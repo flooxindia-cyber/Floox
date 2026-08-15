@@ -75,19 +75,75 @@ const FLOOX = (() => {
 
   // ── Profile helpers ───────────────────────────────────────────────────────
   async function getMe() {
-    const data = await apiGet('me', true);
-    // Keep local storage in sync
-    const token = getToken();
-    if (token) saveSession(token, data.user);
-    return data.user;
+  const token = getToken();
+
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
   }
 
-  async function updateMe(fields) {
-    const data = await apiPost('me', fields, true);
-    const token = getToken();
-    if (token) saveSession(token, data.user);
-    return data;
+  const res = await fetch('/api/me', {
+    method: 'GET',
+    headers
+  });
+
+  let data;
+
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('Profile server returned an invalid response.');
   }
+
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to load profile.');
+  }
+
+  if (token) {
+    saveSession(token, data.user);
+  }
+
+  return data.user;
+}
+
+  async function updateMe(fields) {
+  const token = getToken();
+
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+
+  const res = await fetch('/api/me', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(fields)
+  });
+
+  let data;
+
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('Profile server returned an invalid response.');
+  }
+
+  if (!res.ok) {
+    throw new Error(data.error || 'Profile update failed.');
+  }
+
+  if (token) {
+    saveSession(token, data.user);
+  }
+
+  return data;
+}
 
   async function saveArtistProfile(fields) {
     const data = await apiPost('artist-profile', fields, true);
