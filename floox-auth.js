@@ -165,9 +165,29 @@ const FLOOX = (() => {
 
   // ── Artists directory (public) ────────────────────────────────────────────
   async function getArtists(params = {}) {
-    const qs = new URLSearchParams(params).toString();
-    return await apiGet('artists?' + qs, false);
+  const qs = new URLSearchParams(params).toString();
+
+  const res = await fetch('/api/artists' + (qs ? '?' + qs : ''), {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  let data;
+
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('Artists server returned an invalid response.');
   }
+
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to load artists.');
+  }
+
+  return data;
+}
 
   // ── Organisers directory (auth-gated) ─────────────────────────────────────
   // Only logged-in users can browse organisers
