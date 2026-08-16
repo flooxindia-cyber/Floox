@@ -10,6 +10,7 @@ const HANDLERS = {
   'change-password': require('../server/functions/change-password').handler,
   'delete-account': require('../server/functions/delete-account').handler,
   'forgot-password': require('../server/functions/forgot-password').handler,
+  events: require('../server/functions/events').handler,
   'get-likes': require('../server/functions/get-likes').handler,
   'get-profile': require('../server/functions/get-profile').handler,
   'get-reveals-remaining': require('../server/functions/get-reveals-remaining').handler,
