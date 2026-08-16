@@ -27,13 +27,14 @@ async function readJson(res) {
   try { return JSON.parse(text); } catch { return {}; }
 }
 
-async function queryOrganisers({ city, q, limit = 20, offset = 0 } = {}) {
+async function queryOrganisers({ city, q, id, limit = 20, offset = 0 } = {}) {
   const parts = [
     'role=eq.organiser',
     'verified=eq.true',
     `limit=${limit}`,
     `offset=${offset}`,
   ];
+  if (id) parts.push(`id=eq.${encodeURIComponent(id)}`);
   if (city) parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
   if (q) {
     const safe = encodeURIComponent(q);
@@ -46,8 +47,9 @@ async function queryOrganisers({ city, q, limit = 20, offset = 0 } = {}) {
   return data;
 }
 
-async function countOrganisers({ city, q } = {}) {
+async function countOrganisers({ city, q, id } = {}) {
   const parts = ['role=eq.organiser', 'verified=eq.true'];
+  if (id) parts.push(`id=eq.${encodeURIComponent(id)}`);
   if (city) parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
   if (q) {
     const safe = encodeURIComponent(q);
@@ -67,6 +69,7 @@ exports.handler = async (event) => {
   const filters = {
     city: p.city || undefined,
     q: p.q || undefined,
+    id: p.id || undefined,
     limit: Math.min(parseInt(p.limit, 10) || 20, 50),
     offset: Math.max(parseInt(p.offset, 10) || 0, 0),
   };
