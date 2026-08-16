@@ -1,3 +1,0 @@
-const { adapt } = require('./_adapter');
-const fn = require('../server/functions/me').handler;
-module.exports = adapt(fn);
