@@ -1,8 +1,7 @@
 // Floox server function
-// Internal server function
-//
 // Auth-gated: only logged-in users can see full profiles (including phone/contact).
-// Returns full publicUser data for any profile_complete user by ID.
+// Directory data remains safe for guests; this endpoint is the authenticated
+// full-profile view.
 
 const {
   corsOk, json,
@@ -15,7 +14,6 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'GET')
     return json(405, { error: 'Method not allowed' });
 
-  // ── Must be logged in ──────────────────────────────────────────────────────
   const token = extractBearer(event);
   if (!token) return json(401, { error: 'Please sign in to view full profiles.' });
 
@@ -23,21 +21,18 @@ exports.handler = async (event) => {
   try { decoded = verifyToken(token); }
   catch { return json(401, { error: 'Session expired. Please sign in again.' }); }
 
-  // ── Caller must themselves exist ───────────────────────────────────────────
   const caller = await findUser('id', 'eq', decoded.id);
   if (!caller) return json(401, { error: 'Account not found.' });
 
-  // ── Fetch the requested profile ────────────────────────────────────────────
   const id = (event.queryStringParameters || {}).id;
   if (!id) return json(400, { error: 'Profile ID is required.' });
 
   try {
     const target = await findUser('id', 'eq', id);
     if (!target) return json(404, { error: 'Profile not found.' });
-    if (!target.profile_complete)
-      return json(404, { error: 'This profile is not yet public.' });
+    if (!target.verified)
+      return json(404, { error: 'This profile is not yet verified.' });
 
-    // Return the full profile (publicUser strips password_hash)
     return json(200, { user: publicUser(target) });
   } catch (err) {
     console.error('get-profile error:', err);
