@@ -1,19 +1,16 @@
-<<<<<<< HEAD
-// floox-auth.js — Shared authentication & API helper v4
+// floox-auth.js — Shared authentication & API helper v5
 // Floox — Vercel + Supabase
-// IMPORTANT: All API calls use relative /api/* routes.
-=======
-// floox-auth.js — Shared authentication & API helper v3
-// Centralized auth/session + role-based routing.
->>>>>>> 14b917eca2ff8fb33b97e6031def3bd9966804aa
+// Single source of truth for session, API calls, OTP, profile helpers and routing.
+// IMPORTANT: All production API calls use the Vercel /api/* routes.
 
 const FLOOX = (() => {
+  'use strict';
+
   const API = '/api';
 
-<<<<<<< HEAD
-  /* =========================================================
-     SESSION
-  ========================================================= */
+  // =========================================================
+  // SESSION
+  // =========================================================
 
   function getToken() {
     return localStorage.getItem('floox_token');
@@ -21,18 +18,19 @@ const FLOOX = (() => {
 
   function getUser() {
     const raw = localStorage.getItem('floox_user');
-
     if (!raw) return null;
 
     try {
       return JSON.parse(raw);
     } catch {
+      // Corrupt local session should never break the page.
+      localStorage.removeItem('floox_user');
       return null;
     }
   }
 
   function isLoggedIn() {
-    return !!getToken();
+    return !!getToken() && !!getUser();
   }
 
   function saveSession(token, user) {
@@ -43,18 +41,6 @@ const FLOOX = (() => {
     if (user) {
       localStorage.setItem('floox_user', JSON.stringify(user));
     }
-=======
-  function getToken() { return localStorage.getItem('floox_token'); }
-  function getUser() {
-    const raw = localStorage.getItem('floox_user');
-    try { return raw ? JSON.parse(raw) : null; } catch { return null; }
-  }
-  function isLoggedIn() { return !!getToken(); }
-
-  function saveSession(token, user) {
-    if (token) localStorage.setItem('floox_token', token);
-    if (user) localStorage.setItem('floox_user', JSON.stringify(user));
->>>>>>> 14b917eca2ff8fb33b97e6031def3bd9966804aa
   }
 
   function clearSession() {
@@ -62,13 +48,16 @@ const FLOOX = (() => {
     localStorage.removeItem('floox_user');
   }
 
-<<<<<<< HEAD
-  /* =========================================================
-     ROLE / DASHBOARD ROUTING
-  ========================================================= */
+  // =========================================================
+  // ROLE / ROUTING
+  // =========================================================
+
+  function normaliseRole(role) {
+    return String(role || '').trim().toLowerCase();
+  }
 
   function dashboardForRole(role) {
-    switch (String(role || '').toLowerCase()) {
+    switch (normaliseRole(role)) {
       case 'artist':
         return 'floox-dashboard-artist.html';
 
@@ -82,219 +71,170 @@ const FLOOX = (() => {
 
       default:
         return 'floox-public.html';
-=======
-  function dashboardForRole(role) {
-    switch (String(role || '').toLowerCase()) {
-      case 'artist': return 'floox-dashboard-artist.html';
-      case 'organiser': return 'floox-dashboard-organiser.html';
-      case 'fan': return 'floox-dashboard-fan.html';
-      default: return 'floox-public.html';
->>>>>>> 14b917eca2ff8fb33b97e6031def3bd9966804aa
     }
   }
 
-  function dashboardUrl(user) {
+  function dashboardUrl(user = getUser()) {
     return dashboardForRole(user && user.role);
   }
 
-<<<<<<< HEAD
-  /* =========================================================
-     GENERIC API HELPERS
-  ========================================================= */
+  function goToDashboard(user = getUser()) {
+    if (!user || !user.role) {
+      window.location.href = 'floox-login.html';
+      return false;
+    }
 
-  async function apiPost(endpoint, body = {}, auth = false) {
+    window.location.href = dashboardForRole(user.role);
+    return true;
+  }
+
+  function goToHome() {
+    window.location.href = 'floox-public.html';
+  }
+
+  // =========================================================
+  // API HELPERS
+  // =========================================================
+
+  async function parseResponse(response) {
+    const text = await response.text();
+
+    if (!text) {
+      return {};
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      // This gives a useful error when Vercel returns HTML
+      // instead of JSON (404/500/routing problems).
+      const preview = text.replace(/\s+/g, ' ').slice(0, 180);
+      throw new Error(
+        `Server returned an invalid response (${response.status}).` +
+        (preview ? ` ${preview}` : '')
+      );
+    }
+  }
+
+  async function request(endpoint, options = {}) {
+    const {
+      method = 'GET',
+      body,
+      auth = false,
+      headers: extraHeaders = {}
+    } = options;
+
     const headers = {
-      'Content-Type': 'application/json'
+      Accept: 'application/json',
+      ...extraHeaders
     };
 
-    const token = getToken();
+    if (body !== undefined) {
+      headers['Content-Type'] = 'application/json';
+    }
 
-    if (auth && token) {
+    if (auth) {
+      const token = getToken();
+
+      if (!token) {
+        throw new Error('Authentication required. Please sign in again.');
+      }
+
       headers.Authorization = 'Bearer ' + token;
     }
 
-    const response = await fetch(API + '/' + endpoint, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body)
-    });
+    let response;
 
-    const data = await response.json().catch(() => ({}));
+    try {
+      response = await fetch(API + '/' + endpoint, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body)
+      });
+    } catch {
+      throw new Error(
+        'Unable to connect to Floox. Please check your internet connection and try again.'
+      );
+    }
+
+    // If a stale token is rejected, clear the local session.
+    if (response.status === 401 && auth) {
+      clearSession();
+    }
+
+    const data = await parseResponse(response);
 
     if (!response.ok) {
       throw new Error(
         data.error ||
         data.message ||
-        'Request failed'
+        `Request failed (${response.status}).`
       );
     }
 
-=======
-  async function apiPost(endpoint, body = {}, auth = false) {
-    const headers = { 'Content-Type': 'application/json' };
-    const token = getToken();
-    if (auth && token) headers.Authorization = 'Bearer ' + token;
-    const res = await fetch(API + '/' + endpoint, { method: 'POST', headers, body: JSON.stringify(body) });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Request failed');
->>>>>>> 14b917eca2ff8fb33b97e6031def3bd9966804aa
     return data;
+  }
+
+  async function apiPost(endpoint, body = {}, auth = false) {
+    return request(endpoint, {
+      method: 'POST',
+      body,
+      auth
+    });
   }
 
   async function apiGet(endpoint, auth = true) {
-<<<<<<< HEAD
-    const headers = {
-      'Content-Type': 'application/json'
-    };
-
-    const token = getToken();
-
-    if (auth && token) {
-      headers.Authorization = 'Bearer ' + token;
-    }
-
-    const response = await fetch(API + '/' + endpoint, {
+    return request(endpoint, {
       method: 'GET',
-      headers
+      auth
     });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        data.message ||
-        'Request failed'
-      );
-    }
-
-    return data;
   }
 
-  /* =========================================================
-     LOGIN
-  ========================================================= */
+  async function apiDelete(endpoint, auth = true) {
+    return request(endpoint, {
+      method: 'DELETE',
+      auth
+    });
+  }
+
+  // =========================================================
+  // LOGIN
+  // =========================================================
 
   async function login(email, password) {
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email,
-        password
-      })
+    const data = await apiPost('login', {
+      email: String(email || '').trim().toLowerCase(),
+      password
     });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        data.message ||
-        'Login failed. Please try again.'
-      );
-    }
 
     if (!data.token || !data.user) {
-      throw new Error(
-        'Login response is incomplete. Please try again.'
-      );
+      throw new Error('Login response is incomplete. Please try again.');
     }
 
-    saveSession(data.token, data.user);
-
-    return data.user;
-  }
-
-  /* =========================================================
-     REGISTER
-  ========================================================= */
-
-  async function register(payload) {
-    const data = await apiPost('register', payload);
-
-    /*
-      Registration should normally return:
-
-      {
-        requiresOtp: true,
-        email: "...",
-        role: "artist"
-      }
-
-      Do NOT automatically bypass OTP here.
-      The verification page is responsible for verification.
-    */
-
-    return data;
-  }
-
-  /* =========================================================
-     OTP
-  ========================================================= */
-
-  async function verifyOtp(
-    email,
-    otp,
-    purpose = 'registration'
-  ) {
-    const response = await fetch('/api/verify-otp', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email,
-        otp,
-        purpose
-      })
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        data.message ||
-        'Verification failed.'
-      );
-=======
-    const headers = { 'Content-Type': 'application/json' };
-    const token = getToken();
-    if (auth && token) headers.Authorization = 'Bearer ' + token;
-    const res = await fetch(API + '/' + endpoint, { headers });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Request failed');
-    return data;
-  }
-
-  async function login(email, password) {
-    const res = await fetch('/api/login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Login failed. Please try again.');
     saveSession(data.token, data.user);
     return data.user;
   }
 
+  // =========================================================
+  // REGISTRATION
+  // =========================================================
+
   async function register(payload) {
-    const data = await apiPost('register', payload);
-    if (window.FLOOX_DEMO && data && data.requiresOtp && typeof window.FLOOX_DEMO_OTP_VERIFY === 'function') {
-      const verified = await window.FLOOX_DEMO_OTP_VERIFY(payload.email);
-      if (verified && verified.token && verified.user) saveSession(verified.token, verified.user);
-      return verified;
->>>>>>> 14b917eca2ff8fb33b97e6031def3bd9966804aa
-    }
+    return apiPost('register', payload);
+  }
 
-    /*
-      Successful verification should establish the session
-      if backend returns token + user.
-    */
+  // =========================================================
+  // OTP
+  // =========================================================
 
+  async function verifyOtp(email, otp, purpose = 'registration') {
+    const data = await apiPost('verify-otp', {
+      email: String(email || '').trim().toLowerCase(),
+      otp: String(otp || '').trim(),
+      purpose
+    });
+
+    // Registration verification may establish the session.
     if (data.token && data.user) {
       saveSession(data.token, data.user);
     }
@@ -302,171 +242,32 @@ const FLOOX = (() => {
     return data;
   }
 
-<<<<<<< HEAD
-  async function resendOtp(
-    email,
-    purpose = 'registration'
-  ) {
-    const response = await fetch('/api/resend-otp', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email,
-        purpose
-      })
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        data.message ||
-        'Could not resend OTP.'
-      );
-    }
-
-    return data;
-  }
-
-  /* =========================================================
-     LOGOUT
-  ========================================================= */
-=======
-  async function verifyOtp(email, otp, purpose = 'registration') {
-    const res = await fetch('/api/verify-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp, purpose }) });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Verification failed.');
-    if (data.token && data.user) saveSession(data.token, data.user);
-    return data;
-  }
-
   async function resendOtp(email, purpose = 'registration') {
-    const res = await fetch('/api/resend-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, purpose }) });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Could not resend OTP.');
-    return data;
-  }
->>>>>>> 14b917eca2ff8fb33b97e6031def3bd9966804aa
-
-  function logout(redirect = 'index.html') {
-    clearSession();
-
-    window.location.href = redirect;
+    return apiPost('resend-otp', {
+      email: String(email || '').trim().toLowerCase(),
+      purpose
+    });
   }
 
-<<<<<<< HEAD
-  /* =========================================================
-     CURRENT USER
-  ========================================================= */
+  // =========================================================
+  // PASSWORD RESET
+  // =========================================================
 
-  async function getMe() {
-    const token = getToken();
-
-    if (!token) {
-      throw new Error('Authentication required.');
-    }
-
-    const data = await apiGet('me', true);
-
-    if (!data.user) {
-      throw new Error('Invalid user response.');
-    }
-
-    /*
-      Preserve the current token and refresh the cached
-      user information from Supabase/backend.
-    */
-
-    saveSession(token, data.user);
-
-    return data.user;
+  async function forgotPassword(email) {
+    return apiPost('forgot-password', {
+      email: String(email || '').trim().toLowerCase()
+    });
   }
 
-  /* =========================================================
-     UPDATE USER
-  ========================================================= */
-
-  async function updateMe(fields) {
-    const data = await apiPost(
-      'me',
-      fields,
-      true
-    );
-
-    if (data.user) {
-      saveSession(getToken(), data.user);
-    }
-
-    return data;
+  async function resetPassword(email, otp, newPassword) {
+    return apiPost('reset-password', {
+      email: String(email || '').trim().toLowerCase(),
+      otp: String(otp || '').trim(),
+      newPassword
+    });
   }
 
-  /* =========================================================
-     ARTIST PROFILE
-  ========================================================= */
-
-  async function saveArtistProfile(fields) {
-    const data = await apiPost(
-      'artist-profile',
-      fields,
-      true
-    );
-
-    if (data.user) {
-      saveSession(getToken(), data.user);
-    }
-
-=======
-  async function getMe() {
-    const token = getToken();
-    if (!token) throw new Error('Authentication required.');
-    const data = await apiGet('me', true);
-    saveSession(token, data.user);
-    return data.user;
-  }
-
-  async function updateMe(fields) {
-    const data = await apiPost('me', fields, true);
-    saveSession(getToken(), data.user);
-    return data;
-  }
-
-  async function saveArtistProfile(fields) {
-    const data = await apiPost('artist-profile', fields, true);
-    saveSession(getToken(), data.user);
->>>>>>> 14b917eca2ff8fb33b97e6031def3bd9966804aa
-    return data;
-  }
-
-  /* =========================================================
-     ORGANISER PROFILE
-  ========================================================= */
-
-  async function saveOrganiserProfile(fields) {
-<<<<<<< HEAD
-    const data = await apiPost(
-      'organiser-profile',
-      fields,
-      true
-    );
-
-    if (data.user) {
-      saveSession(getToken(), data.user);
-    }
-
-    return data;
-  }
-
-  /* =========================================================
-     CHANGE PASSWORD
-  ========================================================= */
-
-  async function changePassword(
-    currentPassword,
-    newPassword
-  ) {
+  async function changePassword(currentPassword, newPassword) {
     return apiPost(
       'change-password',
       {
@@ -477,608 +278,331 @@ const FLOOX = (() => {
     );
   }
 
-  /* =========================================================
-     ARTISTS
-  ========================================================= */
+  // =========================================================
+  // LOGOUT
+  // =========================================================
 
-  async function getArtists(params = {}) {
-    const query = new URLSearchParams(params).toString();
+  function logout(redirect = 'floox-public.html') {
+    clearSession();
 
-    const response = await fetch(
-      '/api/artists' +
-      (query ? '?' + query : ''),
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    // Use a safe relative redirect. The default is the real Floox
+    // public landing page, not index.html.
+    window.location.href = redirect || 'floox-public.html';
+  }
 
-    const data = await response.json().catch(() => ({}));
+  // =========================================================
+  // CURRENT USER / PROFILE
+  // =========================================================
 
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        data.message ||
-        'Failed to load artists.'
-      );
+  async function getMe() {
+    const token = getToken();
+
+    if (!token) {
+      throw new Error('Authentication required. Please sign in again.');
+    }
+
+    const data = await apiGet('me', true);
+
+    if (!data.user) {
+      throw new Error('Invalid user response.');
+    }
+
+    saveSession(token, data.user);
+    return data.user;
+  }
+
+  async function updateMe(fields) {
+    const data = await apiPost('me', fields, true);
+
+    if (data.user) {
+      saveSession(getToken(), data.user);
     }
 
     return data;
   }
 
-  /* =========================================================
-     ORGANISERS
-  ========================================================= */
+  async function saveArtistProfile(fields) {
+    const data = await apiPost('artist-profile', fields, true);
 
-  async function getOrganisers(params = {}) {
-    const query = new URLSearchParams(params).toString();
-
-    const response = await fetch(
-      '/api/organisers' +
-      (query ? '?' + query : ''),
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        data.message ||
-        'Failed to load organisers.'
-      );
+    if (data.user) {
+      saveSession(getToken(), data.user);
     }
 
     return data;
   }
 
-  /* =========================================================
-     PROFILE
-  ========================================================= */
+  async function saveOrganiserProfile(fields) {
+    const data = await apiPost('organiser-profile', fields, true);
+
+    if (data.user) {
+      saveSession(getToken(), data.user);
+    }
+
+    return data;
+  }
 
   async function getProfile(id) {
+    if (!id) {
+      throw new Error('Profile ID is required.');
+    }
+
     return apiGet(
-      'get-profile?id=' +
-      encodeURIComponent(id),
+      'get-profile?id=' + encodeURIComponent(id),
       true
     );
   }
 
-  /* =========================================================
-     FILE UPLOAD
-  ========================================================= */
-
-  function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-=======
-    const data = await apiPost('organiser-profile', fields, true);
-    saveSession(getToken(), data.user);
-    return data;
-  }
-
-  async function changePassword(currentPassword, newPassword) {
-    return apiPost('change-password', { currentPassword, newPassword }, true);
-  }
+  // =========================================================
+  // DIRECTORIES
+  // =========================================================
 
   async function getArtists(params = {}) {
     const qs = new URLSearchParams(params).toString();
-    const res = await fetch('/api/artists' + (qs ? '?' + qs : ''), { headers: { 'Content-Type': 'application/json' } });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Failed to load artists.');
-    return data;
+
+    return apiGet(
+      'artists' + (qs ? '?' + qs : ''),
+      false
+    );
   }
 
   async function getOrganisers(params = {}) {
     const qs = new URLSearchParams(params).toString();
-    return apiGet('organisers' + (qs ? '?' + qs : ''), true);
+
+    return apiGet(
+      'organisers' + (qs ? '?' + qs : ''),
+      true
+    );
   }
 
-  async function getProfile(id) {
-    return apiGet('get-profile?id=' + encodeURIComponent(id), true);
+  // =========================================================
+  // LIKES / CONTACT / MESSAGING
+  // =========================================================
+
+  async function toggleLike(artistId) {
+    return apiPost(
+      'toggle-like',
+      { artistId },
+      true
+    );
   }
+
+  async function getLikes() {
+    return apiGet('get-likes', true);
+  }
+
+  async function revealContact(artistId) {
+    return apiPost(
+      'reveal-contact',
+      { artistId },
+      true
+    );
+  }
+
+  async function getRevealsRemaining() {
+    return apiGet('get-reveals-remaining', true);
+  }
+
+  async function sendMessage(payload) {
+    return apiPost(
+      'send-message',
+      payload,
+      true
+    );
+  }
+
+  // =========================================================
+  // FILE UPLOAD
+  // =========================================================
 
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
+      if (!file) {
+        reject(new Error('No file selected.'));
+        return;
+      }
+
       const reader = new FileReader();
->>>>>>> 14b917eca2ff8fb33b97e6031def3bd9966804aa
+
       reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
+      reader.onerror = () => reject(new Error('Could not read the selected file.'));
 
       reader.readAsDataURL(file);
     });
   }
 
-<<<<<<< HEAD
-  async function uploadFile(
-    file,
-    mediaType = 'image',
-    onProgress
-  ) {
+  async function uploadFile(file, mediaType = 'image', onProgress) {
     if (!file) {
-      throw new Error('No file selected.');
+      throw new Error('Please select a file.');
     }
 
     const token = getToken();
 
     if (!token) {
-      throw new Error('You must be logged in to upload files.');
+      throw new Error('Not logged in. Please sign in again.');
+    }
+
+    if (typeof onProgress === 'function') {
+      onProgress(10);
     }
 
     const base64 = await fileToBase64(file);
 
-    if (onProgress) {
-      onProgress(30);
+    if (typeof onProgress === 'function') {
+      onProgress(35);
     }
 
-    const response = await fetch(
-      API + '/upload-media',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token
-        },
-        body: JSON.stringify({
-          fileData: base64,
-          fileName: file.name,
-          fileType: file.type,
-          mediaType
-        })
+    const data = await request('upload-media', {
+      method: 'POST',
+      auth: true,
+      body: {
+        fileData: base64,
+        fileName: file.name,
+        fileType: file.type,
+        mediaType
       }
-    );
+    });
 
-    if (onProgress) {
-      onProgress(90);
-    }
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        data.message ||
-        'Upload failed.'
-      );
-    }
-
-    if (onProgress) {
+    if (typeof onProgress === 'function') {
       onProgress(100);
     }
 
     return data;
   }
 
-  /* =========================================================
-     NAVIGATION / AUTH STATE
-  ========================================================= */
+  // =========================================================
+  // AUTH GUARDS
+  // =========================================================
 
-  async function updateNav() {
-    const loginLinks =
-      document.querySelectorAll(
-        '[data-auth="login"]'
-      );
-
-    const logoutLinks =
-      document.querySelectorAll(
-        '[data-auth="logout"]'
-      );
-
-    const userNameEls =
-      document.querySelectorAll(
-        '[data-auth="username"]'
-      );
-
-    const dashLinks =
-      document.querySelectorAll(
-        '[data-auth="dashboard"]'
-      );
-
+  function requireAuth(role) {
+    const user = getUser();
     const token = getToken();
 
-    /*
-      No session
-    */
-
-    if (!token) {
-      loginLinks.forEach(
-        el => el.style.display = 'inline-flex'
-      );
-
-      logoutLinks.forEach(
-        el => el.style.display = 'none'
-      );
-
-      userNameEls.forEach(
-        el => el.style.display = 'none'
-      );
-
-      dashLinks.forEach(
-        el => el.style.display = 'none'
-      );
-
+    if (!token || !user) {
+      clearSession();
+      window.location.href = 'floox-login.html';
       return null;
     }
 
-    try {
-      /*
-        Always ask backend for the real user.
-        This prevents stale localStorage roles from
-        sending users to the wrong dashboard.
-      */
+    if (role) {
+      const wanted = normaliseRole(role);
+      const actual = normaliseRole(user.role);
 
-      const user = await getMe();
+      // Treat organiser/organizer as the same role.
+      const sameRole =
+        (wanted === 'organiser' || wanted === 'organizer') &&
+        (actual === 'organiser' || actual === 'organizer');
 
-      if (!user || !user.role) {
-        throw new Error('Invalid session.');
+      if (wanted !== actual && !sameRole) {
+        // Never send a logged-in user to the public page just because
+        // their role is wrong. Send them to their own dashboard.
+        window.location.href = dashboardForRole(actual);
+        return null;
       }
+    }
 
-      const url = dashboardUrl(user);
-
-      /*
-        Hide login / show account controls
-      */
-
-      loginLinks.forEach(
-        el => el.style.display = 'none'
-      );
-
-      logoutLinks.forEach(
-        el => el.style.display = 'inline-flex'
-      );
-
-      userNameEls.forEach(el => {
-        el.style.display = 'inline-flex';
-
-        el.textContent =
-          'Hi, ' +
-          (
-            user.name ||
-            user.email ||
-            'Account'
-          )
-            .split(' ')[0] +
-          '! 👋';
-      });
-
-      /*
-        Dashboard button
-      */
-
-      dashLinks.forEach(el => {
-        el.style.display = 'inline-flex';
-        el.href = url;
-
-        /*
-          Use onclick as a second protection.
-        */
-
-        el.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-
-          window.location.assign(url);
-
-          return false;
-        };
-      });
-
-      /*
-        Capture dashboard clicks in the capture phase.
-        This protects against old inline JavaScript on
-        index.html changing the destination.
-      */
-
-      if (
-        !document.documentElement
-          .dataset
-          .flooxDashboardRouteGuard
-      ) {
-        document.documentElement
-          .dataset
-          .flooxDashboardRouteGuard = '1';
-
-        document.addEventListener(
-          'click',
-          function (event) {
-            const link =
-              event.target.closest(
-                '[data-auth="dashboard"]'
-              );
-
-            if (!link) return;
-
-            event.preventDefault();
-            event.stopImmediatePropagation();
-
-            const cachedUser = getUser();
-
-            if (
-              cachedUser &&
-              cachedUser.role
-            ) {
-              window.location.assign(
-                dashboardForRole(
-                  cachedUser.role
-                )
-              );
-            } else {
-              window.location.assign(
-                'floox-login.html'
-              );
-            }
-          },
-          true
-        );
-      }
-
-      /*
-        Re-apply href after any legacy DOMContentLoaded
-        handler has executed.
-      */
-
-      setTimeout(() => {
-        dashLinks.forEach(el => {
-          el.href = url;
-
-          el.onclick = function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            window.location.assign(url);
-
-            return false;
-          };
-        });
-      }, 0);
-
-      return user;
-
-    } catch (error) {
-
-      /*
-        Invalid/expired session
-      */
-
-      clearSession();
-
-      loginLinks.forEach(
-        el => el.style.display = 'inline-flex'
-      );
-
-      logoutLinks.forEach(
-        el => el.style.display = 'none'
-      );
-
-      userNameEls.forEach(
-        el => el.style.display = 'none'
-      );
-
-      dashLinks.forEach(
-        el => el.style.display = 'none'
-      );
-
-=======
-  async function uploadFile(file, mediaType = 'image', onProgress) {
-    const base64 = await fileToBase64(file);
-    if (onProgress) onProgress(30);
-    const token = getToken();
-    if (!token) throw new Error('Not logged in');
-    const res = await fetch(API + '/upload-media', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ fileData: base64, fileName: file.name, fileType: file.type, mediaType })
-    });
-    if (onProgress) onProgress(90);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Upload failed');
-    return data;
+    return user;
   }
 
-  // IMPORTANT: verify the session with /api/me before exposing a dashboard link.
-  // This prevents stale localStorage roles from sending users to the wrong page.
-  async function updateNav() {
+  function redirectIfLoggedIn() {
+    const user = getUser();
+    const token = getToken();
+
+    if (!token || !user) {
+      return false;
+    }
+
+    goToDashboard(user);
+    return true;
+  }
+
+  // =========================================================
+  // NAVIGATION
+  // =========================================================
+
+  function updateNav() {
+    const user = getUser();
+
     const loginLinks = document.querySelectorAll('[data-auth="login"]');
     const logoutLinks = document.querySelectorAll('[data-auth="logout"]');
     const userNameEls = document.querySelectorAll('[data-auth="username"]');
     const dashLinks = document.querySelectorAll('[data-auth="dashboard"]');
 
-    const token = getToken();
-    if (!token) {
-      loginLinks.forEach(el => el.style.display = 'inline-flex');
-      logoutLinks.forEach(el => el.style.display = 'none');
-      userNameEls.forEach(el => el.style.display = 'none');
-      dashLinks.forEach(el => el.style.display = 'none');
-      return null;
-    }
-
-    try {
-      const user = await getMe();
-      if (!user || !user.role) throw new Error('Invalid session');
-
-      loginLinks.forEach(el => el.style.display = 'none');
-      logoutLinks.forEach(el => el.style.display = 'inline-flex');
-      userNameEls.forEach(el => {
-        el.style.display = 'inline-flex';
-        el.textContent = (user.name || user.email || 'Account').split(' ')[0];
+    if (user) {
+      loginLinks.forEach(el => {
+        el.style.display = 'none';
       });
+
+      logoutLinks.forEach(el => {
+        el.style.display = 'inline-flex';
+      });
+
+      userNameEls.forEach(el => {
+        const name = user.name || user.email || 'User';
+        el.textContent = String(name).split(' ')[0];
+      });
+
       dashLinks.forEach(el => {
         el.style.display = 'inline-flex';
-        el.href = dashboardUrl(user);
-        el.dataset.dashboardRole = user.role;
-        el.onclick = () => { window.location.href = dashboardUrl(user); return false; };
+        el.href = dashboardForRole(user.role);
+
+        // Make dashboard controls impossible to mis-route.
+        if (!el.dataset.flooxDashboardBound) {
+          el.dataset.flooxDashboardBound = '1';
+
+          el.addEventListener('click', event => {
+            event.preventDefault();
+            goToDashboard(getUser());
+          });
+        }
       });
-      return user;
-    } catch (err) {
-      // Invalid/expired token: remove it so the nav cannot point to a stale dashboard.
-      clearSession();
-      loginLinks.forEach(el => el.style.display = 'inline-flex');
-      logoutLinks.forEach(el => el.style.display = 'none');
-      userNameEls.forEach(el => el.style.display = 'none');
-      dashLinks.forEach(el => el.style.display = 'none');
->>>>>>> 14b917eca2ff8fb33b97e6031def3bd9966804aa
-      return null;
+    } else {
+      loginLinks.forEach(el => {
+        el.style.display = 'inline-flex';
+      });
+
+      logoutLinks.forEach(el => {
+        el.style.display = 'none';
+      });
+
+      dashLinks.forEach(el => {
+        el.style.display = 'none';
+      });
     }
   }
 
-<<<<<<< HEAD
-  /* =========================================================
-     PROTECTED PAGE
-  ========================================================= */
+  // =========================================================
+  // UI HELPERS
+  // =========================================================
 
-  async function requireAuth(role) {
-    const token = getToken();
-
-    if (!token) {
-      window.location.replace(
-        'floox-login.html'
-      );
-
-      return false;
-    }
-
-    try {
-      const user = await getMe();
-
-      if (!user || !user.role) {
-        throw new Error(
-          'Invalid account.'
-        );
-      }
-
-      /*
-        If page requires a specific role and the
-        logged-in user has another role, send them
-        to their own dashboard.
-      */
-
-      if (
-        role &&
-        String(user.role).toLowerCase() !==
-        String(role).toLowerCase()
-      ) {
-        window.location.replace(
-          dashboardUrl(user)
-        );
-
-        return false;
-      }
-
-      return user;
-
-    } catch (error) {
-      clearSession();
-
-      window.location.replace(
-        'floox-login.html'
-      );
-
-      return false;
-    }
-  }
-
-  /* =========================================================
-     GO TO DASHBOARD
-  ========================================================= */
-
-  async function goDashboard() {
-    const token = getToken();
-
-    if (!token) {
-      window.location.href =
-        'floox-login.html';
-
-      return;
-    }
-
-    try {
-      const user = await getMe();
-
-      if (!user || !user.role) {
-        throw new Error(
-          'Invalid account.'
-        );
-      }
-
-      window.location.assign(
-        dashboardUrl(user)
-      );
-
-    } catch (error) {
-
-      /*
-        Use cached user only as fallback.
-      */
-
-      const cachedUser = getUser();
-
-      if (
-        cachedUser &&
-        cachedUser.role
-      ) {
-        window.location.assign(
-          dashboardForRole(
-            cachedUser.role
-          )
-        );
-      } else {
-        clearSession();
-
-        window.location.assign(
-          'floox-login.html'
-        );
-      }
-    }
-  }
-
-  /* =========================================================
-     TOAST
-  ========================================================= */
-
-  let toastTimer;
-
-  function toast(
-    message,
-    type = 'info'
-  ) {
-    let el =
-      document.getElementById(
-        'flooxToast'
-      );
+  function toast(msg, type = 'info') {
+    let el = document.getElementById('flooxToast');
 
     if (!el) {
       el = document.createElement('div');
-
       el.id = 'flooxToast';
 
-      el.style.cssText =
-        'position:fixed;' +
-        'bottom:2rem;' +
-        'left:50%;' +
-        'transform:translateX(-50%) translateY(80px);' +
-        'z-index:99999;' +
-        'background:#1C1000;' +
-        'color:#fff;' +
-        'border-radius:100px;' +
-        'padding:.85rem 1.6rem;' +
-        'font-size:.88rem;' +
-        'display:flex;' +
-        'align-items:center;' +
-        'gap:.6rem;' +
-        'opacity:0;' +
-        'transition:all .35s;' +
-        'pointer-events:none;' +
-        'box-shadow:0 8px 28px rgba(0,0,0,.4);' +
-        'max-width:90vw;' +
-        'text-align:center;';
+      el.style.cssText = [
+        'position:fixed',
+        'bottom:2rem',
+        'left:50%',
+        'transform:translateX(-50%) translateY(80px)',
+        'z-index:99999',
+        'background:#1C1000',
+        'color:#fff',
+        'border-radius:100px',
+        'padding:.85rem 1.6rem',
+        'font-size:.88rem',
+        'display:flex',
+        'align-items:center',
+        'gap:.6rem',
+        'opacity:0',
+        'transition:all .35s cubic-bezier(.34,1.56,.64,1)',
+        'pointer-events:none',
+        'box-shadow:0 8px 28px rgba(0,0,0,.4)',
+        'font-family:"Plus Jakarta Sans",sans-serif',
+        'max-width:90vw',
+        'text-align:center'
+      ].join(';');
 
       document.body.appendChild(el);
     }
@@ -1089,172 +613,110 @@ const FLOOX = (() => {
       info: '#00C2A8'
     };
 
-    el.innerHTML =
-      '<span style="' +
-      'width:8px;' +
-      'height:8px;' +
-      'border-radius:50%;' +
-      'background:' +
-      (colors[type] || colors.info) +
-      ';flex-shrink:0">' +
-      '</span>' +
-      '<span>' +
-      String(message) +
-      '</span>';
+    const dot = colors[type] || colors.info;
 
-    el.style.transform =
-      'translateX(-50%) translateY(0)';
+    // textContent avoids injecting arbitrary user/server HTML.
+    el.innerHTML = '';
+    const dotEl = document.createElement('span');
+    dotEl.style.cssText =
+      `width:8px;height:8px;border-radius:50%;background:${dot};flex-shrink:0`;
 
+    const textEl = document.createElement('span');
+    textEl.textContent = String(msg || '');
+
+    el.appendChild(dotEl);
+    el.appendChild(textEl);
+
+    el.style.transform = 'translateX(-50%) translateY(0)';
     el.style.opacity = '1';
 
-    clearTimeout(toastTimer);
+    clearTimeout(el._flooxTimer);
 
-    toastTimer = setTimeout(() => {
-      el.style.transform =
-        'translateX(-50%) translateY(80px)';
-
+    el._flooxTimer = setTimeout(() => {
+      el.style.transform = 'translateX(-50%) translateY(80px)';
       el.style.opacity = '0';
     }, 4000);
   }
 
-  /* =========================================================
-     FORMAT BYTES
-  ========================================================= */
-
   function fmtBytes(bytes) {
-    if (bytes < 1024) {
-      return bytes + ' B';
-    }
+    const b = Number(bytes) || 0;
 
-    if (bytes < 1048576) {
-      return (
-        bytes / 1024
-      ).toFixed(1) + ' KB';
-    }
-
-    return (
-      bytes / 1048576
-    ).toFixed(1) + ' MB';
-  }
-
-  /* =========================================================
-     INITIALIZE
-  ========================================================= */
-
-  document.addEventListener(
-    'DOMContentLoaded',
-    function () {
-      updateNav();
-    }
-  );
-
-  /* =========================================================
-     PUBLIC API
-  ========================================================= */
-
-  return {
-    getToken,
-    getUser,
-    isLoggedIn,
-
-    dashboardForRole,
-    dashboardUrl,
-
-    login,
-    register,
-
-    verifyOtp,
-    resendOtp,
-
-    logout,
-
-    getMe,
-    updateMe,
-
-    saveArtistProfile,
-    saveOrganiserProfile,
-
-    changePassword,
-
-    getArtists,
-    getOrganisers,
-    getProfile,
-
-    uploadFile,
-
-    updateNav,
-    requireAuth,
-    goDashboard,
-
-    toast,
-    fmtBytes,
-
-    apiPost,
-    apiGet,
-
-    saveSession,
-    clearSession
-=======
-  // Use this on protected pages. It verifies the role against the backend,
-  // rather than trusting only localStorage.
-  async function requireAuth(role) {
-    const token = getToken();
-    if (!token) { window.location.replace('floox-login.html'); return false; }
-    try {
-      const user = await getMe();
-      if (!user || !user.role) throw new Error('Invalid account');
-      if (role && user.role !== role) {
-        window.location.replace(dashboardUrl(user));
-        return false;
-      }
-      return user;
-    } catch (err) {
-      clearSession();
-      window.location.replace('floox-login.html');
-      return false;
-    }
-  }
-
-  function goDashboard() {
-    const cached = getUser();
-    if (!getToken()) { window.location.href = 'floox-login.html'; return; }
-    // Try server verification; fallback only for transient API failures.
-    getMe().then(user => {
-      window.location.href = dashboardUrl(user);
-    }).catch(() => {
-      if (cached && cached.role) window.location.href = dashboardUrl(cached);
-      else window.location.href = 'floox-login.html';
-    });
-  }
-
-  function toast(msg, type = 'info') {
-    let el = document.getElementById('flooxToast');
-    if (!el) {
-      el = document.createElement('div'); el.id = 'flooxToast';
-      el.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);z-index:9999;background:#1C1000;color:#fff;border-radius:100px;padding:.85rem 1.6rem;font-size:.88rem;display:flex;align-items:center;gap:.6rem;opacity:0;transition:all .35s;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,.4);font-family:Arial,sans-serif;max-width:90vw;text-align:center';
-      document.body.appendChild(el);
-    }
-    const colors = { success: '#22C55E', error: '#FF2D78', info: '#00C2A8' };
-    el.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${colors[type] || colors.info};flex-shrink:0"></span><span>${msg}</span>`;
-    el.style.transform = 'translateX(-50%) translateY(0)'; el.style.opacity = '1';
-    clearTimeout(el._t); el._t = setTimeout(() => { el.style.transform = 'translateX(-50%) translateY(80px)'; el.style.opacity = '0'; }, 4000);
-  }
-
-  function fmtBytes(b) {
     if (b < 1024) return b + ' B';
     if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+
     return (b / 1048576).toFixed(1) + ' MB';
   }
 
-  document.addEventListener('DOMContentLoaded', () => { updateNav(); });
+  // =========================================================
+  // PUBLIC API
+  // =========================================================
 
   return {
-    getToken, getUser, isLoggedIn, dashboardForRole, dashboardUrl,
-    login, register, verifyOtp, resendOtp, logout,
-    getMe, updateMe, saveArtistProfile, saveOrganiserProfile,
-    changePassword, getArtists, getOrganisers, getProfile,
-    uploadFile, updateNav, requireAuth, goDashboard,
-    toast, fmtBytes, apiPost, apiGet, saveSession, clearSession
->>>>>>> 14b917eca2ff8fb33b97e6031def3bd9966804aa
+    // session
+    getToken,
+    getUser,
+    isLoggedIn,
+    saveSession,
+    clearSession,
+
+    // routing
+    normaliseRole,
+    dashboardForRole,
+    dashboardUrl,
+    goToDashboard,
+    goToHome,
+    requireAuth,
+    redirectIfLoggedIn,
+
+    // API
+    apiGet,
+    apiPost,
+    apiDelete,
+
+    // authentication
+    login,
+    register,
+    verifyOtp,
+    resendOtp,
+    forgotPassword,
+    resetPassword,
+    changePassword,
+    logout,
+
+    // profile
+    getMe,
+    updateMe,
+    saveArtistProfile,
+    saveOrganiserProfile,
+    getProfile,
+
+    // directories
+    getArtists,
+    getOrganisers,
+
+    // interaction
+    toggleLike,
+    getLikes,
+    revealContact,
+    getRevealsRemaining,
+    sendMessage,
+
+    // upload
+    fileToBase64,
+    uploadFile,
+
+    // UI
+    updateNav,
+    toast,
+    fmtBytes
   };
 })();
+
+// Keep navigation consistent on every page that loads floox-auth.js.
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    FLOOX.updateNav();
+  } catch (err) {
+    console.error('Floox navigation error:', err);
+  }
+});
