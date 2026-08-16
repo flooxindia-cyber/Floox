@@ -2,6 +2,30 @@
   "version": 2,
   "routes": [
     {
+      "src": "/floox-search-results.html",
+      "has": [{ "type": "query", "key": "type", "value": "artists" }],
+      "transforms": [
+        { "type": "request.query", "op": "set", "target": { "key": "type" }, "args": "artist" }
+      ],
+      "continue": true
+    },
+    {
+      "src": "/floox-search-results.html",
+      "has": [{ "type": "query", "key": "type", "value": "events" }],
+      "transforms": [
+        { "type": "request.query", "op": "set", "target": { "key": "type" }, "args": "event" }
+      ],
+      "continue": true
+    },
+    {
+      "src": "/floox-search-results.html",
+      "has": [{ "type": "query", "key": "type", "value": "organisers" }],
+      "transforms": [
+        { "type": "request.query", "op": "set", "target": { "key": "type" }, "args": "organiser" }
+      ],
+      "continue": true
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/index?route=$1"
     },
