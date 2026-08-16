@@ -1,5 +1,8 @@
 // Floox API gateway — single Vercel Serverless Function
 // All production API traffic goes through this gateway.
+//
+// The gateway accepts both the canonical /api/<route> URLs and the older
+// /api/auth/otp/* URLs so older frontend builds do not break during migration.
 
 const HANDLERS = {
   'artist-profile': require('../server/functions/artist-profile').handler,
@@ -23,6 +26,16 @@ const HANDLERS = {
   'toggle-like': require('../server/functions/toggle-like').handler,
   'upload-media': require('../server/functions/upload-media').handler,
   'verify-otp': require('../server/functions/verify-otp').handler,
+};
+
+const ROUTE_ALIASES = {
+  'auth/otp/send': 'resend-otp',
+  'auth/otp/resend': 'resend-otp',
+  'auth/otp/verify': 'verify-otp',
+  'auth/login': 'login',
+  'auth/register': 'register',
+  'auth/forgot-password': 'forgot-password',
+  'auth/reset-password': 'reset-password',
 };
 
 function getRoute(req) {
@@ -56,12 +69,13 @@ async function invoke(serverHandler, req, res) {
 }
 
 module.exports = async function handler(req, res) {
-  const route = getRoute(req);
+  const requestedRoute = getRoute(req);
+  const route = ROUTE_ALIASES[requestedRoute] || requestedRoute;
   const fn = HANDLERS[route];
 
   if (!fn) {
     res.status(404).setHeader('Content-Type', 'application/json');
-    return res.end(JSON.stringify({ error: `API route not found: /api/${route}` }));
+    return res.end(JSON.stringify({ error: `API route not found: /api/${requestedRoute}` }));
   }
 
   try {
