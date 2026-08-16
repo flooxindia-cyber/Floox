@@ -1,1 +1,48 @@
-REPLACE_ME
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floox — Login / Sign Up</title>
+<link rel="icon" href="logo_floox.jpeg">
+<link rel="stylesheet" href="floox-shared.css">
+</head>
+<body>
+<main style="min-height:100vh;display:grid;place-items:center;padding:32px;background:#0D0800">
+<section style="width:min(980px,100%);display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center">
+<div style="color:#fff;padding:20px"><h1 style="font-size:clamp(2.5rem,5vw,4.5rem);line-height:.95;margin-bottom:18px">Your Stage.<br><span style="color:#FF5C00">Your Story.</span></h1><p style="color:#aaa;line-height:1.8">Sign in to manage your profile, bookings, and events. Or create a new account to join India's live music platform.</p><p style="margin-top:24px"><a href="floox-artist-register.html" style="color:#FF5C00">Join as Artist →</a></p><p><a href="floox-organiser-register.html" style="color:#00C2A8">Join as Organiser →</a></p><p><a href="floox-public.html" style="color:#aaa">Browse as Guest →</a></p></div>
+<div style="background:#FFFBF4;border-radius:28px;padding:36px">
+<div id="formWrap">
+<h2>Welcome back 👋</h2><p style="color:#7A6A50">Sign in to your Floox account.</p>
+<div style="display:flex;gap:8px;margin:20px 0"><button id="tabLogin" class="btn-fire" style="flex:1" type="button">Sign In</button><button id="tabSignup" class="btn-ghost" style="flex:1" type="button">Create Account</button></div>
+<div id="panelLogin">
+<label>Email Address</label><input type="email" id="lEmail" class="finput" placeholder="you@email.com" style="width:100%;margin:6px 0 14px">
+<label>Password</label><input type="password" id="lPw" class="finput" placeholder="Your password" style="width:100%;margin:6px 0 14px">
+<button id="loginBtn" class="btn-fire" style="width:100%" type="button">Sign In →</button>
+<p style="text-align:center;margin-top:12px"><a href="#" id="forgotLink" style="color:#FF5C00">Forgot your password?</a></p>
+</div>
+<div id="panelSignup" style="display:none">
+<label>I am joining as</label><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 14px"><button class="role-opt" data-role="fan" type="button">🎵 Fan</button><button class="role-opt" data-role="artist" type="button">🎤 Artist</button><button class="role-opt" data-role="organiser" type="button">🎪 Organiser</button></div>
+<label>Full Name</label><input type="text" id="sName" class="finput" placeholder="Your full name" style="width:100%;margin:6px 0 10px">
+<label>Email Address</label><input type="email" id="sEmail" class="finput" placeholder="you@email.com" style="width:100%;margin:6px 0 10px">
+<label>Phone Number</label><input type="tel" id="sPhone" class="finput" placeholder="+91 XXXXX XXXXX" style="width:100%;margin:6px 0 10px">
+<label>City</label><input type="text" id="sCity" class="finput" placeholder="Your city" style="width:100%;margin:6px 0 10px">
+<label>Password</label><input type="password" id="sPw" class="finput" placeholder="Min 8 characters" style="width:100%;margin:6px 0 14px">
+<button id="signupBtn" class="btn-fire" style="width:100%" type="button">Create Account →</button>
+</div>
+<div id="panelForgot" style="display:none">
+<p style="color:#7A6A50">Enter your email and we'll send you a one-time reset code.</p><input type="email" id="fEmail" class="finput" placeholder="you@email.com" style="width:100%;margin:8px 0 14px"><button id="forgotBtn" class="btn-fire" style="width:100%" type="button">Send Reset Code →</button><p><a href="#" id="backLogin" style="color:#FF5C00">← Back to Sign In</a></p>
+</div>
+</div>
+</div></section></main>
+<script src="floox-auth.js"></script>
+<script>
+let selectedRole='fan';
+function showPanel(name){document.getElementById('panelLogin').style.display=name==='login'?'block':'none';document.getElementById('panelSignup').style.display=name==='signup'?'block':'none';document.getElementById('panelForgot').style.display=name==='forgot'?'block':'none';}
+document.querySelectorAll('.role-opt').forEach(b=>b.onclick=()=>{selectedRole=b.dataset.role;document.querySelectorAll('.role-opt').forEach(x=>x.style.borderColor='');b.style.borderColor='#FF5C00'});
+document.getElementById('tabLogin').onclick=()=>showPanel('login');document.getElementById('tabSignup').onclick=()=>showPanel('signup');document.getElementById('forgotLink').onclick=e=>{e.preventDefault();showPanel('forgot')};document.getElementById('backLogin').onclick=e=>{e.preventDefault();showPanel('login')};
+document.getElementById('loginBtn').onclick=async()=>{const email=lEmail.value.trim(),password=lPw.value;if(!email||!email.includes('@'))return FLOOX.toast('Please enter a valid email','error');if(!password)return FLOOX.toast('Please enter your password','error');const b=loginBtn;b.disabled=true;b.textContent='Signing in…';try{const u=await FLOOX.login(email,password);FLOOX.toast('Welcome back!','success');setTimeout(()=>FLOOX.goToDashboard(u),300)}catch(e){if(e.message.includes('verify your email'))location.href='floox-verify.html?email='+encodeURIComponent(email)+'&role='+encodeURIComponent(FLOOX.getUser()?.role||selectedRole);else FLOOX.toast(e.message,'error');b.disabled=false;b.textContent='Sign In →'}};
+document.getElementById('signupBtn').onclick=async()=>{const name=sName.value.trim(),email=sEmail.value.trim(),phone=sPhone.value.trim(),city=sCity.value.trim(),password=sPw.value;if(!name)return FLOOX.toast('Please enter your name','error');if(!email||!email.includes('@'))return FLOOX.toast('Please enter a valid email','error');if(password.length<8)return FLOOX.toast('Password must be at least 8 characters','error');const b=signupBtn;b.disabled=true;b.textContent='Creating account…';try{const r=await FLOOX.register({role:selectedRole,email,password,name,phone,city});if(r.requiresOtp){location.href='floox-verify.html?email='+encodeURIComponent(email)+'&role='+encodeURIComponent(selectedRole);}}catch(e){FLOOX.toast(e.message,'error');b.disabled=false;b.textContent='Create Account →'}};
+document.getElementById('forgotBtn').onclick=async()=>{const email=fEmail.value.trim().toLowerCase();if(!email||!email.includes('@'))return FLOOX.toast('Please enter a valid email','error');const b=forgotBtn;b.disabled=true;b.textContent='Sending…';try{const r=await FLOOX.forgotPassword(email);FLOOX.toast(r.message||'Reset code sent.','success');setTimeout(()=>location.href='floox-reset-password.html?email='+encodeURIComponent(email),500)}catch(e){FLOOX.toast(e.message,'error');b.disabled=false;b.textContent='Send Reset Code →'}};
+document.addEventListener('DOMContentLoaded',()=>{if(FLOOX.isLoggedIn())FLOOX.goToDashboard()});
+</script>
+</body></html>
