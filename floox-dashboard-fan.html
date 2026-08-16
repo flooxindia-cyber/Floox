@@ -1,11 +1,112 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Floox — Fan Dashboard</title><link rel="stylesheet" href="floox-shared.css"></head><body><header style="padding:18px 5%;border-bottom:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center"><a href="floox-public.html" style="color:#fff;text-decoration:none;font-weight:900;font-size:1.4rem">Floox</a><nav style="display:flex;gap:10px;align-items:center"><a href="floox-public.html" class="btn-ghost">Discover Artists</a><button id="logout" class="btn-fire">Log out</button></nav></header><main style="max-width:1100px;margin:auto;padding:48px 5%"><div style="margin-bottom:32px"><p style="color:#ff7a18;font-weight:800">FAN DASHBOARD</p><h1 id="welcome">Welcome back</h1><p style="color:#aaa">Save artists, manage your account and discover talent for your next event.</p></div><section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-bottom:30px"><div class="form-card"><h3>Discover</h3><p style="color:#aaa">Browse verified artists by genre and city.</p><a class="btn-fire" href="floox-public.html">Browse artists →</a></div><div class="form-card"><h3>Plan an event</h3><p style="color:#aaa">Need an artist? Tell Floox what you're planning.</p><a class="btn-teal" href="floox-contact.html">Plan my event →</a></div><div class="form-card"><h3>Saved artists</h3><p id="savedCount" style="color:#aaa">Loading…</p><a class="btn-ghost" href="floox-search-results.html?type=artists">View directory →</a></div></section><section class="form-card"><h2>My profile</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px"><input id="name" class="finput" placeholder="Name"><input id="phone" class="finput" placeholder="Phone"><input id="city" class="finput" placeholder="City"></div><textarea id="bio" class="finput" style="margin-top:14px;min-height:110px" placeholder="About you"></textarea><button id="save" class="btn-fire" style="margin-top:14px">Save profile</button><p id="msg" style="color:#aaa"></p></section></main><script src="floox-auth.js"></script><script>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Floox — Fan Dashboard</title>
+<link rel="stylesheet" href="floox-shared.css">
+<style>
+:root{--sidebar:250px}
+body{background:var(--bg);min-height:100vh}
+.dash{min-height:100vh;display:flex}
+.sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar);background:var(--text);color:#fff;z-index:100;display:flex;flex-direction:column;box-shadow:8px 0 30px rgba(13,8,0,.12)}
+.sb-brand{padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff}
+.sb-brand img{width:42px;height:42px;object-fit:cover;border-radius:12px}
+.sb-brand span{font:800 1.35rem var(--head)}
+.sb-profile{padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.avatar{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--pink));display:flex;align-items:center;justify-content:center;font:800 1.25rem var(--head);border:3px solid rgba(255,255,255,.15);margin-bottom:12px}
+.sb-name{font:800 .95rem var(--head)}
+.sb-role{font-size:.72rem;color:rgba(255,255,255,.45);margin-top:3px}
+.sb-nav{padding:16px 10px;flex:1}
+.sb-label{font:700 .6rem var(--head);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.24);padding:12px 10px 6px}
+.sb-link{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border:0;border-radius:11px;background:transparent;color:rgba(255,255,255,.55);font:700 .8rem var(--head);text-decoration:none;text-align:left;cursor:pointer;transition:.2s}
+.sb-link:hover{background:rgba(255,255,255,.06);color:#fff}.sb-link.active{background:rgba(255,92,0,.17);color:#fff}.sb-icon{width:22px;text-align:center;font-size:1rem}.sb-bottom{padding:12px 10px;border-top:1px solid rgba(255,255,255,.08)}
+.main{margin-left:var(--sidebar);width:calc(100% - var(--sidebar));min-height:100vh}
+.topbar{height:74px;position:sticky;top:0;z-index:50;background:rgba(255,251,244,.92);backdrop-filter:blur(20px);border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 34px}
+.top-title{font:800 1.05rem var(--head)}.top-sub{font-size:.74rem;color:var(--muted);margin-top:2px}.top-actions{display:flex;align-items:center;gap:10px}.top-actions a{font:700 .75rem var(--head);text-decoration:none}.top-actions .ghost{border:1.5px solid var(--border);border-radius:100px;padding:9px 15px;color:var(--muted)}.top-actions .ghost:hover{border-color:var(--orange);color:var(--orange)}
+.content{padding:32px;max-width:1320px;margin:auto}
+.hero{position:relative;overflow:hidden;border-radius:28px;padding:38px 40px;margin-bottom:22px;background:linear-gradient(120deg,#180b00 0%,#3a1600 45%,#24102c 100%);color:#fff;box-shadow:0 18px 45px rgba(40,18,0,.15)}
+.hero:before,.hero:after{content:"";position:absolute;border-radius:50%;filter:blur(3px);pointer-events:none}.hero:before{width:280px;height:280px;background:rgba(255,92,0,.28);right:-70px;top:-110px}.hero:after{width:260px;height:260px;background:rgba(255,45,120,.18);right:180px;bottom:-160px}
+.hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;align-items:center;gap:30px}.eyebrow{display:inline-flex;align-items:center;gap:7px;color:#ffd9c2;font:700 .68rem var(--head);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}.dot{width:7px;height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 0 5px rgba(34,197,94,.12)}
+.hero h1{font:800 clamp(2rem,4vw,3.5rem)/1 var(--head);letter-spacing:-1.8px;margin-bottom:12px}.hero h1 span{background:linear-gradient(135deg,#ffd600,#ff8c00,#ff2d78);-webkit-background-clip:text;color:transparent}.hero p{max-width:650px;color:rgba(255,255,255,.64);font-size:.9rem;line-height:1.75}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.hero-actions a{font:700 .76rem var(--head);text-decoration:none;padding:10px 17px;border-radius:100px}.fire{background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;box-shadow:0 7px 20px rgba(255,92,0,.3)}.glass{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);color:#fff}
+.hero-badge{width:145px;height:145px;border-radius:32px;background:linear-gradient(145deg,rgba(255,255,255,.14),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:4rem;box-shadow:inset 0 1px rgba(255,255,255,.18),0 20px 40px rgba(0,0,0,.18);transform:rotate(3deg)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}.stat{background:#fff;border:1.5px solid var(--border);border-radius:18px;padding:19px 20px;position:relative;overflow:hidden;transition:.2s}.stat:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.06)}.stat:after{content:"";position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--orange),var(--pink))}.stat:nth-child(2):after{background:linear-gradient(90deg,var(--teal),var(--purple))}.stat:nth-child(3):after{background:linear-gradient(90deg,var(--yellow),var(--orange))}.stat-icon{font-size:1.3rem}.stat-value{font:800 1.8rem var(--head);letter-spacing:-1px;margin-top:7px}.stat-label{font-size:.72rem;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1.45fr .85fr;gap:18px}.card{background:#fff;border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:18px}.card-head{padding:17px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}.card-title{font:800 .95rem var(--head)}.card-sub{font-size:.7rem;color:var(--muted);margin-top:2px}.card-body{padding:20px}
+.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.quick{position:relative;min-height:150px;padding:18px;border-radius:17px;color:#fff;text-decoration:none;overflow:hidden;transition:.25s}.quick:hover{transform:translateY(-4px);box-shadow:0 14px 28px rgba(0,0,0,.12)}.quick:after{content:"";position:absolute;width:110px;height:110px;border-radius:50%;right:-35px;bottom:-50px;background:rgba(255,255,255,.12)}.q1{background:linear-gradient(135deg,#ff5c00,#ff2d78)}.q2{background:linear-gradient(135deg,#00a98f,#7c3aed)}.q3{background:linear-gradient(135deg,#5b3500,#ff8c00)}.q4{background:linear-gradient(135deg,#24112d,#7c3aed)}.quick-icon{font-size:1.55rem}.quick h3{font:800 1rem var(--head);margin-top:18px}.quick p{font-size:.7rem;color:rgba(255,255,255,.72);margin-top:4px;max-width:180px}
+.profile-row{display:flex;gap:16px;align-items:center;margin-bottom:20px}.profile-avatar{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,rgba(255,92,0,.12),rgba(255,45,120,.12));border:2px dashed #e5d6c7;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0}.profile-copy h3{font:800 1rem var(--head)}.profile-copy p{font-size:.72rem;color:var(--muted)}.field{margin-bottom:12px}.field label{display:block;font:700 .62rem var(--head);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}.field input,.field textarea{width:100%;border:1.5px solid var(--border);border-radius:11px;padding:10px 12px;background:var(--bg);font:400 .8rem var(--body);color:var(--text);outline:none}.field input:focus,.field textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,92,0,.08)}.field textarea{min-height:85px;resize:vertical}.save{border:0;border-radius:100px;padding:10px 17px;background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;font:700 .75rem var(--head);cursor:pointer}.msg{font-size:.7rem;color:var(--green);margin-top:8px;min-height:18px}
+.saved{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}.saved:last-child{border-bottom:0}.saved-pic{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#ff5c00,#ff2d78);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.05rem}.saved-copy{flex:1}.saved-copy strong{font:700 .78rem var(--head);display:block}.saved-copy span{font-size:.65rem;color:var(--muted)}.count{font:800 .72rem var(--head);color:var(--orange);background:rgba(255,92,0,.08);padding:5px 9px;border-radius:100px}
+.tip-list{display:flex;flex-direction:column;gap:10px}.tip{display:flex;gap:10px;align-items:flex-start}.tip-num{width:27px;height:27px;border-radius:9px;background:rgba(255,92,0,.1);color:var(--orange);display:flex;align-items:center;justify-content:center;font:800 .7rem var(--head);flex-shrink:0}.tip strong{font:700 .75rem var(--head);display:block}.tip span{font-size:.67rem;color:var(--muted)}
+.mobile-toggle{display:none;border:0;background:none;font-size:1.3rem;cursor:pointer}
+@media(max-width:1000px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:none}.main{margin-left:0;width:100%}.mobile-toggle{display:block}.grid{grid-template-columns:1fr}.hero-grid{grid-template-columns:1fr}.hero-badge{display:none}}
+@media(max-width:650px){.content{padding:18px}.topbar{padding:0 18px}.stats{grid-template-columns:1fr}.quick-grid{grid-template-columns:1fr}.hero{padding:28px 24px}.top-actions .ghost{display:none}}
+</style>
+</head>
+<body>
+<div class="dash">
+<aside class="sidebar" id="sidebar">
+  <a class="sb-brand" href="floox-public.html"><img src="logo_floox.jpeg" alt="Floox"><span>Floox</span></a>
+  <div class="sb-profile"><div class="avatar" id="sbAvatar">F</div><div class="sb-name" id="sbName">Floox Fan</div><div class="sb-role">Fan account · <span style="color:#22c55e">●</span> Active</div></div>
+  <nav class="sb-nav">
+    <div class="sb-label">My Floox</div>
+    <a class="sb-link active" href="#top"><span class="sb-icon">⌂</span>Overview</a>
+    <a class="sb-link" href="floox-search-results.html?type=artists"><span class="sb-icon">◉</span>Discover Artists</a>
+    <a class="sb-link" href="floox-contact.html"><span class="sb-icon">✦</span>Plan an Event</a>
+    <div class="sb-label">Account</div>
+    <a class="sb-link" href="#profile"><span class="sb-icon">◎</span>My Profile</a>
+    <a class="sb-link" href="floox-public.html"><span class="sb-icon">↗</span>Back to Floox</a>
+  </nav>
+  <div class="sb-bottom"><button class="sb-link" id="logout"><span class="sb-icon">↪</span>Log out</button></div>
+</aside>
+<main class="main" id="top">
+  <header class="topbar"><div style="display:flex;align-items:center;gap:12px"><button class="mobile-toggle" id="toggle">☰</button><div><div class="top-title">Fan Dashboard</div><div class="top-sub">Your personal Floox space</div></div></div><div class="top-actions"><a class="ghost" href="floox-search-results.html?type=artists">Discover artists</a><a class="fire" href="floox-contact.html">Plan an event →</a></div></header>
+  <div class="content">
+    <section class="hero"><div class="hero-grid"><div><div class="eyebrow"><span class="dot"></span> FAN DASHBOARD</div><h1 id="welcome">Welcome back, <span>music lover.</span></h1><p>Keep your favourite artists close, discover new talent and turn your next idea into a real Floox experience.</p><div class="hero-actions"><a class="fire" href="floox-search-results.html?type=artists">Explore artists ↗</a><a class="glass" href="floox-contact.html">Plan an event</a></div></div><div class="hero-badge">♫</div></div></section>
+    <section class="stats"><div class="stat"><div class="stat-icon">♡</div><div class="stat-value" id="savedStat">—</div><div class="stat-label">Saved artists</div></div><div class="stat"><div class="stat-icon">◉</div><div class="stat-value">∞</div><div class="stat-label">Artists to discover</div></div><div class="stat"><div class="stat-icon">✦</div><div class="stat-value">24/7</div><div class="stat-label">Floox discovery</div></div></section>
+    <div class="grid">
+      <div>
+        <section class="card"><div class="card-head"><div><div class="card-title">What do you want to do?</div><div class="card-sub">Jump straight into the things that matter.</div></div></div><div class="card-body"><div class="quick-grid"><a class="quick q1" href="floox-search-results.html?type=artists"><div class="quick-icon">🎤</div><h3>Discover Artists</h3><p>Find performers by genre, city and vibe.</p></a><a class="quick q2" href="floox-contact.html"><div class="quick-icon">🎪</div><h3>Plan My Event</h3><p>Tell us what you're planning and let Floox help.</p></a><a class="quick q3" href="floox-search-results.html?type=artists"><div class="quick-icon">♡</div><h3>Saved Artists</h3><p>Your shortlist, ready whenever inspiration hits.</p></a><a class="quick q4" href="floox-public.html#discover"><div class="quick-icon">✦</div><h3>Explore Floox</h3><p>See what's happening across the platform.</p></a></div></div></section>
+        <section class="card"><div class="card-head"><div><div class="card-title">Your Floox profile</div><div class="card-sub">Keep your details current so we can personalise your experience.</div></div></div><div class="card-body" id="profile"><div class="profile-row"><div class="profile-avatar" id="profileAvatar">♫</div><div class="profile-copy"><h3 id="profileName">Your profile</h3><p id="profileEmail">—</p></div></div><div class="field"><label>Name</label><input id="name" placeholder="Your name"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="field"><label>Phone</label><input id="phone" placeholder="Phone number"></div><div class="field"><label>City</label><input id="city" placeholder="City"></div></div><div class="field"><label>About you</label><textarea id="bio" placeholder="Tell us a little about yourself..."></textarea></div><button class="save" id="save">Save profile</button><div class="msg" id="msg"></div></div></section>
+      </div>
+      <div>
+        <section class="card"><div class="card-head"><div><div class="card-title">Saved artists</div><div class="card-sub">Your favourites at a glance.</div></div><span class="count" id="savedCount">Loading…</span></div><div class="card-body"><div id="savedList"><div class="saved"><div class="saved-pic">♫</div><div class="saved-copy"><strong>Your saved artists</strong><span>Loading your favourites…</span></div></div></div><a href="floox-search-results.html?type=artists" class="card-link" style="display:inline-flex;margin-top:14px;color:var(--orange);font:700 .72rem var(--head);text-decoration:none">Open artist directory →</a></div></section>
+        <section class="card"><div class="card-head"><div><div class="card-title">Make the most of Floox</div><div class="card-sub">A few ideas for your next visit.</div></div></div><div class="card-body"><div class="tip-list"><div class="tip"><div class="tip-num">1</div><div><strong>Build a shortlist</strong><span>Save artists you want to revisit before your event.</span></div></div><div class="tip"><div class="tip-num">2</div><div><strong>Explore by city</strong><span>Discover performers close to where your event is happening.</span></div></div><div class="tip"><div class="tip-num">3</div><div><strong>Plan early</strong><span>Share your requirements with Floox and get the right talent.</span></div></div></div></div></section>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<script src="floox-auth.js"></script>
+<script>
 (async function(){
-  const u = await FLOOX.requireAuth('fan');
-  if (!u) return;
-  document.getElementById('welcome').textContent='Welcome back, '+((u.name||u.email||'').split(' ')[0]||'');
+  const u=await FLOOX.requireAuth('fan');
+  if(!u)return;
+  const first=(u.name||u.email||'Music lover').split(' ')[0]||'Music lover';
+  document.getElementById('welcome').innerHTML='Welcome back, <span>'+first.replace(/[<>&"']/g,'')+'.</span>';
+  document.getElementById('sbName').textContent=u.name||u.email||'Floox Fan';
+  document.getElementById('profileName').textContent=u.name||'Your profile';
+  document.getElementById('profileEmail').textContent=u.email||'Fan account';
+  document.getElementById('sbAvatar').textContent=(first[0]||'F').toUpperCase();
+  document.getElementById('profileAvatar').textContent=(first[0]||'♫').toUpperCase();
   ['name','phone','city','bio'].forEach(k=>document.getElementById(k).value=u[k]||'');
   document.getElementById('logout').onclick=()=>FLOOX.logout('floox-public.html');
-  document.getElementById('save').onclick=async()=>{try{await FLOOX.updateMe({name:document.getElementById('name').value,phone:document.getElementById('phone').value,city:document.getElementById('city').value,bio:document.getElementById('bio').value});document.getElementById('msg').textContent='Profile saved successfully.';}catch(e){document.getElementById('msg').textContent=e.message;}};
-  try{const d=await FLOOX.apiGet('get-likes',true);document.getElementById('savedCount').textContent=(d.likes||[]).length+' saved artist(s)';}catch(e){document.getElementById('savedCount').textContent='Unable to load saved artists.';}
+  document.getElementById('save').onclick=async()=>{
+    const btn=document.getElementById('save'),msg=document.getElementById('msg');
+    btn.disabled=true;btn.textContent='Saving…';msg.textContent='';
+    try{await FLOOX.updateMe({name:document.getElementById('name').value,phone:document.getElementById('phone').value,city:document.getElementById('city').value,bio:document.getElementById('bio').value});msg.textContent='Profile saved successfully.';document.getElementById('profileName').textContent=document.getElementById('name').value||'Your profile';}
+    catch(e){msg.style.color='var(--pink)';msg.textContent=e.message||'Unable to save profile.';}
+    finally{btn.disabled=false;btn.textContent='Save profile';}
+  };
+  try{
+    const d=await FLOOX.apiGet('get-likes',true),likes=d.likes||[];
+    document.getElementById('savedCount').textContent=likes.length+' saved';
+    document.getElementById('savedStat').textContent=likes.length;
+    const list=document.getElementById('savedList');
+    if(!likes.length){list.innerHTML='<div style="padding:8px 0;color:var(--muted);font-size:.75rem">No saved artists yet. Start exploring and build your shortlist.</div>';return;}
+    list.innerHTML=likes.slice(0,4).map((x,i)=>{const name=(x.artist_name||x.name||x.artistName||'Saved artist');const genre=x.genre||x.city||'Floox artist';return '<div class="saved"><div class="saved-pic">'+['🎤','🎸','🎧','🎹'][i%4]+'</div><div class="saved-copy"><strong>'+String(name).replace(/[<>&"']/g,'')+'</strong><span>'+String(genre).replace(/[<>&"']/g,'')+'</span></div></div>';}).join('');
+  }catch(e){document.getElementById('savedCount').textContent='—';document.getElementById('savedStat').textContent='—';document.getElementById('savedList').innerHTML='<div style="padding:8px 0;color:var(--muted);font-size:.75rem">Saved artists are temporarily unavailable.</div>';}
 })();
-</script></body></html>
+const toggle=document.getElementById('toggle'),sidebar=document.getElementById('sidebar');if(toggle)toggle.onclick=()=>sidebar.classList.toggle('open');
+document.querySelectorAll('.sb-link[href^="#"]').forEach(a=>a.addEventListener('click',()=>sidebar.classList.remove('open')));
+</script>
+</body>
+</html>
