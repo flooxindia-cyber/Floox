@@ -51,9 +51,9 @@ function supabaseHeaders() {
   if (!key) throw new Error('SUPABASE_SERVICE_KEY env var is not set');
   return {
     'Content-Type': 'application/json',
-    'apikey': key,
-    'Authorization': `Bearer ${key}`,
-    'Prefer': 'return=representation',
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+    Prefer: 'return=representation',
   };
 }
 
@@ -103,7 +103,6 @@ async function updateUser(id, fields) {
 async function queryArtists({ genre, city, q, id, limit = 20, offset = 0 } = {}) {
   const parts = [
     'role=eq.artist',
-    'profile_complete=eq.true',
     'verified=eq.true',
     `limit=${limit}`,
     `offset=${offset}`,
@@ -124,7 +123,7 @@ async function queryArtists({ genre, city, q, id, limit = 20, offset = 0 } = {})
 }
 
 async function countArtists({ genre, city, q, id } = {}) {
-  const parts = ['role=eq.artist', 'profile_complete=eq.true', 'verified=eq.true'];
+  const parts = ['role=eq.artist', 'verified=eq.true'];
   if (id) parts.push(`id=eq.${encodeURIComponent(id)}`);
   if (genre) parts.push(`genres=cs.{"${encodeURIComponent(genre)}"}`);
   if (city) parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
@@ -134,47 +133,46 @@ async function countArtists({ genre, city, q, id } = {}) {
   }
 
   const headers = { ...supabaseHeaders(), Prefer: 'count=exact' };
-  const res = await fetch(supabaseUrl('users', parts.join('&') + '&select=id'), {
-    method: 'HEAD',
-    headers,
-  });
+  const res = await fetch(supabaseUrl('users', parts.join('&') + '&select=id'), { method: 'HEAD', headers });
   const range = res.headers.get('content-range') || '0/0';
   return parseInt(range.split('/')[1], 10) || 0;
 }
 
 function publicUser(u) {
   if (!u) return null;
-  const {
-    password_hash,
-    created_at, updated_at,
-    stage_name, performer_type,
-    org_name, org_type,
-    social_links, media_links,
-    performance_types, event_types,
-    min_fee, max_fee,
-    cover_image, rider_notes,
-    profile_complete,
-    ...rest
-  } = u;
-
+  const { password_hash, created_at, updated_at, ...rest } = u;
   return {
     ...rest,
     createdAt: created_at,
     updatedAt: updated_at,
-    stageName: stage_name,
-    performerType: performer_type,
-    orgName: org_name,
-    orgType: org_type,
-    socialLinks: social_links || {},
-    mediaLinks: media_links || [],
-    performanceTypes: performance_types || [],
-    eventTypes: event_types || [],
-    minFee: min_fee,
-    maxFee: max_fee,
-    coverImage: cover_image,
-    riderNotes: rider_notes,
-    profileComplete: profile_complete,
+    stageName: rest.stage_name,
+    performerType: rest.performer_type,
+    orgName: rest.org_name,
+    orgType: rest.org_type,
+    socialLinks: rest.social_links || {},
+    mediaLinks: rest.media_links || [],
+    performanceTypes: rest.performance_types || [],
+    eventTypes: rest.event_types || [],
+    minFee: rest.min_fee,
+    maxFee: rest.max_fee,
+    coverImage: rest.cover_image,
+    riderNotes: rest.rider_notes,
+    profileComplete: rest.profile_complete,
   };
+}
+
+// Safe directory representation. Contact/private business fields stay behind
+// the authenticated /api/get-profile endpoint.
+function directoryUser(u) {
+  const safe = publicUser(u);
+  if (!safe) return null;
+  delete safe.email;
+  delete safe.phone;
+  delete safe.gst_number;
+  delete safe.riderNotes;
+  delete safe.rider_notes;
+  delete safe.equipment;
+  return safe;
 }
 
 async function toggleLike(likerId, likedId) {
@@ -243,7 +241,7 @@ module.exports = {
   hashPassword, checkPassword,
   findUser, createUser, updateUser,
   queryArtists, countArtists,
-  publicUser,
+  publicUser, directoryUser,
   toggleLike, getLikesByUser, getLikeCount,
   createMessage,
 };
