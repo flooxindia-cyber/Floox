@@ -1,35 +1,28 @@
 // Floox API gateway — single Vercel Serverless Function
-// Keeps all existing server/functions handlers while exposing them through /api/*.
-
-const { adapt } = require('./_adapter');
+// Existing business logic remains in server/functions/*.
 
 const HANDLERS = {
-  'artist-profile': adapt(require('../server/functions/artist-profile').handler),
-  artists: adapt(require('../server/functions/artists').handler),
-  'change-password': adapt(require('../server/functions/change-password').handler),
-  'delete-account': adapt(require('../server/functions/delete-account').handler),
-  'forgot-password': adapt(require('../server/functions/forgot-password').handler),
-  'get-likes': adapt(require('../server/functions/get-likes').handler),
-  'get-profile': adapt(require('../server/functions/get-profile').handler),
-  'get-reveals-remaining': adapt(require('../server/functions/get-reveals-remaining').handler),
-  login: adapt(require('../server/functions/login').handler),
-  me: adapt(require('../server/functions/me').handler),
-  'organiser-profile': adapt(require('../server/functions/organiser-profile').handler),
-  organisers: adapt(require('../server/functions/organisers').handler),
-  register: adapt(require('../server/functions/register').handler),
-  'resend-otp': adapt(require('../server/functions/resend-otp').handler),
-  'reset-password': adapt(require('../server/functions/reset-password').handler),
-  'reveal-contact': adapt(require('../server/functions/reveal-contact').handler),
-  'send-message': adapt(require('../server/functions/send-message').handler),
-  'toggle-like': adapt(require('../server/functions/toggle-like').handler),
-  'upload-media': adapt(require('../server/functions/upload-media').handler),
-  'verify-otp': adapt(require('../server/functions/verify-otp').handler),
+  'artist-profile': require('../server/functions/artist-profile').handler,
+  artists: require('../server/functions/artists').handler,
+  'change-password': require('../server/functions/change-password').handler,
+  'delete-account': require('../server/functions/delete-account').handler,
+  'forgot-password': require('../server/functions/forgot-password').handler,
+  'get-likes': require('../server/functions/get-likes').handler,
+  'get-profile': require('../server/functions/get-profile').handler,
+  'get-reveals-remaining': require('../server/functions/get-reveals-remaining').handler,
+  login: require('../server/functions/login').handler,
+  me: require('../server/functions/me').handler,
+  'organiser-profile': require('../server/functions/organiser-profile').handler,
+  organisers: require('../server/functions/organisers').handler,
+  register: require('../server/functions/register').handler,
+  'resend-otp': require('../server/functions/resend-otp').handler,
+  'reset-password': require('../server/functions/reset-password').handler,
+  'reveal-contact': require('../server/functions/reveal-contact').handler,
+  'send-message': require('../server/functions/send-message').handler,
+  'toggle-like': require('../server/functions/toggle-like').handler,
+  'upload-media': require('../server/functions/upload-media').handler,
+  'verify-otp': require('../server/functions/verify-otp').handler,
 };
-
-function json(res, status, payload) {
-  res.status(status).setHeader('Content-Type', 'application/json');
-  return res.end(JSON.stringify(payload));
-}
 
 function getRoute(req) {
   const raw = req.query?.route || req.query?.path || '';
@@ -37,18 +30,44 @@ function getRoute(req) {
   return String(raw).replace(/^\/+|\/+$/g, '').split('?')[0];
 }
 
+function toEvent(req) {
+  return {
+    httpMethod: req.method,
+    headers: req.headers || {},
+    body: req.body == null ? '' : (typeof req.body === 'string' ? req.body : JSON.stringify(req.body)),
+    queryStringParameters: req.query || {},
+    path: req.url,
+  };
+}
+
+async function invoke(netlifyHandler, req, res) {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    return res.status(204).end();
+  }
+
+  const result = await netlifyHandler(toEvent(req), {});
+  const headers = result?.headers || {};
+  Object.entries(headers).forEach(([key, value]) => res.setHeader(key, value));
+  return res.status(result?.statusCode || 200).send(result?.body || '');
+}
+
 module.exports = async function handler(req, res) {
   const route = getRoute(req);
   const fn = HANDLERS[route];
 
   if (!fn) {
-    return json(res, 404, { error: `API route not found: /api/${route}` });
+    res.status(404).setHeader('Content-Type', 'application/json');
+    return res.end(JSON.stringify({ error: `API route not found: /api/${route}` }));
   }
 
   try {
-    return await fn(req, res);
+    return await invoke(fn, req, res);
   } catch (err) {
     console.error(`API gateway error [${route}]:`, err);
-    return json(res, 500, { error: 'Internal server error.' });
+    res.status(500).setHeader('Content-Type', 'application/json');
+    return res.end(JSON.stringify({ error: 'Internal server error.' }));
   }
 };
