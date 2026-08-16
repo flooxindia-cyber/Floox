@@ -1,5 +1,5 @@
 // Floox API gateway — single Vercel Serverless Function
-// Existing business logic remains in server/functions/*.
+// All production API traffic goes through this gateway.
 
 const HANDLERS = {
   'artist-profile': require('../server/functions/artist-profile').handler,
@@ -10,6 +10,7 @@ const HANDLERS = {
   'get-likes': require('../server/functions/get-likes').handler,
   'get-profile': require('../server/functions/get-profile').handler,
   'get-reveals-remaining': require('../server/functions/get-reveals-remaining').handler,
+  health: require('../server/functions/health').handler,
   login: require('../server/functions/login').handler,
   me: require('../server/functions/me').handler,
   'organiser-profile': require('../server/functions/organiser-profile').handler,
@@ -40,7 +41,7 @@ function toEvent(req) {
   };
 }
 
-async function invoke(netlifyHandler, req, res) {
+async function invoke(serverHandler, req, res) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -48,7 +49,7 @@ async function invoke(netlifyHandler, req, res) {
     return res.status(204).end();
   }
 
-  const result = await netlifyHandler(toEvent(req), {});
+  const result = await serverHandler(toEvent(req), {});
   const headers = result?.headers || {};
   Object.entries(headers).forEach(([key, value]) => res.setHeader(key, value));
   return res.status(result?.statusCode || 200).send(result?.body || '');
