@@ -46,89 +46,52 @@
       <a class="join-card" href="floox-public.html"><span class="join-icon">🎵</span><span class="join-copy"><strong>Browse as Guest</strong><span>Discover events & artists without an account</span></span></a>
     </div>
   </div>
-
   <div class="login-card">
     <div id="formWrap">
       <h2>Welcome back 👋</h2>
       <p class="login-sub">Sign in to your Floox account.</p>
       <div class="auth-tabs"><button id="tabLogin" class="auth-tab active" type="button">Sign In</button><button id="tabSignup" class="auth-tab" type="button">Create Account</button></div>
-
       <div id="panelLogin">
-        <label for="lEmail">Email Address</label>
-        <input type="email" id="lEmail" class="finput" placeholder="you@email.com" autocomplete="email">
-        <label for="lPw">Password</label>
-        <input type="password" id="lPw" class="finput" placeholder="Your password" autocomplete="current-password">
+        <label for="lEmail">Email Address</label><input type="email" id="lEmail" class="finput" placeholder="you@email.com" autocomplete="email">
+        <label for="lPw">Password</label><input type="password" id="lPw" class="finput" placeholder="Your password" autocomplete="current-password">
         <button id="loginBtn" class="btn btn-fire" style="width:100%;justify-content:center" type="button">Sign In →</button>
-        <div class="forgot"><a href="#" id="forgotLink">Forgot your password?</a></div>
-        <div id="loginMsg" class="auth-message"></div>
+        <div class="forgot"><a href="#" id="forgotLink">Forgot your password?</a></div><div id="loginMsg" class="auth-message"></div>
       </div>
-
       <div id="panelSignup" style="display:none">
-        <label>I am joining as</label>
-        <div class="role-options"><button class="role-opt selected" data-role="fan" type="button">🎵 Fan</button><button class="role-opt" data-role="artist" type="button">🎤 Artist</button><button class="role-opt" data-role="organiser" type="button">🎪 Organiser</button></div>
+        <label>I am joining as</label><div class="role-options"><button class="role-opt selected" data-role="fan" type="button">🎵 Fan</button><button class="role-opt" data-role="artist" type="button">🎤 Artist</button><button class="role-opt" data-role="organiser" type="button">🎪 Organiser</button></div>
         <label for="sName">Full Name</label><input type="text" id="sName" class="finput" placeholder="Your full name" autocomplete="name">
         <label for="sEmail">Email Address</label><input type="email" id="sEmail" class="finput" placeholder="you@email.com" autocomplete="email">
         <label for="sPhone">Phone Number</label><input type="tel" id="sPhone" class="finput" placeholder="+91 XXXXX XXXXX" autocomplete="tel">
         <label for="sCity">City</label><input type="text" id="sCity" class="finput" placeholder="Your city" autocomplete="address-level2">
         <label for="sPw">Password</label><input type="password" id="sPw" class="finput" placeholder="Min 8 characters" autocomplete="new-password">
-        <button id="signupBtn" class="btn btn-fire" style="width:100%;justify-content:center" type="button">Create Account →</button>
-        <div id="signupMsg" class="auth-message"></div>
+        <button id="signupBtn" class="btn btn-fire" style="width:100%;justify-content:center" type="button">Create Account →</button><div id="signupMsg" class="auth-message"></div>
       </div>
-
       <div id="panelForgot" style="display:none">
-        <p class="login-sub" style="margin-bottom:15px">Enter your email and we'll send you a one-time reset code.</p>
-        <label for="fEmail">Email Address</label><input type="email" id="fEmail" class="finput" placeholder="you@email.com" autocomplete="email">
-        <button id="forgotBtn" class="btn btn-fire" style="width:100%;justify-content:center" type="button">Send Reset Code →</button>
-        <div id="forgotMsg" class="auth-message"></div>
-        <div class="forgot"><a href="#" id="backLogin">← Back to Sign In</a></div>
+        <p class="login-sub" style="margin-bottom:15px">Enter your email and we'll send you a one-time reset code.</p><label for="fEmail">Email Address</label><input type="email" id="fEmail" class="finput" placeholder="you@email.com" autocomplete="email">
+        <button id="forgotBtn" class="btn btn-fire" style="width:100%;justify-content:center" type="button">Send Reset Code →</button><div id="forgotMsg" class="auth-message"></div><div class="forgot"><a href="#" id="backLogin">← Back to Sign In</a></div>
       </div>
     </div>
   </div>
 </section>
 <div class="login-footer-note">Floox Technologies Pvt. Ltd. · India's live music platform</div>
 </main>
-<script src="floox-auth.js"></script>
+<!-- Cache-busted auth module. The page uses window.FLOOX explicitly so a stale/missing global cannot break the handlers. -->
+<script src="/floox-auth.js?v=20260816-4"></script>
 <script>
-let selectedRole='fan';
-const $=id=>document.getElementById(id);
-function showPanel(name){
-  $('panelLogin').style.display=name==='login'?'block':'none';
-  $('panelSignup').style.display=name==='signup'?'block':'none';
-  $('panelForgot').style.display=name==='forgot'?'block':'none';
-  $('tabLogin').classList.toggle('active',name==='login');
-  $('tabSignup').classList.toggle('active',name==='signup');
-}
-function setMsg(id,text,type=''){const el=$(id);if(!el)return;el.textContent=text;el.className='auth-message '+type;}
-document.querySelectorAll('.role-opt').forEach(b=>b.addEventListener('click',()=>{selectedRole=b.dataset.role;document.querySelectorAll('.role-opt').forEach(x=>x.classList.remove('selected'));b.classList.add('selected')}));
-$('tabLogin').onclick=()=>showPanel('login');
-$('tabSignup').onclick=()=>showPanel('signup');
-$('forgotLink').onclick=e=>{e.preventDefault();showPanel('forgot')};
-$('backLogin').onclick=e=>{e.preventDefault();showPanel('login')};
-$('loginBtn').onclick=async()=>{
-  const email=$('lEmail').value.trim(),password=$('lPw').value;
-  if(!email||!email.includes('@'))return setMsg('loginMsg','Please enter a valid email.','error');
-  if(!password)return setMsg('loginMsg','Please enter your password.','error');
-  const b=$('loginBtn');b.disabled=true;b.textContent='Signing in…';setMsg('loginMsg','');
-  try{const u=await FLOOX.login(email,password);setMsg('loginMsg','Welcome back!','success');setTimeout(()=>FLOOX.goToDashboard(u),350)}
-  catch(e){if(String(e.message).toLowerCase().includes('verify your email'))location.href='floox-verify.html?email='+encodeURIComponent(email)+'&role='+encodeURIComponent(FLOOX.getUser()?.role||selectedRole);else setMsg('loginMsg',e.message||'Unable to sign in.','error');b.disabled=false;b.textContent='Sign In →'}
-};
-$('signupBtn').onclick=async()=>{
-  const name=$('sName').value.trim(),email=$('sEmail').value.trim(),phone=$('sPhone').value.trim(),city=$('sCity').value.trim(),password=$('sPw').value;
-  if(!name)return setMsg('signupMsg','Please enter your name.','error');
-  if(!email||!email.includes('@'))return setMsg('signupMsg','Please enter a valid email.','error');
-  if(password.length<8)return setMsg('signupMsg','Password must be at least 8 characters.','error');
-  const b=$('signupBtn');b.disabled=true;b.textContent='Creating account…';setMsg('signupMsg','');
-  try{const r=await FLOOX.register({role:selectedRole,email,password,name,phone,city});if(r.requiresOtp)location.href='floox-verify.html?email='+encodeURIComponent(email)+'&role='+encodeURIComponent(selectedRole);else if(r.user)setTimeout(()=>FLOOX.goToDashboard(r.user),350)}
-  catch(e){setMsg('signupMsg',e.message||'Unable to create account.','error');b.disabled=false;b.textContent='Create Account →'}
-};
-$('forgotBtn').onclick=async()=>{
-  const email=$('fEmail').value.trim().toLowerCase();
-  if(!email||!email.includes('@'))return setMsg('forgotMsg','Please enter a valid email.','error');
-  const b=$('forgotBtn');b.disabled=true;b.textContent='Sending…';setMsg('forgotMsg','');
-  try{const r=await FLOOX.forgotPassword(email);setMsg('forgotMsg',r.message||'Reset code sent.','success');setTimeout(()=>location.href='floox-reset-password.html?email='+encodeURIComponent(email),500)}
-  catch(e){setMsg('forgotMsg',e.message||'Unable to send reset code.','error');b.disabled=false;b.textContent='Send Reset Code →'}
-};
-document.addEventListener('DOMContentLoaded',()=>{if(FLOOX.isLoggedIn())FLOOX.goToDashboard()});
+(() => {
+  'use strict';
+  let selectedRole='fan';
+  const $=id=>document.getElementById(id);
+  const auth=()=>window.FLOOX;
+  function setMsg(id,text,type=''){const el=$(id);if(!el)return;el.textContent=text;el.className='auth-message '+type;}
+  function showPanel(name){$('panelLogin').style.display=name==='login'?'block':'none';$('panelSignup').style.display=name==='signup'?'block':'none';$('panelForgot').style.display=name==='forgot'?'block':'none';$('tabLogin').classList.toggle('active',name==='login');$('tabSignup').classList.toggle('active',name==='signup');}
+  document.querySelectorAll('.role-opt').forEach(b=>b.addEventListener('click',()=>{selectedRole=b.dataset.role;document.querySelectorAll('.role-opt').forEach(x=>x.classList.remove('selected'));b.classList.add('selected')}));
+  $('tabLogin').onclick=()=>showPanel('login');$('tabSignup').onclick=()=>showPanel('signup');$('forgotLink').onclick=e=>{e.preventDefault();showPanel('forgot')};$('backLogin').onclick=e=>{e.preventDefault();showPanel('login')};
+  $('loginBtn').onclick=async()=>{const api=auth();if(!api)return setMsg('loginMsg','Authentication module did not load. Please refresh once.','error');const email=$('lEmail').value.trim(),password=$('lPw').value;if(!email||!email.includes('@'))return setMsg('loginMsg','Please enter a valid email.','error');if(!password)return setMsg('loginMsg','Please enter your password.','error');const b=$('loginBtn');b.disabled=true;b.textContent='Signing in…';setMsg('loginMsg','');try{const u=await api.login(email,password);setMsg('loginMsg','Welcome back!','success');setTimeout(()=>api.goToDashboard(u),350)}catch(e){if(String(e.message).toLowerCase().includes('verify your email'))location.href='floox-verify.html?email='+encodeURIComponent(email)+'&role='+encodeURIComponent(api.getUser()?.role||selectedRole);else setMsg('loginMsg',e.message||'Unable to sign in.','error');b.disabled=false;b.textContent='Sign In →'}};
+  $('signupBtn').onclick=async()=>{const api=auth();if(!api)return setMsg('signupMsg','Authentication module did not load. Please refresh once.','error');const name=$('sName').value.trim(),email=$('sEmail').value.trim(),phone=$('sPhone').value.trim(),city=$('sCity').value.trim(),password=$('sPw').value;if(!name)return setMsg('signupMsg','Please enter your name.','error');if(!email||!email.includes('@'))return setMsg('signupMsg','Please enter a valid email.','error');if(password.length<8)return setMsg('signupMsg','Password must be at least 8 characters.','error');const b=$('signupBtn');b.disabled=true;b.textContent='Creating account…';setMsg('signupMsg','');try{const r=await api.register({role:selectedRole,email,password,name,phone,city});if(r.requiresOtp)location.href='floox-verify.html?email='+encodeURIComponent(email)+'&role='+encodeURIComponent(selectedRole);else if(r.user)setTimeout(()=>api.goToDashboard(r.user),350)}catch(e){setMsg('signupMsg',e.message||'Unable to create account.','error');b.disabled=false;b.textContent='Create Account →'}};
+  $('forgotBtn').onclick=async()=>{const api=auth();if(!api)return setMsg('forgotMsg','Authentication module did not load. Please refresh once.','error');const email=$('fEmail').value.trim().toLowerCase();if(!email||!email.includes('@'))return setMsg('forgotMsg','Please enter a valid email.','error');const b=$('forgotBtn');b.disabled=true;b.textContent='Sending…';setMsg('forgotMsg','');try{const r=await api.forgotPassword(email);setMsg('forgotMsg',r.message||'Reset code sent.','success');setTimeout(()=>location.href='floox-reset-password.html?email='+encodeURIComponent(email),500)}catch(e){setMsg('forgotMsg',e.message||'Unable to send reset code.','error');b.disabled=false;b.textContent='Send Reset Code →'}};
+  window.addEventListener('load',()=>{const api=auth();if(api?.isLoggedIn())api.goToDashboard();});
+})();
 </script>
 </body>
 </html>
