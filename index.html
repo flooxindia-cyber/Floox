@@ -1653,7 +1653,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   if(typeof FLOOX!=='undefined' && FLOOX.isLoggedIn()){
     const user=FLOOX.getUser();
-    const dashUrl=user.role==='artist'?'floox-dashboard-artist.html':user.role==='organiser'?'floox-dashboard-organiser.html':'floox-public.html';
+    const dashUrl=user.role==='artist'?'floox-dashboard-artist.html':user.role==='organiser'?'floox-dashboard-organiser.html':'floox-dashboard-fan.html';
     document.querySelectorAll('[data-auth="login"]').forEach(el=>el.style.display='none');
     document.querySelectorAll('[data-auth="logout"]').forEach(el=>el.style.display='inline-flex');
     document.querySelectorAll('[data-auth="username"]').forEach(el=>{el.style.display='inline';el.textContent='Hi, '+(user.name||'').split(' ')[0]+'! 👋'});
