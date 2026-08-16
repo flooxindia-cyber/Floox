@@ -286,7 +286,7 @@ async function loadLikes() {
   if (!isLoggedIn()) { likesLoaded = true; return; }
   try {
     const token = localStorage.getItem('floox_token');
-    const res   = await fetch('/.netlify/functions/get-likes', {
+    const res   = await fetch('/api/get-likes', {
       headers: { Authorization: 'Bearer ' + token }
     });
     if (res.ok) {
@@ -424,7 +424,7 @@ async function runSearch() {
 
 async function fetchArtists(filters) {
   const qs = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([,v])=>v!=null))).toString();
-  const res = await fetch('/.netlify/functions/artists?' + qs);
+  const res = await fetch('/api/artists?' + qs);
   if(!res.ok) throw new Error('artists fetch failed');
   return res.json();
 }
@@ -434,7 +434,7 @@ async function fetchOrganisers(filters) {
   if(!isLoggedIn()) return { organisers: [] };
   const token = localStorage.getItem('floox_token');
   const qs = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([,v])=>v!=null))).toString();
-  const res = await fetch('/.netlify/functions/organisers?' + qs, {
+  const res = await fetch('/api/organisers?' + qs, {
     headers: { Authorization: 'Bearer ' + token }
   });
   if(!res.ok) return { organisers: [] };
@@ -577,7 +577,7 @@ async function toggleLike(e, id, name) {
   // Sync with DB
   try {
     const token = localStorage.getItem('floox_token');
-    const res   = await fetch('/.netlify/functions/toggle-like', {
+    const res   = await fetch('/api/toggle-like', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
       body:    JSON.stringify({ likedId: id }),
@@ -656,6 +656,8 @@ loadLikes().then(() => runSearch());
   </div>
 </div>
 
+<script>window.FLOOX_BACKEND_ENABLED = true;</script>
+<script src="floox-demo.js"></script>
 <script src="floox-auth.js"></script>
 <script>
 // Auth nav state
@@ -708,7 +710,7 @@ async function openProfile(id, role) {
     if (isLoggedIn()) {
       // Logged-in: fetch full profile including contact details
       const token = localStorage.getItem('floox_token');
-      const res = await fetch('/.netlify/functions/get-profile?id=' + encodeURIComponent(id), {
+      const res = await fetch('/api/get-profile?id=' + encodeURIComponent(id), {
         headers: { Authorization: 'Bearer ' + token }
       });
       const data = await res.json();
@@ -719,7 +721,7 @@ async function openProfile(id, role) {
       // For artists, hit the public artists endpoint filtered by id using select + eq filter.
       // For organisers, we have no public endpoint — just show a login nudge.
       if (role === 'artist') {
-        const res = await fetch('/.netlify/functions/artists?id=' + encodeURIComponent(id) + '&limit=1');
+        const res = await fetch('/api/artists?id=' + encodeURIComponent(id) + '&limit=1');
         const data = await res.json();
         user = (data.artists || [])[0] || null;
       }
@@ -891,7 +893,7 @@ function buildRevealWidget(profileId) {
 async function updateRevealCounter(profileId) {
   try {
     const token = localStorage.getItem('floox_token');
-    const res   = await fetch('/.netlify/functions/get-reveals-remaining', {
+    const res   = await fetch('/api/get-reveals-remaining', {
       headers: { Authorization: 'Bearer ' + token }
     });
     const data = await res.json();
@@ -918,7 +920,7 @@ async function requestReveal() {
 
   try {
     const token = localStorage.getItem('floox_token');
-    const res   = await fetch('/.netlify/functions/reveal-contact', {
+    const res   = await fetch('/api/reveal-contact', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
       body:    JSON.stringify({ action: 'request', profileId: _revealProfileId }),
@@ -969,7 +971,7 @@ async function verifyRevealOtp() {
 
   try {
     const token = localStorage.getItem('floox_token');
-    const res   = await fetch('/.netlify/functions/reveal-contact', {
+    const res   = await fetch('/api/reveal-contact', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
       body:    JSON.stringify({ action: 'verify', profileId: _revealProfileId, otp }),
@@ -993,7 +995,7 @@ async function verifyRevealOtp() {
 async function doAutoReveal() {
   try {
     const token = localStorage.getItem('floox_token');
-    const res   = await fetch('/.netlify/functions/get-profile?id=' + encodeURIComponent(_revealProfileId), {
+    const res   = await fetch('/api/get-profile?id=' + encodeURIComponent(_revealProfileId), {
       headers: { Authorization: 'Bearer ' + token }
     });
     const data = await res.json();
@@ -1055,7 +1057,7 @@ async function sendMessage() {
 
   try {
     const token = localStorage.getItem('floox_token');
-    const res   = await fetch('/.netlify/functions/send-message', {
+    const res   = await fetch('/api/send-message', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
       body:    JSON.stringify({ receiverId: currentReceiverId, subject, body, eventDate, budget }),
@@ -1112,7 +1114,7 @@ async function toggleFollowFromModal() {
   }
   try {
     const token = localStorage.getItem('floox_token');
-    const res   = await fetch('/.netlify/functions/toggle-like', {
+    const res   = await fetch('/api/toggle-like', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
       body:    JSON.stringify({ likedId: currentProfileId }),

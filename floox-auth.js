@@ -2,7 +2,7 @@
 // Loaded on every page via <script src="floox-auth.js">
 
 const FLOOX = (() => {
-  const API = '/.netlify/functions';
+  const API = '/api';
 
   // ── Token management ──────────────────────────────────────────────────────
   function getToken()   { return localStorage.getItem('floox_token'); }
@@ -65,7 +65,30 @@ const FLOOX = (() => {
 }
 
   async function register(payload) {
-    return await apiPost('register', payload);
+    const data = await apiPost('register', payload);
+    // Frontend-first mode: complete the verification step before the
+    // registration promise resolves. The real backend will own OTP delivery.
+    if (window.FLOOX_DEMO && data && data.requiresOtp && typeof window.FLOOX_DEMO_OTP_VERIFY === 'function') {
+      const verified = await window.FLOOX_DEMO_OTP_VERIFY(payload.email);
+      if (verified && verified.token && verified.user) saveSession(verified.token, verified.user);
+      return verified;
+    }
+    return data;
+  }
+
+  async function verifyOtp(email, otp, purpose='registration') {
+    const res = await fetch('/api/verify-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp,purpose})});
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Verification failed.');
+    if(data.token && data.user) saveSession(data.token,data.user);
+    return data;
+  }
+
+  async function resendOtp(email, purpose='registration') {
+    const res = await fetch('/api/resend-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,purpose})});
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Could not resend OTP.');
+    return data;
   }
 
   function logout(redirect = 'index.html') {
@@ -213,7 +236,7 @@ const FLOOX = (() => {
     });
   }
 
-  // ── Upload single file to Cloudinary via function ─────────────────────────
+  // ── Upload single file via Supabase Storage API ─────────────────────────
   async function uploadFile(file, mediaType = 'image', onProgress) {
     const base64 = await fileToBase64(file);
     if (onProgress) onProgress(30);
@@ -295,7 +318,7 @@ const FLOOX = (() => {
 
   return {
     getToken, getUser, isLoggedIn,
-    login, register, logout,
+    login, register, verifyOtp, resendOtp, logout,
     getMe, updateMe, saveArtistProfile, saveOrganiserProfile,
     changePassword, getArtists, getOrganisers, getProfile,
     uploadFile, updateNav, requireAuth,

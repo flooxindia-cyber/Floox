@@ -695,6 +695,8 @@ function showT(msg){
 const obs=new IntersectionObserver(en=>{en.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target)}})},{threshold:0.1})
 document.querySelectorAll('.reveal,.reveal-l,.reveal-r').forEach((el,i)=>{el.style.transitionDelay=(i%4)*0.1+'s';obs.observe(el)})
 </script>
+<script>window.FLOOX_BACKEND_ENABLED = true;</script>
+<script src="floox-demo.js"></script>
 <script src="floox-auth.js"></script>
 </body>
 </html>

@@ -269,7 +269,7 @@
     <div id="reviewContent" style="display:flex;flex-direction:column;margin-bottom:1.5rem"></div>
     <div style="background:rgba(0,194,168,0.06);border:1.5px solid rgba(0,194,168,0.2);border-radius:16px;padding:1.2rem;margin-bottom:1.2rem">
       <div style="font-family:var(--head);font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:0.4rem">🔒 Privacy & Terms</div>
-      <div style="font-size:0.8rem;color:var(--muted);line-height:1.65;margin-bottom:0.8rem">Your data is secure. By creating an account you agree to Floox's <a href="floox-contact.html" style="color:var(--teal)">Terms of Service</a> and <a href="floox-contact.html" style="color:var(--teal)">Privacy Policy</a>.</div>
+      <div style="font-size:0.8rem;color:var(--muted);line-height:1.65;margin-bottom:0.8rem">Your data is secure. By creating an account you agree to Floox's <a href="floox-terms.html" style="color:var(--teal)">Terms of Service</a> and <a href="floox-privacy.html" style="color:var(--teal)">Privacy Policy</a>.</div>
       <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
         <input type="checkbox" id="termsCheck" style="margin-top:3px;accent-color:var(--teal)">
         <span style="font-size:0.82rem;color:var(--text);font-weight:500">I agree to Floox's Terms of Service and Privacy Policy</span>
@@ -308,6 +308,8 @@
   <div class="foot-bottom"><span>© 2026 Floox · Your Stage. Your Story.</span><div class="foot-legal"><a href="#">Privacy</a><a href="#">Terms</a></div></div>
 </footer>
 
+<script>window.FLOOX_BACKEND_ENABLED = true;</script>
+<script src="floox-demo.js"></script>
 <script src="floox-auth.js"></script>
 <script>
 let curStep = 1;
@@ -465,23 +467,10 @@ async function submitForm() {
     }
   };
   try {
-    await FLOOX.register(payload);
-    btn.textContent='Uploading media…';
-    const loginRes = await fetch('/.netlify/functions/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:payload.email,password:payload.password})}).then(r=>r.json());
-    if (loginRes.token) {
-      FLOOX.saveSession(loginRes.token, loginRes.user);
-      const allFiles=[
-        ...(document.getElementById('logoInput').files[0]?[{file:document.getElementById('logoInput').files[0],type:'profile'}]:[]),
-        ...uploadedFiles.photo.map(f=>({file:f,type:'photo'})),
-        ...uploadedFiles.video.map(f=>({file:f,type:'video'}))
-      ];
-      for(let i=0;i<allFiles.length;i++){
-        document.getElementById('uploadStatus').style.display='block';
-        document.getElementById('uploadStatusText').textContent=`Uploading ${i+1} of ${allFiles.length}: ${allFiles[i].file.name}`;
-        document.getElementById('uploadFill').style.width=Math.round(((i+0.5)/allFiles.length)*100)+'%';
-        try{ await FLOOX.uploadFile(allFiles[i].file, allFiles[i].type); }catch(e){console.warn('Upload failed:',e.message);}
-        document.getElementById('uploadFill').style.width=Math.round(((i+1)/allFiles.length)*100)+'%';
-      }
+    const regRes = await FLOOX.register(payload);
+    if (regRes && regRes.requiresOtp) {
+      window.location.href = 'floox-verify.html?email=' + encodeURIComponent(payload.email) + '&role=organiser';
+      return;
     }
     document.getElementById('step4').classList.remove('active');
     document.getElementById('formSteps').style.display='none';

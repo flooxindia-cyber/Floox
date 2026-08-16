@@ -342,6 +342,8 @@
   <div class="foot-bottom"><span>© 2026 Floox · Your Stage. Your Story.</span><div class="foot-legal"><a href="#">Privacy</a><a href="#">Terms</a></div></div>
 </footer>
 
+<script>window.FLOOX_BACKEND_ENABLED = true;</script>
+<script src="floox-demo.js"></script>
 <script src="floox-auth.js"></script>
 <script>
 let curStep = 1;
@@ -519,36 +521,9 @@ async function submitForm() {
 
   try {
     const regRes = await FLOOX.register(payload);
-    registeredUserId = regRes.userId;
-
-    // Now log in to get token for media uploads
-    btn.textContent = 'Uploading media…';
-    const loginRes = await fetch('/.netlify/functions/login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: payload.email, password: payload.password })
-    }).then(r => r.json());
-
-    if (loginRes.token) {
-      FLOOX.saveSession(loginRes.token, loginRes.user);
-      // Upload all media files
-      const allFiles = [
-        ...uploadedFiles.video.map(f => ({file:f, type:'video'})),
-        ...uploadedFiles.photo.map(f => ({file:f, type:'photo'})),
-        ...uploadedFiles.audio.map(f => ({file:f, type:'audio'})),
-      ];
-      // Upload profile pic
-      const profilePicInput = document.getElementById('profilePicInput');
-      if (profilePicInput.files[0]) allFiles.unshift({ file: profilePicInput.files[0], type: 'profile' });
-
-      const total = allFiles.length;
-      for (let i = 0; i < total; i++) {
-        const { file, type } = allFiles[i];
-        document.getElementById('uploadStatus').style.display = 'block';
-        document.getElementById('uploadStatusText').textContent = `Uploading ${i+1} of ${total}: ${file.name}`;
-        document.getElementById('uploadFill').style.width = Math.round(((i+0.5)/total)*100)+'%';
-        try { await FLOOX.uploadFile(file, type); } catch(e) { console.warn('File upload failed:', file.name, e.message); }
-        document.getElementById('uploadFill').style.width = Math.round(((i+1)/total)*100)+'%';
-      }
+    if (regRes && regRes.requiresOtp) {
+      window.location.href = 'floox-verify.html?email=' + encodeURIComponent(payload.email) + '&role=artist';
+      return;
     }
 
     // Show success

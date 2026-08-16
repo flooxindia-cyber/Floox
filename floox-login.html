@@ -211,12 +211,12 @@ main{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-
 
         <!-- FORGOT PANEL -->
         <div class="panel" id="panelForgot">
-          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.5rem">Enter your email and we'll send you a reset link.</p>
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.5rem">Enter your email and we'll send you a one-time reset code.</p>
           <div class="field-group">
             <label class="flabel">Email Address</label>
             <input type="email" class="finput" id="fEmail" placeholder="you@email.com">
           </div>
-          <button class="btn-fire" onclick="doForgot()">Send Reset Link →</button>
+          <button class="btn-fire" onclick="doForgot()">Send Reset Code →</button>
           <div class="link-row" style="margin-top:.8rem"><a href="#" onclick="switchTab('login');return false">← Back to Sign In</a></div>
         </div>
       </div>
@@ -232,13 +232,15 @@ main{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-
   </div>
 </main>
 
+<script>window.FLOOX_BACKEND_ENABLED = true;</script>
+<script src="floox-demo.js"></script>
 <script src="floox-auth.js"></script>
 <script>
 // If already logged in, redirect
 document.addEventListener('DOMContentLoaded', () => {
   if (FLOOX.isLoggedIn()) {
     const u = FLOOX.getUser();
-    window.location.href = u.role === 'artist' ? 'floox-dashboard-artist.html' : u.role === 'organiser' ? 'floox-dashboard-organiser.html' : 'floox-public.html';
+    window.location.href = u.role === 'artist' ? 'floox-dashboard-artist.html' : u.role === 'organiser' ? 'floox-dashboard-organiser.html' : 'floox-dashboard-fan.html';
   }
 });
 
@@ -277,7 +279,7 @@ async function doLogin() {
     const user = await FLOOX.login(email, pw);
     FLOOX.toast('Welcome back, ' + user.name.split(' ')[0] + '! 🎉', 'success');
     setTimeout(() => {
-      window.location.href = user.role === 'artist' ? 'floox-dashboard-artist.html' : user.role === 'organiser' ? 'floox-dashboard-organiser.html' : 'floox-public.html';
+      window.location.href = user.role === 'artist' ? 'floox-dashboard-artist.html' : user.role === 'organiser' ? 'floox-dashboard-organiser.html' : 'floox-dashboard-fan.html';
     }, 1000);
   } catch (err) {
     FLOOX.toast(err.message || 'Login failed. Please check your credentials.', 'error');
@@ -298,17 +300,9 @@ async function doSignup() {
   btn.disabled = true; btn.textContent = 'Creating account…';
   try {
     const res = await FLOOX.register({ role: selectedRole, email, password: pw, name, phone, city });
-    if (selectedRole === 'artist' || selectedRole === 'organiser') {
-      document.getElementById('formWrap').style.display = 'none';
-      document.getElementById('formSuc').style.display = 'block';
-      document.getElementById('sucMsg').textContent = res.message;
-      document.getElementById('sucBtn').href = selectedRole === 'artist' ? 'floox-artist-register.html' : 'floox-organiser-register.html';
-      document.getElementById('sucBtn').textContent = 'Complete Full Profile →';
-    } else {
-      // Fan — log them in
-      await FLOOX.login(email, pw);
-      FLOOX.toast('Account created! Welcome to Floox 🎉', 'success');
-      setTimeout(() => window.location.href = 'floox-public.html', 1200);
+    if (res && res.requiresOtp) {
+      window.location.href = 'floox-verify.html?email=' + encodeURIComponent(email) + '&role=' + encodeURIComponent(selectedRole);
+      return;
     }
   } catch (err) {
     FLOOX.toast(err.message || 'Registration failed. Please try again.', 'error');

@@ -932,7 +932,7 @@ async function loadFeaturedArtists() {
   const grid = document.getElementById('featuredArtistsGrid');
   if (!grid) return;
   try {
-    const res  = await fetch('/.netlify/functions/artists?limit=8');
+    const res  = await fetch('/api/artists?limit=8');
     const data = await res.json();
     const artists = data.artists || [];
     if (!artists.length) {
@@ -1007,6 +1007,8 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
   })
 })
 </script>
+<script>window.FLOOX_BACKEND_ENABLED = true;</script>
+<script src="floox-demo.js"></script>
 <script src="floox-auth.js"></script>
 </body>
 </html>
