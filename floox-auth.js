@@ -1,722 +1,84 @@
-// floox-auth.js — Shared authentication & API helper v5
+// floox-auth.js — shared authentication, API, session and routing helper
 // Floox — Vercel + Supabase
-// Single source of truth for session, API calls, OTP, profile helpers and routing.
-// IMPORTANT: All production API calls use the Vercel /api/* routes.
-
-const FLOOX = (() => {
+(() => {
   'use strict';
-
-  const API = '/api';
-
-  // =========================================================
-  // SESSION
-  // =========================================================
-
-  function getToken() {
-    return localStorage.getItem('floox_token');
-  }
-
-  function getUser() {
-    const raw = localStorage.getItem('floox_user');
-    if (!raw) return null;
-
-    try {
-      return JSON.parse(raw);
-    } catch {
-      // Corrupt local session should never break the page.
-      localStorage.removeItem('floox_user');
-      return null;
-    }
-  }
-
-  function isLoggedIn() {
-    return !!getToken() && !!getUser();
-  }
-
-  function saveSession(token, user) {
-    if (token) {
-      localStorage.setItem('floox_token', token);
-    }
-
-    if (user) {
-      localStorage.setItem('floox_user', JSON.stringify(user));
-    }
-  }
-
-  function clearSession() {
-    localStorage.removeItem('floox_token');
-    localStorage.removeItem('floox_user');
-  }
-
-  // =========================================================
-  // ROLE / ROUTING
-  // =========================================================
-
-  function normaliseRole(role) {
-    return String(role || '').trim().toLowerCase();
-  }
-
-  function dashboardForRole(role) {
-    switch (normaliseRole(role)) {
-      case 'artist':
-        return 'floox-dashboard-artist.html';
-
-      case 'organiser':
-      case 'organizer':
-        return 'floox-dashboard-organiser.html';
-
-      case 'fan':
-      case 'user':
-        return 'floox-dashboard-fan.html';
-
-      default:
-        return 'floox-public.html';
-    }
-  }
-
-  function dashboardUrl(user = getUser()) {
-    return dashboardForRole(user && user.role);
-  }
-
-  function goToDashboard(user = getUser()) {
-    if (!user || !user.role) {
-      window.location.href = 'floox-login.html';
-      return false;
-    }
-
-    window.location.href = dashboardForRole(user.role);
-    return true;
-  }
-
-  function goToHome() {
-    window.location.href = 'floox-public.html';
-  }
-
-  // =========================================================
-  // API HELPERS
-  // =========================================================
-
-  async function parseResponse(response) {
-    const text = await response.text();
-
-    if (!text) {
-      return {};
-    }
-
-    try {
-      return JSON.parse(text);
-    } catch {
-      // This gives a useful error when Vercel returns HTML
-      // instead of JSON (404/500/routing problems).
-      const preview = text.replace(/\s+/g, ' ').slice(0, 180);
-      throw new Error(
-        `Server returned an invalid response (${response.status}).` +
-        (preview ? ` ${preview}` : '')
-      );
-    }
-  }
-
-  async function request(endpoint, options = {}) {
-    const {
-      method = 'GET',
-      body,
-      auth = false,
-      headers: extraHeaders = {}
-    } = options;
-
-    const headers = {
-      Accept: 'application/json',
-      ...extraHeaders
-    };
-
-    if (body !== undefined) {
-      headers['Content-Type'] = 'application/json';
-    }
-
-    if (auth) {
-      const token = getToken();
-
-      if (!token) {
-        throw new Error('Authentication required. Please sign in again.');
-      }
-
-      headers.Authorization = 'Bearer ' + token;
-    }
-
-    let response;
-
-    try {
-      response = await fetch(API + '/' + endpoint, {
-        method,
-        headers,
-        body: body === undefined ? undefined : JSON.stringify(body)
-      });
-    } catch {
-      throw new Error(
-        'Unable to connect to Floox. Please check your internet connection and try again.'
-      );
-    }
-
-    // If a stale token is rejected, clear the local session.
-    if (response.status === 401 && auth) {
-      clearSession();
-    }
-
-    const data = await parseResponse(response);
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        data.message ||
-        `Request failed (${response.status}).`
-      );
-    }
-
-    return data;
-  }
-
-  async function apiPost(endpoint, body = {}, auth = false) {
-    return request(endpoint, {
-      method: 'POST',
-      body,
-      auth
-    });
-  }
-
-  async function apiGet(endpoint, auth = true) {
-    return request(endpoint, {
-      method: 'GET',
-      auth
-    });
-  }
-
-  async function apiDelete(endpoint, auth = true) {
-    return request(endpoint, {
-      method: 'DELETE',
-      auth
-    });
-  }
-
-  // =========================================================
-  // LOGIN
-  // =========================================================
-
-  async function login(email, password) {
-    const data = await apiPost('login', {
-      email: String(email || '').trim().toLowerCase(),
-      password
-    });
-
-    if (!data.token || !data.user) {
-      throw new Error('Login response is incomplete. Please try again.');
-    }
-
-    saveSession(data.token, data.user);
-    return data.user;
-  }
-
-  // =========================================================
-  // REGISTRATION
-  // =========================================================
-
-  async function register(payload) {
-    return apiPost('register', payload);
-  }
-
-  // =========================================================
-  // OTP
-  // =========================================================
-
-  async function verifyOtp(email, otp, purpose = 'registration') {
-    const data = await apiPost('verify-otp', {
-      email: String(email || '').trim().toLowerCase(),
-      otp: String(otp || '').trim(),
-      purpose
-    });
-
-    // Registration verification may establish the session.
-    if (data.token && data.user) {
-      saveSession(data.token, data.user);
-    }
-
-    return data;
-  }
-
-  async function resendOtp(email, purpose = 'registration') {
-    return apiPost('resend-otp', {
-      email: String(email || '').trim().toLowerCase(),
-      purpose
-    });
-  }
-
-  // =========================================================
-  // PASSWORD RESET
-  // =========================================================
-
-  async function forgotPassword(email) {
-    return apiPost('forgot-password', {
-      email: String(email || '').trim().toLowerCase()
-    });
-  }
-
-  async function resetPassword(email, otp, newPassword) {
-    return apiPost('reset-password', {
-      email: String(email || '').trim().toLowerCase(),
-      otp: String(otp || '').trim(),
-      newPassword
-    });
-  }
-
-  async function changePassword(currentPassword, newPassword) {
-    return apiPost(
-      'change-password',
-      {
-        currentPassword,
-        newPassword
-      },
-      true
-    );
-  }
-
-  // =========================================================
-  // LOGOUT
-  // =========================================================
-
-  function logout(redirect = 'floox-public.html') {
-    clearSession();
-
-    // Use a safe relative redirect. The default is the real Floox
-    // public landing page, not index.html.
-    window.location.href = redirect || 'floox-public.html';
-  }
-
-  // =========================================================
-  // CURRENT USER / PROFILE
-  // =========================================================
-
-  async function getMe() {
-    const token = getToken();
-
-    if (!token) {
-      throw new Error('Authentication required. Please sign in again.');
-    }
-
-    const data = await apiGet('me', true);
-
-    if (!data.user) {
-      throw new Error('Invalid user response.');
-    }
-
-    saveSession(token, data.user);
-    return data.user;
-  }
-
-  async function updateMe(fields) {
-    const data = await apiPost('me', fields, true);
-
-    if (data.user) {
-      saveSession(getToken(), data.user);
-    }
-
-    return data;
-  }
-
-  async function saveArtistProfile(fields) {
-    const data = await apiPost('artist-profile', fields, true);
-
-    if (data.user) {
-      saveSession(getToken(), data.user);
-    }
-
-    return data;
-  }
-
-  async function saveOrganiserProfile(fields) {
-    const data = await apiPost('organiser-profile', fields, true);
-
-    if (data.user) {
-      saveSession(getToken(), data.user);
-    }
-
-    return data;
-  }
-
-  async function getProfile(id) {
-    if (!id) {
-      throw new Error('Profile ID is required.');
-    }
-
-    return apiGet(
-      'get-profile?id=' + encodeURIComponent(id),
-      true
-    );
-  }
-
-  // =========================================================
-  // DIRECTORIES
-  // =========================================================
-
-  async function getArtists(params = {}) {
-    const qs = new URLSearchParams(params).toString();
-
-    return apiGet(
-      'artists' + (qs ? '?' + qs : ''),
-      false
-    );
-  }
-
-  async function getOrganisers(params = {}) {
-    const qs = new URLSearchParams(params).toString();
-
-    return apiGet(
-      'organisers' + (qs ? '?' + qs : ''),
-      true
-    );
-  }
-
-  // =========================================================
-  // LIKES / CONTACT / MESSAGING
-  // =========================================================
-
-  async function toggleLike(artistId) {
-    return apiPost(
-      'toggle-like',
-      { artistId },
-      true
-    );
-  }
-
-  async function getLikes() {
-    return apiGet('get-likes', true);
-  }
-
-  async function revealContact(artistId) {
-    return apiPost(
-      'reveal-contact',
-      { artistId },
-      true
-    );
-  }
-
-  async function getRevealsRemaining() {
-    return apiGet('get-reveals-remaining', true);
-  }
-
-  async function sendMessage(payload) {
-    return apiPost(
-      'send-message',
-      payload,
-      true
-    );
-  }
-
-  // =========================================================
-  // FILE UPLOAD
-  // =========================================================
-
-  function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-      if (!file) {
-        reject(new Error('No file selected.'));
-        return;
-      }
-
-      const reader = new FileReader();
-
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error('Could not read the selected file.'));
-
-      reader.readAsDataURL(file);
-    });
-  }
-
-  async function uploadFile(file, mediaType = 'image', onProgress) {
-    if (!file) {
-      throw new Error('Please select a file.');
-    }
-
-    const token = getToken();
-
-    if (!token) {
-      throw new Error('Not logged in. Please sign in again.');
-    }
-
-    if (typeof onProgress === 'function') {
-      onProgress(10);
-    }
-
-    const base64 = await fileToBase64(file);
-
-    if (typeof onProgress === 'function') {
-      onProgress(35);
-    }
-
-    const data = await request('upload-media', {
-      method: 'POST',
-      auth: true,
-      body: {
-        fileData: base64,
-        fileName: file.name,
-        fileType: file.type,
-        mediaType
-      }
-    });
-
-    if (typeof onProgress === 'function') {
-      onProgress(100);
-    }
-
-    return data;
-  }
-
-  // =========================================================
-  // AUTH GUARDS
-  // =========================================================
-
-  function requireAuth(role) {
-    const user = getUser();
-    const token = getToken();
-
-    if (!token || !user) {
-      clearSession();
-      window.location.href = 'floox-login.html';
-      return null;
-    }
-
-    if (role) {
-      const wanted = normaliseRole(role);
-      const actual = normaliseRole(user.role);
-
-      // Treat organiser/organizer as the same role.
-      const sameRole =
-        (wanted === 'organiser' || wanted === 'organizer') &&
-        (actual === 'organiser' || actual === 'organizer');
-
-      if (wanted !== actual && !sameRole) {
-        // Never send a logged-in user to the public page just because
-        // their role is wrong. Send them to their own dashboard.
-        window.location.href = dashboardForRole(actual);
-        return null;
-      }
-    }
-
-    return user;
-  }
-
-  function redirectIfLoggedIn() {
-    const user = getUser();
-    const token = getToken();
-
-    if (!token || !user) {
-      return false;
-    }
-
-    goToDashboard(user);
-    return true;
-  }
-
-  // =========================================================
-  // NAVIGATION
-  // =========================================================
-
-  function updateNav() {
-    const user = getUser();
-
-    const loginLinks = document.querySelectorAll('[data-auth="login"]');
-    const logoutLinks = document.querySelectorAll('[data-auth="logout"]');
-    const userNameEls = document.querySelectorAll('[data-auth="username"]');
-    const dashLinks = document.querySelectorAll('[data-auth="dashboard"]');
-
-    if (user) {
-      loginLinks.forEach(el => {
-        el.style.display = 'none';
-      });
-
-      logoutLinks.forEach(el => {
-        el.style.display = 'inline-flex';
-      });
-
-      userNameEls.forEach(el => {
-        const name = user.name || user.email || 'User';
-        el.textContent = String(name).split(' ')[0];
-      });
-
-      dashLinks.forEach(el => {
-        el.style.display = 'inline-flex';
-        el.href = dashboardForRole(user.role);
-
-        // Make dashboard controls impossible to mis-route.
-        if (!el.dataset.flooxDashboardBound) {
-          el.dataset.flooxDashboardBound = '1';
-
-          el.addEventListener('click', event => {
-            event.preventDefault();
-            goToDashboard(getUser());
-          });
+  const API='/api';
+  const getToken=()=>localStorage.getItem('floox_token');
+  const getUser=()=>{try{return JSON.parse(localStorage.getItem('floox_user')||'null')}catch{localStorage.removeItem('floox_user');return null}};
+  const isLoggedIn=()=>!!getToken()&&!!getUser();
+  const saveSession=(token,user)=>{if(token)localStorage.setItem('floox_token',token);if(user)localStorage.setItem('floox_user',JSON.stringify(user));};
+  const clearSession=()=>{localStorage.removeItem('floox_token');localStorage.removeItem('floox_user');};
+  const normaliseRole=r=>String(r||'').trim().toLowerCase();
+  function dashboardForRole(role){switch(normaliseRole(role)){case'artist':return'floox-dashboard-artist.html';case'organiser':case'organizer':return'floox-dashboard-organiser.html';case'fan':case'user':return'floox-dashboard-fan.html';default:return'floox-public.html'}}
+  const dashboardUrl=u=>dashboardForRole(u?.role);
+  function goToDashboard(user=getUser()){if(!user?.role){location.href='floox-login.html';return false}location.href=dashboardForRole(user.role);return true}
+  const goToHome=()=>{location.href='floox-public.html'};
+  async function parseResponse(r){const text=await r.text();if(!text)return{};try{return JSON.parse(text)}catch{throw new Error(`Server returned an invalid response (${r.status}).`)}}
+  async function request(endpoint,{method='GET',body,auth=false,headers={}}={}){const h={Accept:'application/json',...headers};if(body!==undefined)h['Content-Type']='application/json';if(auth){const t=getToken();if(!t)throw new Error('Authentication required. Please sign in again.');h.Authorization='Bearer '+t}let r;try{r=await fetch(API+'/'+endpoint,{method,headers:h,body:body===undefined?undefined:JSON.stringify(body)})}catch{throw new Error('Unable to connect to Floox. Please check your internet connection and try again.')}if(r.status===401&&auth)clearSession();const d=await parseResponse(r);if(!r.ok)throw new Error(d.error||d.message||`Request failed (${r.status}).`);return d}
+  const apiGet=(endpoint,auth=true)=>request(endpoint,{auth});
+  const apiPost=(endpoint,body={},auth=false)=>request(endpoint,{method:'POST',body,auth});
+  const apiDelete=(endpoint,auth=true)=>request(endpoint,{method:'DELETE',auth});
+
+  async function login(email,password){const d=await apiPost('login',{email:String(email||'').trim().toLowerCase(),password});if(!d.token||!d.user)throw new Error('Login response is incomplete.');saveSession(d.token,d.user);return d.user}
+  const register=payload=>apiPost('register',payload);
+  async function verifyOtp(email,otp,purpose='registration'){const d=await apiPost('verify-otp',{email:String(email||'').trim().toLowerCase(),otp:String(otp||'').trim(),purpose});if(d.token&&d.user)saveSession(d.token,d.user);return d}
+  const resendOtp=(email,purpose='registration')=>apiPost('resend-otp',{email:String(email||'').trim().toLowerCase(),purpose});
+  const forgotPassword=email=>apiPost('forgot-password',{email:String(email||'').trim().toLowerCase()});
+  const resetPassword=(email,otp,newPassword)=>apiPost('reset-password',{email:String(email||'').trim().toLowerCase(),otp:String(otp||'').trim(),newPassword});
+  const changePassword=(currentPassword,newPassword)=>apiPost('change-password',{currentPassword,newPassword},true);
+  const logout=(redirect='floox-public.html')=>{clearSession();location.href=redirect||'floox-public.html'};
+  async function getMe(){const d=await apiGet('me',true);if(!d.user)throw new Error('Invalid user response.');saveSession(getToken(),d.user);return d.user}
+  async function updateMe(fields){const d=await apiPost('me',fields,true);if(d.user)saveSession(getToken(),d.user);return d}
+  async function saveArtistProfile(fields){const d=await apiPost('artist-profile',fields,true);if(d.user)saveSession(getToken(),d.user);return d}
+  async function saveOrganiserProfile(fields){const d=await apiPost('organiser-profile',fields,true);if(d.user)saveSession(getToken(),d.user);return d}
+  const getProfile=id=>apiGet('get-profile?id='+encodeURIComponent(id),true);
+  const getArtists=params=>apiGet('artists'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
+  const getOrganisers=params=>apiGet('organisers'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
+  const getEvents=params=>apiGet('events'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
+  const toggleLike=likedId=>apiPost('toggle-like',{likedId},true);
+  const getLikes=()=>apiGet('get-likes',true);
+  const revealContact=profileId=>apiPost('reveal-contact',{profileId},true);
+  const getRevealsRemaining=()=>apiGet('get-reveals-remaining',true);
+  const sendMessage=payload=>apiPost('send-message',payload,true);
+  function fileToBase64(file){return new Promise((resolve,reject)=>{if(!file)return reject(new Error('No file selected.'));const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(new Error('Could not read the selected file.'));r.readAsDataURL(file)})}
+  async function uploadFile(file,mediaType='image',onProgress){if(!file)throw new Error('Please select a file.');if(!getToken())throw new Error('Not logged in. Please sign in again.');onProgress?.(10);const base64=await fileToBase64(file);onProgress?.(35);const d=await apiPost('upload-media',{fileData:base64,fileName:file.name,fileType:file.type,mediaType},true);onProgress?.(100);return d}
+  function requireAuth(role){const u=getUser();if(!getToken()||!u){clearSession();location.href='floox-login.html';return null}if(role){const a=normaliseRole(u.role),w=normaliseRole(role);const same=(w==='organiser'||w==='organizer')&&(a==='organiser'||a==='organizer');if(a!==w&&!same){location.href=dashboardForRole(a);return null}}return u}
+  function redirectIfLoggedIn(){const u=getUser();if(!getToken()||!u)return false;return goToDashboard(u)}
+  function toast(msg,type='info'){let el=document.getElementById('flooxToast');if(!el){el=document.createElement('div');el.id='flooxToast';el.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);z-index:99999;background:#1C1000;color:#fff;border-radius:100px;padding:.85rem 1.5rem;font-size:.85rem;opacity:0;transition:.3s;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,.4);max-width:90vw;text-align:center';document.body.appendChild(el)}el.textContent=String(msg||'');el.style.transform='translateX(-50%) translateY(0)';el.style.opacity='1';clearTimeout(el._flooxTimer);el._flooxTimer=setTimeout(()=>{el.style.transform='translateX(-50%) translateY(80px)';el.style.opacity='0'},4000)}
+  const fmtBytes=b=>{b=Number(b)||0;return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB'};
+  function updateNav(){const u=getUser();document.querySelectorAll('[data-auth="login"]').forEach(e=>e.style.display=u?'none':'inline-flex');document.querySelectorAll('[data-auth="logout"]').forEach(e=>e.style.display=u?'inline-flex':'none');document.querySelectorAll('[data-auth="username"]').forEach(e=>e.textContent=String(u?.name||u?.email||'User').split(' ')[0]);document.querySelectorAll('[data-auth="dashboard"]').forEach(e=>{if(u){e.style.display='inline-flex';e.href=dashboardForRole(u.role);if(!e.dataset.flooxBound){e.dataset.flooxBound='1';e.addEventListener('click',ev=>{ev.preventDefault();goToDashboard(getUser())})}}else e.style.display='none'})}
+
+  window.FLOOX={getToken,getUser,isLoggedIn,saveSession,clearSession,normaliseRole,dashboardForRole,dashboardUrl,goToDashboard,goToHome,requireAuth,redirectIfLoggedIn,apiGet,apiPost,apiDelete,login,register,verifyOtp,resendOtp,forgotPassword,resetPassword,changePassword,logout,getMe,updateMe,saveArtistProfile,saveOrganiserProfile,getProfile,getArtists,getOrganisers,getEvents,toggleLike,getLikes,revealContact,getRevealsRemaining,sendMessage,fileToBase64,uploadFile,updateNav,toast,fmtBytes};
+
+  // Persist organiser dashboard events to Supabase without changing the existing dashboard UI.
+  document.addEventListener('DOMContentLoaded',()=>{
+    try{updateNav()}catch(e){console.error('Floox navigation error:',e)}
+    if(!/floox-dashboard-organiser\.html$/i.test(location.pathname))return;
+    setTimeout(async()=>{
+      if(!isLoggedIn()||normaliseRole(getUser()?.role)!=='organiser')return;
+      try{
+        const d=await getJSONInternal('events?mine=1&limit=100',true);
+        if(Array.isArray(d.events)&&typeof allEvents!=='undefined'){
+          allEvents=d.events.map(mapDashboardEvent);
+          if(typeof renderOverview==='function')renderOverview();
+          if(typeof renderAllEvents==='function')renderAllEvents();
+          const total=document.getElementById('totalEvents');if(total)total.textContent=String(allEvents.length);
         }
-      });
-    } else {
-      loginLinks.forEach(el => {
-        el.style.display = 'inline-flex';
-      });
-
-      logoutLinks.forEach(el => {
-        el.style.display = 'none';
-      });
-
-      dashLinks.forEach(el => {
-        el.style.display = 'none';
-      });
-    }
-  }
-
-  // =========================================================
-  // UI HELPERS
-  // =========================================================
-
-  function toast(msg, type = 'info') {
-    let el = document.getElementById('flooxToast');
-
-    if (!el) {
-      el = document.createElement('div');
-      el.id = 'flooxToast';
-
-      el.style.cssText = [
-        'position:fixed',
-        'bottom:2rem',
-        'left:50%',
-        'transform:translateX(-50%) translateY(80px)',
-        'z-index:99999',
-        'background:#1C1000',
-        'color:#fff',
-        'border-radius:100px',
-        'padding:.85rem 1.6rem',
-        'font-size:.88rem',
-        'display:flex',
-        'align-items:center',
-        'gap:.6rem',
-        'opacity:0',
-        'transition:all .35s cubic-bezier(.34,1.56,.64,1)',
-        'pointer-events:none',
-        'box-shadow:0 8px 28px rgba(0,0,0,.4)',
-        'font-family:"Plus Jakarta Sans",sans-serif',
-        'max-width:90vw',
-        'text-align:center'
-      ].join(';');
-
-      document.body.appendChild(el);
-    }
-
-    const colors = {
-      success: '#22C55E',
-      error: '#FF2D78',
-      info: '#00C2A8'
-    };
-
-    const dot = colors[type] || colors.info;
-
-    // textContent avoids injecting arbitrary user/server HTML.
-    el.innerHTML = '';
-    const dotEl = document.createElement('span');
-    dotEl.style.cssText =
-      `width:8px;height:8px;border-radius:50%;background:${dot};flex-shrink:0`;
-
-    const textEl = document.createElement('span');
-    textEl.textContent = String(msg || '');
-
-    el.appendChild(dotEl);
-    el.appendChild(textEl);
-
-    el.style.transform = 'translateX(-50%) translateY(0)';
-    el.style.opacity = '1';
-
-    clearTimeout(el._flooxTimer);
-
-    el._flooxTimer = setTimeout(() => {
-      el.style.transform = 'translateX(-50%) translateY(80px)';
-      el.style.opacity = '0';
-    }, 4000);
-  }
-
-  function fmtBytes(bytes) {
-    const b = Number(bytes) || 0;
-
-    if (b < 1024) return b + ' B';
-    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
-
-    return (b / 1048576).toFixed(1) + ' MB';
-  }
-
-  // =========================================================
-  // PUBLIC API
-  // =========================================================
-
-  return {
-    // session
-    getToken,
-    getUser,
-    isLoggedIn,
-    saveSession,
-    clearSession,
-
-    // routing
-    normaliseRole,
-    dashboardForRole,
-    dashboardUrl,
-    goToDashboard,
-    goToHome,
-    requireAuth,
-    redirectIfLoggedIn,
-
-    // API
-    apiGet,
-    apiPost,
-    apiDelete,
-
-    // authentication
-    login,
-    register,
-    verifyOtp,
-    resendOtp,
-    forgotPassword,
-    resetPassword,
-    changePassword,
-    logout,
-
-    // profile
-    getMe,
-    updateMe,
-    saveArtistProfile,
-    saveOrganiserProfile,
-    getProfile,
-
-    // directories
-    getArtists,
-    getOrganisers,
-
-    // interaction
-    toggleLike,
-    getLikes,
-    revealContact,
-    getRevealsRemaining,
-    sendMessage,
-
-    // upload
-    fileToBase64,
-    uploadFile,
-
-    // UI
-    updateNav,
-    toast,
-    fmtBytes
-  };
+      }catch(e){console.warn('Could not load organiser events:',e.message)}
+      if(typeof window.createEvent==='function'){
+        window.createEvent=async function(status='published'){
+          try{
+            const name=document.getElementById('evName')?.value.trim();const date=document.getElementById('evDate')?.value;const venue=document.getElementById('evVenue')?.value.trim();
+            if(!name||!date){toast('Event name and date are required.','error');return}
+            const body={name,eventDate:date,venue,city:getUser()?.city||'',eventType:document.getElementById('evType')?.value||'Other',budget:Number(document.getElementById('evBudget')?.value||0),description:document.getElementById('evDesc')?.value.trim()||'',genres:Array.isArray(window.evSelectedGenres)?window.evSelectedGenres:[],status};
+            const d=await apiPost('events',body,true);toast(d.message||'Event saved.','success');
+            document.getElementById('newEventModal')?.classList.remove('open');
+            const fresh=await getJSONInternal('events?mine=1&limit=100',true);if(Array.isArray(fresh.events)&&typeof allEvents!=='undefined'){allEvents=fresh.events.map(mapDashboardEvent);if(typeof renderOverview==='function')renderOverview();if(typeof renderAllEvents==='function')renderAllEvents();const total=document.getElementById('totalEvents');if(total)total.textContent=String(allEvents.length)}
+          }catch(e){toast(e.message||'Could not save event.','error')}
+        }
+      }
+    },250);
+  });
+  async function getJSONInternal(endpoint,auth){return request(endpoint,{auth})}
+  function mapDashboardEvent(e){const past=String(e.eventDate||'')<new Date().toISOString().slice(0,10);return{id:e.id,name:e.name,date:e.eventDate,venue:e.venue||'TBA',type:e.eventType||'Other',budget:Number(e.budget||0),status:e.status==='draft'?'draft':past?'completed':'upcoming',artistsBooked:Number(e.artistsBooked||0),description:e.description||'',genres:e.genres||[]}}
 })();
-
-// Keep navigation consistent on every page that loads floox-auth.js.
-document.addEventListener('DOMContentLoaded', () => {
-  try {
-    FLOOX.updateNav();
-  } catch (err) {
-    console.error('Floox navigation error:', err);
-  }
-});
