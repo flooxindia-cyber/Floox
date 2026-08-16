@@ -1,24 +1,17 @@
-// Floox server function
-// Internal server function
-//
-// Auth-gated: only logged-in users can browse organisers.
-// Returns paginated list of profile_complete organisers.
-
+// Floox server function — organiser directory
 const {
   corsOk, json,
-  verifyToken, extractBearer,
-  findUser, publicUser,
+  directoryUser,
 } = require('./_utils');
 
-// ── Supabase helpers (inlined since _utils doesn't export queryOrganisers) ───
 function supabaseHeaders() {
   const key = process.env.SUPABASE_SERVICE_KEY;
   if (!key) throw new Error('SUPABASE_SERVICE_KEY env var is not set');
   return {
-    'Content-Type':  'application/json',
-    'apikey':        key,
-    'Authorization': `Bearer ${key}`,
-    'Prefer':        'return=representation',
+    'Content-Type': 'application/json',
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+    Prefer: 'return=representation',
   };
 }
 
@@ -28,58 +21,54 @@ function supabaseUrl(table, qs = '') {
   return `${base}/rest/v1/${table}${qs ? '?' + qs : ''}`;
 }
 
+async function readJson(res) {
+  const text = await res.text();
+  if (!text) return {};
+  try { return JSON.parse(text); } catch { return {}; }
+}
+
 async function queryOrganisers({ city, q, limit = 20, offset = 0 } = {}) {
   const parts = [
-    `role=eq.organiser`,
-    `profile_complete=eq.true`,
+    'role=eq.organiser',
+    'verified=eq.true',
     `limit=${limit}`,
     `offset=${offset}`,
   ];
   if (city) parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
-  if (q)    parts.push(`or=(name.ilike.*${encodeURIComponent(q)}*,org_name.ilike.*${encodeURIComponent(q)}*,bio.ilike.*${encodeURIComponent(q)}*,org_type.ilike.*${encodeURIComponent(q)}*)`);
+  if (q) {
+    const safe = encodeURIComponent(q);
+    parts.push(`or=(name.ilike.*${safe}*,org_name.ilike.*${safe}*,bio.ilike.*${safe}*,org_type.ilike.*${safe}*)`);
+  }
 
-  const res  = await fetch(supabaseUrl('users', parts.join('&')), { headers: supabaseHeaders() });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'DB query error');
+  const res = await fetch(supabaseUrl('users', parts.join('&')), { headers: supabaseHeaders() });
+  const data = await readJson(res);
+  if (!res.ok) throw new Error(data.message || data.error || 'DB query error');
   return data;
 }
 
 async function countOrganisers({ city, q } = {}) {
-  const parts = [`role=eq.organiser`, `profile_complete=eq.true`];
+  const parts = ['role=eq.organiser', 'verified=eq.true'];
   if (city) parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
-  if (q)    parts.push(`or=(name.ilike.*${encodeURIComponent(q)}*,org_name.ilike.*${encodeURIComponent(q)}*,bio.ilike.*${encodeURIComponent(q)}*)`);
-
-  const headers = { ...supabaseHeaders(), 'Prefer': 'count=exact' };
+  if (q) {
+    const safe = encodeURIComponent(q);
+    parts.push(`or=(name.ilike.*${safe}*,org_name.ilike.*${safe}*,bio.ilike.*${safe}*,org_type.ilike.*${safe}*)`);
+  }
+  const headers = { ...supabaseHeaders(), Prefer: 'count=exact' };
   const res = await fetch(supabaseUrl('users', parts.join('&') + '&select=id'), { method: 'HEAD', headers });
   const range = res.headers.get('content-range') || '0/0';
   return parseInt(range.split('/')[1], 10) || 0;
 }
 
-// ── Handler ───────────────────────────────────────────────────────────────────
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return corsOk();
-  if (event.httpMethod !== 'GET')
-    return json(405, { error: 'Method not allowed' });
-
-  // Must be logged in to search organisers
-  const token = extractBearer(event);
-  if (!token) return json(401, { error: 'Please sign in to browse organisers.' });
-
-  let decoded;
-  try { decoded = verifyToken(token); }
-  catch { return json(401, { error: 'Session expired. Please sign in again.' }); }
-
-  const caller = await findUser('id', 'eq', decoded.id);
-  if (!caller) return json(401, { error: 'Account not found.' });
+  if (event.httpMethod !== 'GET') return json(405, { error: 'Method not allowed' });
 
   const p = event.queryStringParameters || {};
-  const { city = '', q = '', limit = '20', offset = '0' } = p;
-
   const filters = {
-    city:   city  || undefined,
-    q:      q     || undefined,
-    limit:  Math.min(parseInt(limit,  10) || 20, 50),
-    offset: parseInt(offset, 10) || 0,
+    city: p.city || undefined,
+    q: p.q || undefined,
+    limit: Math.min(parseInt(p.limit, 10) || 20, 50),
+    offset: Math.max(parseInt(p.offset, 10) || 0, 0),
   };
 
   try {
@@ -87,8 +76,7 @@ exports.handler = async (event) => {
       queryOrganisers(filters),
       countOrganisers(filters),
     ]);
-
-    const organisers = rawOrgs.map(publicUser);
+    const organisers = rawOrgs.map(directoryUser);
     return json(200, { organisers, total, offset: filters.offset, limit: filters.limit });
   } catch (err) {
     console.error('organisers error:', err);
