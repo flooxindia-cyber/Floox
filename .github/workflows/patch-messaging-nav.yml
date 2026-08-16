@@ -1,0 +1,53 @@
+name: Wire messaging into Floox
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch shared auth helpers and navigation
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('floox-auth.js')
+          text = path.read_text(encoding='utf-8')
+
+          old = "const sendMessage=payload=>apiPost('send-message',payload,true);"
+          new = "const sendMessage=payload=>apiPost('send-message',payload,true);\n  const getMessages=params=>apiGet('messages'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),true);\n  const markMessagesRead=senderId=>apiPost('mark-messages-read',{senderId},true);"
+          if old in text and "const getMessages=" not in text:
+              text = text.replace(old, new, 1)
+
+          old = "sendMessage,fileToBase64,uploadFile,updateNav,toast,fmtBytes"
+          new = "sendMessage,getMessages,markMessagesRead,fileToBase64,uploadFile,updateNav,toast,fmtBytes"
+          if old in text and "getMessages,markMessagesRead" not in text:
+              text = text.replace(old, new, 1)
+
+          old = "document.addEventListener('DOMContentLoaded',()=>{\n    try{updateNav()}catch(e){console.error('Floox navigation error:',e)}"
+          new = "document.addEventListener('DOMContentLoaded',()=>{\n    try{updateNav();document.querySelectorAll('.sb-nav').forEach(nav=>{if(!nav.querySelector('[data-floox-messages]')){const a=document.createElement('a');a.className='sb-link';a.href='floox-messages.html';a.dataset.flooxMessages='1';a.innerHTML='<span class=\"sb-icon\">✉</span>Messages';nav.appendChild(a)}})}catch(e){console.error('Floox navigation error:',e)}"
+          if old in text and "data-floox-messages" not in text:
+              text = text.replace(old, new, 1)
+
+          old = "setTimeout(()=>document.getElementById('fxEnquiryBg').classList.remove('open'),1300)"
+          new = "setTimeout(()=>location.href='floox-messages.html?with='+encodeURIComponent(activeProfile.u.id),900)"
+          if old in text and "floox-messages.html?with=" not in text:
+              text = text.replace(old, new, 1)
+
+          path.write_text(text, encoding='utf-8')
+
+      - name: Commit patch and remove one-time workflow
+        run: |
+          git config user.name "flooxindia-cyber"
+          git config user.email "flooxindia@gmail.com"
+          git add floox-auth.js
+          git rm .github/workflows/patch-messaging-nav.yml
+          git diff --cached --quiet || git commit -m "Add Floox messaging navigation and profile handoff"
+          git push
