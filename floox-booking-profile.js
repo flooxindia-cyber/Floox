@@ -1,0 +1,134 @@
+// Floox booking-ready profile enhancement for the Discover profile modal.
+// Adds portfolio, pricing, availability, reviews and a proper booking request flow.
+(() => {
+  'use strict';
+  const F = window.FLOOX;
+  if (!F) return;
+
+  const esc = s => String(s ?? '').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+  let lastProfileId = null;
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .floox-booking-extra{margin-top:18px}
+    .fbe-section{padding:15px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);border-radius:16px;margin-top:12px}
+    .fbe-title{font-family:'Clash Display',sans-serif;font-size:.9rem;font-weight:700;color:#fff;margin-bottom:4px}
+    .fbe-sub{font-size:.68rem;color:rgba(255,255,255,.48);line-height:1.55}
+    .fbe-portfolio{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:11px}
+    .fbe-portfolio img{width:100%;height:92px;object-fit:cover;border-radius:11px;border:1px solid rgba(255,255,255,.08)}
+    .fbe-empty{padding:12px;border-radius:12px;background:rgba(255,92,0,.045);border:1px dashed rgba(255,92,0,.2);color:rgba(255,255,255,.48);font-size:.68rem;margin-top:10px}
+    .fbe-price{font-family:'Clash Display',sans-serif;font-size:1.05rem;font-weight:800;color:#ffd600;margin-top:5px}
+    .fbe-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+    .fbe-pill{font-size:.62rem;padding:6px 9px;border-radius:100px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.72)}
+    .fbe-days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
+    .fbe-day{padding:7px 3px;text-align:center;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025)}
+    .fbe-day b{display:block;font:700 .62rem 'Clash Display';color:#fff}.fbe-day span{display:block;font-size:.5rem;color:rgba(255,255,255,.5);margin-top:3px}
+    .fbe-day.available{border-color:rgba(34,197,94,.22)}.fbe-day.available span{color:#55dc7c}.fbe-day.tentative{border-color:rgba(255,214,0,.2)}.fbe-day.tentative span{color:#ffd600}.fbe-day.booked{border-color:rgba(255,45,120,.2)}.fbe-day.booked span{color:#ff6b9a}
+    .fbe-reviews{display:grid;gap:8px;margin-top:10px}.fbe-review{padding:10px;border-radius:11px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07)}.fbe-review-head{display:flex;justify-content:space-between;gap:8px;font-size:.64rem}.fbe-review-stars{color:#ffd600;font-weight:800}.fbe-review-text{font-size:.64rem;color:rgba(255,255,255,.55);line-height:1.55;margin-top:4px}
+    .fbe-actions{display:flex;gap:8px;margin-top:14px}.fbe-primary{flex:1;border:0;border-radius:12px;padding:12px;background:linear-gradient(135deg,#ff5c00,#ff2d78);color:#fff;font:900 .76rem 'Cabinet Grotesk',sans-serif;cursor:pointer;box-shadow:0 7px 20px rgba(255,92,0,.24)}.fbe-secondary{border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:11px 13px;background:rgba(255,255,255,.04);color:#fff;font:800 .72rem 'Cabinet Grotesk',sans-serif;cursor:pointer}
+    .fbe-modal-bg{position:fixed;inset:0;z-index:10050;background:rgba(0,0,0,.78);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:16px}.fbe-booking-modal{width:min(650px,100%);max-height:92vh;overflow:auto;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:22px;box-shadow:0 30px 100px rgba(0,0,0,.65);padding:20px}.fbe-booking-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}.fbe-booking-head h3{font:800 1.2rem 'Clash Display';color:#fff}.fbe-close{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#fff;cursor:pointer}.fbe-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fbe-form label{display:flex;flex-direction:column;gap:5px;font:800 .62rem 'Cabinet Grotesk';color:rgba(255,255,255,.65)}.fbe-form input,.fbe-form select,.fbe-form textarea{width:100%;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:rgba(255,255,255,.045);color:#fff;padding:10px 11px;outline:0}.fbe-form input:focus,.fbe-form select:focus,.fbe-form textarea:focus{border-color:rgba(255,92,0,.65);box-shadow:0 0 0 3px rgba(255,92,0,.08)}.fbe-form select option{background:#1a1008}.fbe-form textarea{min-height:95px;resize:vertical}.fbe-full{grid-column:1/-1}.fbe-form .fbe-submit{margin-top:4px;border:0;border-radius:11px;padding:12px;background:linear-gradient(135deg,#ff5c00,#ff2d78);color:#fff;font:900 .76rem 'Cabinet Grotesk';cursor:pointer}
+    @media(max-width:620px){.fbe-days{grid-template-columns:repeat(4,1fr)}.fbe-form{grid-template-columns:1fr}.fbe-full{grid-column:auto}.fbe-portfolio{grid-template-columns:repeat(2,1fr)}}
+  `;
+  document.head.appendChild(style);
+
+  function idFromElement(el){
+    let n = el;
+    while(n && n !== document.body){
+      const ds = n.dataset || {};
+      const candidate = ds.profileId || ds.userId || ds.id;
+      if(candidate) return candidate;
+      const href = n.getAttribute?.('href') || '';
+      const m = href.match(/[?&]id=([^&]+)/); if(m) return decodeURIComponent(m[1]);
+      const onclick = n.getAttribute?.('onclick') || '';
+      const u = onclick.match(/[0-9a-f]{8}-[0-9a-f-]{27,}/i); if(u) return u[0];
+      n = n.parentElement;
+    }
+    return null;
+  }
+
+  document.addEventListener('click', e => {
+    const card = e.target.closest?.('.card,.artist-card,.org-card,[data-profile-id]');
+    if(card){ const id = idFromElement(card); if(id) lastProfileId = id; }
+  }, true);
+
+  function findId(modal){
+    return lastProfileId || idFromElement(modal) || idFromElement(modal.querySelector('button, a'));
+  }
+
+  function replaceContact(modal){
+    const c = modal.querySelector('.contact');
+    if(!c) return;
+    c.innerHTML = `<strong style="display:block;color:#fff;margin-bottom:3px">🔒 Contact details protected</strong><span style="color:rgba(255,255,255,.52)">Keep your booking on Floox. Send a booking request and the artist can respond through the platform.</span>`;
+    c.style.borderColor='rgba(255,92,0,.22)'; c.style.background='rgba(255,92,0,.045)';
+  }
+
+  function getModalProfile(modal){
+    const name = modal.querySelector('.modal-name')?.textContent?.trim() || 'Artist';
+    const bio = modal.querySelector('.modal-bio')?.textContent?.trim() || '';
+    const boxes = [...modal.querySelectorAll('.meta-box')];
+    const data = {name,bio,city:'',experience:'',genres:'',verification:''};
+    boxes.forEach(b=>{const k=b.querySelector('small')?.textContent?.trim().toLowerCase()||'',v=b.querySelector('span')?.textContent?.trim()||'';if(k.includes('city'))data.city=v;if(k.includes('experience'))data.experience=v;if(k.includes('genre'))data.genres=v;if(k.includes('verification'))data.verification=v});
+    const cover = modal.querySelector('.modal-cover img')?.src || '';
+    const avatar = modal.querySelector('.modal-avatar img')?.src || '';
+    return {...data,cover,avatar};
+  }
+
+  async function loadDetails(modal,id,profile){
+    const host=modal.querySelector('.modal-body'); if(!host) return;
+    let extra=host.querySelector('.floox-booking-extra'); if(extra) extra.remove();
+    extra=document.createElement('div'); extra.className='floox-booking-extra';
+    extra.innerHTML=`<div class="fbe-section"><div class="fbe-title">Booking snapshot</div><div class="fbe-pills"><span class="fbe-pill">📍 ${esc(profile.city||'India')}</span><span class="fbe-pill">🎤 ${esc(profile.experience||'Live performance')}</span><span class="fbe-pill">✓ ${esc(profile.verification||'Profile verified')}</span></div><div id="fbePrice" class="fbe-price">Check pricing with the artist</div></div><div class="fbe-section" id="fbePortfolio"><div class="fbe-title">Performance portfolio</div><div class="fbe-sub">See the artist in action before you book.</div><div class="fbe-empty">Loading portfolio…</div></div><div class="fbe-section" id="fbeAvailability"><div class="fbe-title">Availability</div><div class="fbe-sub">Check the next 14 days before sending your request.</div><div class="fbe-empty">Loading availability…</div></div><div class="fbe-section" id="fbeReviews"><div class="fbe-title">Reviews</div><div class="fbe-empty">Loading reviews…</div></div><div class="fbe-actions"><button class="fbe-primary" id="fbeBook">Check Availability &amp; Book →</button><button class="fbe-secondary" id="fbeSave">♡ Save</button></div>`;
+    host.appendChild(extra);
+    replaceContact(modal);
+
+    let p=profile;
+    if(id){
+      try{ const r=await F.apiGet('artists?id='+encodeURIComponent(id),true); p={...p,...(r.user||r.profile||{})}; }catch{}
+    }
+    const price = p.starting_fee ?? p.startingFee ?? p.price ?? p.min_fee ?? p.minimum_fee;
+    if(price!==undefined && price!==null && price!=='') document.getElementById('fbePrice').textContent=`Starting from ₹${Number(price).toLocaleString('en-IN')}`;
+
+    const media=[];
+    const raw=p.media_links||p.mediaLinks||p.portfolio||[];
+    if(Array.isArray(raw)) raw.forEach(x=>media.push(typeof x==='string'?x:(x?.url||x?.src||'')));
+    else if(typeof raw==='string') raw.split(',').forEach(x=>media.push(x.trim()));
+    [p.cover_image,p.coverImage,p.avatar,p.profile_image,p.profileImage].forEach(x=>{if(x)media.push(x)});
+    const unique=[...new Set(media.filter(x=>/^https?:\/\//i.test(x)))].slice(0,6);
+    const ph=document.getElementById('fbePortfolio');
+    if(unique.length){ph.querySelector('.fbe-empty')?.remove();const g=document.createElement('div');g.className='fbe-portfolio';g.innerHTML=unique.map((u,i)=>`<img src="${esc(u)}" alt="${esc(p.stageName||p.name||'Performance')} portfolio ${i+1}" loading="lazy">`).join('');ph.appendChild(g)}else ph.querySelector('.fbe-empty').textContent='No portfolio media has been added yet. Ask the artist for a performance video or recent work.';
+
+    try{
+      const today=new Date();const mapTo=new Date(today.getTime()+14*86400000);
+      const av=await F.apiGet('marketplace?action=availability&userId='+encodeURIComponent(id)+'&from='+today.toISOString().slice(0,10)+'&to='+mapTo.toISOString().slice(0,10),true);
+      const map=new Map((av.availability||[]).map(x=>[x.date,x.status]));
+      const days=[];for(let i=0;i<14;i++){const d=new Date(today.getTime()+i*86400000),key=d.toISOString().slice(0,10),s=map.get(key)||'available';days.push(`<div class="fbe-day ${esc(s)}"><b>${d.toLocaleDateString(undefined,{day:'numeric',month:'short'})}</b><span>${s==='available'?'Available':s==='tentative'?'Tentative':s==='booked'?'Booked':'Unavailable'}</span></div>`)}
+      const avBox=document.getElementById('fbeAvailability');avBox.querySelector('.fbe-empty').remove();const daysEl=document.createElement('div');daysEl.className='fbe-days';daysEl.innerHTML=days.join('');avBox.appendChild(daysEl);
+    }catch{document.getElementById('fbeAvailability').querySelector('.fbe-empty').textContent='Availability is not published yet. You can still send a booking request with your date.'}
+
+    try{
+      const rv=await F.apiGet('marketplace?action=reviews&profileId='+encodeURIComponent(id),true);const box=document.getElementById('fbeReviews');box.querySelector('.fbe-empty').remove();
+      if(!rv.reviews?.length){box.insertAdjacentHTML('beforeend','<div class="fbe-empty">No reviews yet. Be one of the first organisers to leave verified feedback after a booking.</div>')}else{box.insertAdjacentHTML('beforeend',`<div class="fbe-sub" style="margin-top:5px">★ ${esc(rv.average||'—')} · ${rv.count||rv.reviews.length} review${(rv.count||rv.reviews.length)===1?'':'s'}</div><div class="fbe-reviews">${rv.reviews.slice(0,4).map(x=>`<div class="fbe-review"><div class="fbe-review-head"><span class="fbe-review-stars">★ ${esc(x.rating)}</span>${x.verified_booking?'<span style="color:#39e6ca">✓ Verified booking</span>':''}</div><div class="fbe-review-text">${esc(x.body||'Great experience.')}</div></div>`).join('')}</div>`)}
+    }catch{document.getElementById('fbeReviews').querySelector('.fbe-empty').textContent='Reviews will appear here after verified bookings.'}
+
+    extra.querySelector('#fbeBook').onclick=()=>bookingModal(id,p);
+    extra.querySelector('#fbeSave').onclick=async()=>{if(!id){F.toast('Please open the profile again to save it.');return}try{const liked=await F.toggleLike(id);extra.querySelector('#fbeSave').textContent=liked.liked?'♥ Saved':'♡ Save'}catch(e){F.toast(e.message)}};
+  }
+
+  function bookingModal(id,p){
+    if(!id){F.toast('This profile is missing its booking ID. Please refresh and try again.');return;}
+    const old=document.getElementById('flooxBookingModal');old?.remove();
+    const bg=document.createElement('div');bg.id='flooxBookingModal';bg.className='fbe-modal-bg';
+    bg.innerHTML=`<div class="fbe-booking-modal"><div class="fbe-booking-head"><div><h3>Check availability &amp; book</h3><div class="fbe-sub">Send a structured request to ${esc(p.stageName||p.name||'this artist')}.</div></div><button class="fbe-close">×</button></div><form class="fbe-form"><label>Event type<input name="eventType" required placeholder="Wedding, corporate, concert…"></label><label>Event date<input name="eventDate" type="date" required></label><label>City<input name="city" value="${esc(p.city||'')}" required></label><label>Venue<input name="venue" placeholder="Venue / location"></label><label>Guest count<input name="guestCount" type="number" min="1" placeholder="e.g. 250"></label><label>Performance duration<input name="durationHours" type="number" min="0.5" step="0.5" placeholder="e.g. 2"></label><label>Budget (₹)<input name="budget" type="number" min="0" placeholder="Your entertainment budget"></label><label>Genre / vibe<input name="genre" placeholder="Bollywood, Sufi, acoustic…"></label><label class="fbe-full">Requirements / message<textarea name="requirements" placeholder="Sound, equipment, travel, accommodation, special requests…"></textarea></label><button class="fbe-submit fbe-full">Send Booking Request →</button></form></div>`;
+    document.body.appendChild(bg);bg.querySelector('.fbe-close').onclick=()=>bg.remove();bg.onclick=e=>{if(e.target===bg)bg.remove()};
+    bg.querySelector('form').onsubmit=async e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target));const btn=e.target.querySelector('.fbe-submit');btn.disabled=true;btn.textContent='Sending…';try{await F.apiPost('marketplace?action=quote-request',{providerId:id,...data,eventName:data.eventType||'Event'});F.toast('Booking request sent.');bg.remove()}catch(err){F.toast(err.message||'Could not send booking request.');btn.disabled=false;btn.textContent='Send Booking Request →'}};
+  }
+
+  let activeModal=null;
+  const observer=new MutationObserver(()=>{
+    const modal=document.querySelector('.modal-bg.show .modal');
+    if(!modal || modal===activeModal) return;
+    activeModal=modal;
+    setTimeout(()=>{const id=findId(modal);const profile=getModalProfile(modal);loadDetails(modal,id,profile)},50);
+  });
+  observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+})();
