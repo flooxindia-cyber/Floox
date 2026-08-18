@@ -1,39 +1,8 @@
 // Floox API gateway — single Vercel Serverless Function
-// All production API traffic goes through this gateway.
-const HANDLERS = {
-  'artist-profile': require('../server/functions/artist-profile').handler,
-  'artist-dashboard': require('../server/functions/artist-dashboard').handler,
-  artists: require('../server/functions/artists').handler,
-  'change-password': require('../server/functions/change-password').handler,
-  'delete-account': require('../server/functions/delete-account').handler,
-  'forgot-password': require('../server/functions/forgot-password').handler,
-  events: require('../server/functions/events').handler,
-  'get-likes': require('../server/functions/get-likes').handler,
-  'get-profile': require('../server/functions/get-profile').handler,
-  'get-reveals-remaining': require('../server/functions/get-reveals-remaining').handler,
-  health: require('../server/functions/health').handler,
-  login: require('../server/functions/login').handler,
-  me: require('../server/functions/me').handler,
-  messages: require('../server/functions/messages').handler,
-  'mark-messages-read': require('../server/functions/mark-messages-read').handler,
-  'organiser-profile': require('../server/functions/organiser-profile').handler,
-  'organiser-stats': require('../server/functions/organiser-stats').handler,
-  organisers: require('../server/functions/organisers').handler,
-  users: require('../server/functions/users').handler,
-  register: require('../server/functions/register').handler,
-  'resend-otp': require('../server/functions/resend-otp').handler,
-  'reset-password': require('../server/functions/reset-password').handler,
-  'reveal-contact': require('../server/functions/reveal-contact').handler,
-  'send-message': require('../server/functions/send-message').handler,
-  'toggle-like': require('../server/functions/toggle-like').handler,
-  'upload-media': require('../server/functions/upload-media').handler,
-  'verify-otp': require('../server/functions/verify-otp').handler,
-};
-const ROUTE_ALIASES = {
-  'auth/otp/send': 'resend-otp','auth/otp/resend': 'resend-otp','auth/otp/verify': 'verify-otp',
-  'auth/login': 'login','auth/register': 'register','auth/forgot-password': 'forgot-password','auth/reset-password': 'reset-password',
-};
+const HANDLERS={
+'artist-profile':require('../server/functions/artist-profile').handler,'artist-dashboard':require('../server/functions/artist-dashboard').handler,artists:require('../server/functions/artists').handler,'change-password':require('../server/functions/change-password').handler,'delete-account':require('../server/functions/delete-account').handler,'forgot-password':require('../server/functions/forgot-password').handler,events:require('../server/functions/events').handler,'get-likes':require('../server/functions/get-likes').handler,'get-profile':require('../server/functions/get-profile').handler,'get-reveals-remaining':require('../server/functions/get-reveals-remaining').handler,health:require('../server/functions/health').handler,login:require('../server/functions/login').handler,me:require('../server/functions/me').handler,messages:require('../server/functions/messages').handler,'mark-messages-read':require('../server/functions/mark-messages-read').handler,'marketplace':require('../server/functions/marketplace').handler,'organiser-profile':require('../server/functions/organiser-profile').handler,'organiser-stats':require('../server/functions/organiser-stats').handler,organisers:require('../server/functions/organisers').handler,users:require('../server/functions/users').handler,register:require('../server/functions/register').handler,'resend-otp':require('../server/functions/resend-otp').handler,'reset-password':require('../server/functions/reset-password').handler,'reveal-contact':require('../server/functions/reveal-contact').handler,'send-message':require('../server/functions/send-message').handler,'toggle-like':require('../server/functions/toggle-like').handler,'upload-media':require('../server/functions/upload-media').handler,'verify-otp':require('../server/functions/verify-otp').handler};
+const ROUTE_ALIASES={'auth/otp/send':'resend-otp','auth/otp/resend':'resend-otp','auth/otp/verify':'verify-otp','auth/login':'login','auth/register':'register','auth/forgot-password':'forgot-password','auth/reset-password':'reset-password'};
 function getRoute(req){const raw=req.query?.route||req.query?.path||'';if(Array.isArray(raw))return raw.join('/').replace(/^\/+|\/+$/g,'');return String(raw).replace(/^\/+|\/+$/g,'').split('?')[0]}
 function toEvent(req){return{httpMethod:req.method,headers:req.headers||{},body:req.body==null?'':(typeof req.body==='string'?req.body:JSON.stringify(req.body)),queryStringParameters:req.query||{},path:req.url}}
-async function invoke(serverHandler,req,res){if(req.method==='OPTIONS'){res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization');res.setHeader('Access-Control-Allow-Methods','GET, POST, PUT, DELETE, OPTIONS');return res.status(204).end()}const result=await serverHandler(toEvent(req),{});Object.entries(result?.headers||{}).forEach(([key,value])=>res.setHeader(key,value));return res.status(result?.statusCode||200).send(result?.body||'')}
-module.exports=async function handler(req,res){const requestedRoute=getRoute(req);const route=ROUTE_ALIASES[requestedRoute]||requestedRoute;const fn=HANDLERS[route];if(!fn){res.status(404).setHeader('Content-Type','application/json');return res.end(JSON.stringify({error:`API route not found: /api/${requestedRoute}`}))}try{return await invoke(fn,req,res)}catch(err){console.error(`API gateway error [${route}]:`,err);res.status(500).setHeader('Content-Type','application/json');return res.end(JSON.stringify({error:'Internal server error.'}))}};
+async function invoke(fn,req,res){if(req.method==='OPTIONS'){res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization');res.setHeader('Access-Control-Allow-Methods','GET, POST, PUT, DELETE, OPTIONS');return res.status(204).end()}const result=await fn(toEvent(req),{});Object.entries(result?.headers||{}).forEach(([k,v])=>res.setHeader(k,v));return res.status(result?.statusCode||200).send(result?.body||'')}
+module.exports=async function handler(req,res){const requestedRoute=getRoute(req),route=ROUTE_ALIASES[requestedRoute]||requestedRoute,fn=HANDLERS[route];if(!fn){res.status(404).setHeader('Content-Type','application/json');return res.end(JSON.stringify({error:`API route not found: /api/${requestedRoute}`}))}try{return await invoke(fn,req,res)}catch(err){console.error(`API gateway error [${route}]:`,err);res.status(500).setHeader('Content-Type','application/json');return res.end(JSON.stringify({error:'Internal server error.'}))}};
