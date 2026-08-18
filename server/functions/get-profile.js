@@ -9,10 +9,20 @@ const {
   findUser, publicUser,
 } = require('./_utils');
 
+function dbHeaders() {
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!key) throw new Error('SUPABASE_SERVICE_KEY env var is not set');
+  return { 'Content-Type': 'application/json', apikey: key, Authorization: `Bearer ${key}` };
+}
+function dbUrl(table, qs = '') {
+  const base = process.env.SUPABASE_URL;
+  if (!base) throw new Error('SUPABASE_URL env var is not set');
+  return `${base}/rest/v1/${table}${qs ? '?' + qs : ''}`;
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return corsOk();
-  if (event.httpMethod !== 'GET')
-    return json(405, { error: 'Method not allowed' });
+  if (event.httpMethod !== 'GET') return json(405, { error: 'Method not allowed' });
 
   const token = extractBearer(event);
   if (!token) return json(401, { error: 'Please sign in to view full profiles.' });
@@ -30,8 +40,17 @@ exports.handler = async (event) => {
   try {
     const target = await findUser('id', 'eq', id);
     if (!target) return json(404, { error: 'Profile not found.' });
-    if (!target.verified)
-      return json(404, { error: 'This profile is not yet verified.' });
+    if (!target.verified) return json(404, { error: 'This profile is not yet verified.' });
+
+    // Every authenticated visit to an artist profile is a real profile-view event.
+    // Self-visits are excluded so an artist cannot inflate their own metric.
+    if (target.role === 'artist' && target.id !== decoded.id) {
+      fetch(dbUrl('profile_views'), {
+        method: 'POST',
+        headers: { ...dbHeaders(), Prefer: 'return=minimal' },
+        body: JSON.stringify({ artist_id: target.id, viewer_id: decoded.id }),
+      }).catch(err => console.error('profile view tracking failed:', err));
+    }
 
     return json(200, { user: publicUser(target) });
   } catch (err) {
