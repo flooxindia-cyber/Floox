@@ -1,0 +1,55 @@
+name: Ensure marketplace scripts are loaded
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  ensure-marketplace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure marketplace script is loaded by dashboards
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          files = [
+              'floox-dashboard-fan.html',
+              'floox-dashboard-artist.html',
+              'floox-dashboard-organiser.html',
+          ]
+          tag = '<script src="floox-marketplace.js"></script>'
+          changed = []
+          for name in files:
+              p = Path(name)
+              if not p.exists():
+                  continue
+              text = p.read_text(encoding='utf-8')
+              if tag in text:
+                  continue
+              marker = '</body>'
+              if marker in text:
+                  text = text.replace(marker, f'  {tag}\n{marker}', 1)
+              else:
+                  text += f'\n{tag}\n'
+              p.write_text(text, encoding='utf-8')
+              changed.append(name)
+          print('Changed:', changed)
+          PY
+
+      - name: Commit changes
+        run: |
+          git config user.name 'Floox Automation'
+          git config user.email 'actions@github.com'
+          git add floox-dashboard-fan.html floox-dashboard-artist.html floox-dashboard-organiser.html
+          if git diff --cached --quiet; then
+            echo 'No changes needed.'
+            exit 0
+          fi
+          git commit -m 'Ensure marketplace features load on dashboards [skip ci]'
+          git push
