@@ -26,6 +26,10 @@
       "continue": true
     },
     {
+      "src": "/floox-auth.js",
+      "dest": "/api/auth-js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/index?route=$1"
     },
