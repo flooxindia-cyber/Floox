@@ -4,7 +4,7 @@
   const F = window.FLOOX;
   if (!F) return;
 
-  const esc = s => String(s ?? '').replace(/[&<>\'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
+  const esc = s => String(s ?? '').replace(/[&<>\'\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
   const IMG = {
     concert: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1200&q=82',
     singer: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=900&q=82',
@@ -49,7 +49,6 @@
     try{
       const r=await F.getArtists({limit:4});
       let list=r?.artists||[];
-      // Fetch full profiles when the list endpoint omits media URLs.
       list=await Promise.all(list.slice(0,4).map(async u=>{
         if(real(u)||!u?.id||!F.getProfile) return u;
         try{const p=await F.getProfile(u.id); return {...u,...(p?.user||{})};}catch{return u;}
@@ -74,18 +73,8 @@
 
   async function homepage(){
     if(!/^(\/|\/index\.html)$/i.test(location.pathname)) return;
-    // The original homepage already has the correct "Live on Floox" Now Playing bar.
-    // Do not create another marketplace section here.
     document.getElementById('flooxLiveActivity')?.remove();
     renderFeatured(await getArtistData());
-  }
-
-  async function planner(){
-    if(!/floox-search-results\.html$/i.test(location.pathname)||document.getElementById('flooxPlanner')) return;
-    const host=document.querySelector('.content'); if(!host) return;
-    const el=document.createElement('section');el.className='fxp-section';el.id='flooxPlanner';el.innerHTML='<div class="fxp-head"><div><h2>Plan the event, then find the talent</h2><p>Tell Floox what you are planning and get a shortlist instead of manually opening dozens of profiles.</p></div></div><div class="fxp-planner"><form class="fxp-form" id="fxpPlannerForm"><input name="eventType" placeholder="Event type · Wedding, Corporate…"><input name="city" placeholder="City"><input name="genre" placeholder="Genre / vibe"><input name="budget" type="number" min="0" placeholder="Budget ₹"><input name="eventDate" type="date"><input class="wide" name="q" placeholder="Describe the experience you want"><button class="fxp-btn wide" type="submit">Find my best matches →</button></form><div class="fxp-results" id="fxpPlannerResults"></div></div>';
-    host.insertBefore(el,host.firstElementChild||null);
-    el.querySelector('form').addEventListener('submit',async e=>{e.preventDefault();const out=el.querySelector('#fxpPlannerResults');if(!F.isLoggedIn()){location.href='floox-login.html?redirect='+encodeURIComponent(location.href);return}out.innerHTML='<div class="fxp-empty">Finding the strongest matches…</div>';try{const q=new URLSearchParams(Object.fromEntries(new FormData(e.target)));const r=await F.apiGet('marketplace?action=match&'+q,true);const m=r?.matches||[];out.innerHTML=m.length?m.slice(0,6).map(x=>{const u=x.profile||{};return `<div class="fxp-match"><div class="fxp-match-img">${image(u,u.stageName||u.name||'Artist')}</div><div class="fxp-match-main"><b>${esc(u.stageName||u.stage_name||u.name||'Floox Artist')}</b><span>${esc(u.city||'India')} · ${esc((u.genres||[]).slice(0,2).join(' · ')||u.performer_type||'Performer')}</span></div><div class="fxp-score">${Number(x.score||0)}%</div><a class="fxp-btn alt" href="floox-profile.html?id=${encodeURIComponent(u.id||'')}">View</a></div>`}).join(''):'<div class="fxp-empty">No strong matches yet. Try a wider city, genre or budget.</div>';}catch(err){out.innerHTML='<div class="fxp-empty">Could not find matches right now.</div>'}});
   }
 
   async function portfolio(){
@@ -99,7 +88,7 @@
     const specs=document.createElement('div');specs.className='fxp-specs';[['Formats',(u.performance_types||u.event_types||[]).slice?.(0,3)?.join(' · ')||'Available on request'],['Genres',(u.genres||[]).slice?.(0,4)?.join(' · ')||'Not added'],['Languages',(u.languages||[]).slice?.(0,4)?.join(' · ')||'Not added'],['Budget',u.min_fee?`₹${Number(u.min_fee).toLocaleString('en-IN')} onwards`:'Quote based']].forEach(([a,b])=>{const s=document.createElement('div');s.className='fxp-spec';s.innerHTML=`<small>${a}</small><b>${esc(b)}</b>`;specs.appendChild(s)});el.appendChild(specs);content.appendChild(el);
   }
 
-  function run(){homepage();planner();portfolio();}
+  function run(){homepage();portfolio();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
   window.addEventListener('load',run,{once:true});
 })();
