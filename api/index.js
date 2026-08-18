@@ -2,6 +2,7 @@
 // All production API traffic goes through this gateway.
 const HANDLERS = {
   'artist-profile': require('../server/functions/artist-profile').handler,
+  'artist-dashboard': require('../server/functions/artist-dashboard').handler,
   artists: require('../server/functions/artists').handler,
   'change-password': require('../server/functions/change-password').handler,
   'delete-account': require('../server/functions/delete-account').handler,
