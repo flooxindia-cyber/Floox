@@ -54,5 +54,10 @@
   function loadScript(file,marker){if(document.querySelector(`script[data-${marker}]`))return;const s=document.createElement('script');s.src=file+'?v=20260818';s.async=false;s.dataset[marker]='1';document.head.appendChild(s)}
   if(/floox-dashboard-organiser\.html$/i.test(location.pathname)){const load=()=>loadScript('organiser-dashboard-live.js','flooxOrganiserLive');if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()}
   if(/floox-dashboard-artist\.html$/i.test(location.pathname)){const load=()=>{loadScript('artist-dashboard-live.js','flooxArtistLive');loadScript('artist-dashboard-polish.js','flooxArtistPolish')};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()}
-  if(/(^|\/)index\.html$/i.test(location.pathname)||location.pathname==='/' ){const load=()=>loadScript('organiser-cards-live.js','flooxOrganiserCards');if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()}
+  if(/(^|\/)index\.html$/i.test(location.pathname)||location.pathname==='/' ){
+    // organiser-cards-live.js uses the existing .rv reveal class but marks dynamic cards as .visible.
+    // Keep both states compatible so live cards cannot remain transparent after rendering.
+    const style=document.createElement('style');style.textContent='.rv.visible{opacity:1!important;transform:translateY(0)!important;}';document.head.appendChild(style);
+    const load=()=>loadScript('organiser-cards-live.js','flooxOrganiserCards');if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()
+  }
 })();
