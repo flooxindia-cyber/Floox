@@ -69,12 +69,17 @@
     candidates.forEach(el=>{const cls=(el.className||'').toString().toLowerCase();if(el && cls.includes('shell')&&!el.classList.contains('floox-login-art'))el.classList.add('floox-login-art')});
   }
 
+  function loadProductUpgrade(){
+    if(document.querySelector('script[data-floox-product-upgrade]')) return;
+    const s=document.createElement('script');s.src='floox-product-upgrade.js?v=20260818-9';s.async=false;s.dataset.flooxProductUpgrade='1';document.head.appendChild(s);
+  }
+
   function run(){
     try{
       if(/(^|\/)index\.html$/i.test(location.pathname)||location.pathname==='/')homepage();
       if(/floox-search-results\.html$/i.test(location.pathname))search();
       if(/floox-organiser-profile\.html$/i.test(location.pathname))profile();
-      dashboard();authScreens();
+      dashboard();authScreens();loadProductUpgrade();
     }catch(e){console.warn('Floox visual upgrade:',e)}
   }
 
