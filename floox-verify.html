@@ -6,95 +6,54 @@
 <title>Verify your email — Floox</title>
 <link rel="icon" href="logo_floox.jpeg">
 <link rel="stylesheet" href="floox-shared.css">
+<style>
+:root{--bg:#fffaf4;--ink:#1c1000;--muted:#7a6a50;--border:#e8ddd0;--orange:#ff5c00;--pink:#ff2d78;--purple:#7c3aed}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 15%,rgba(255,92,0,.14),transparent 30%),radial-gradient(circle at 90% 80%,rgba(124,58,237,.12),transparent 32%),var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}.verify-shell{min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;align-items:stretch}.visual{position:relative;overflow:hidden;background:#1c1000;color:#fff;padding:clamp(2rem,6vw,5.5rem);display:flex;flex-direction:column;justify-content:space-between}.visual:before{content:'';position:absolute;width:430px;height:430px;border-radius:50%;right:-180px;top:-140px;background:linear-gradient(135deg,#ff5c00,#ff2d78);filter:blur(2px);opacity:.9}.visual:after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;left:-160px;bottom:-120px;background:#7c3aed;opacity:.65;filter:blur(45px)}.brand{position:relative;z-index:2;display:flex;align-items:center;gap:.7rem;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:1.3rem}.brand-mark{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#ff5c00,#ff2d78);box-shadow:0 10px 30px rgba(255,92,0,.25)}.visual-copy{position:relative;z-index:2;max-width:560px}.eyebrow{display:inline-flex;align-items:center;gap:.45rem;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);padding:.4rem .75rem;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}.visual h1{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:clamp(2.4rem,5vw,4.8rem);line-height:.98;letter-spacing:-.07em;margin:1.2rem 0}.visual h1 span{background:linear-gradient(90deg,#ff9b5c,#ff2d78);-webkit-background-clip:text;background-clip:text;color:transparent}.visual p{max-width:480px;color:rgba(255,255,255,.62);font-size:1rem;line-height:1.8}.trust{position:relative;z-index:2;display:flex;gap:.7rem;flex-wrap:wrap}.trust span{padding:.55rem .75rem;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);font-size:.72rem;color:rgba(255,255,255,.72)}.panel{display:grid;place-items:center;padding:2rem;background:rgba(255,250,244,.75)}.card{width:min(500px,100%);background:#fff;border:1.5px solid var(--border);border-radius:28px;padding:clamp(1.5rem,4vw,2.6rem);box-shadow:0 24px 70px rgba(28,16,0,.1);animation:rise .55s ease both}@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}.step{display:flex;align-items:center;gap:.65rem;color:var(--muted);font-size:.72rem;font-weight:700;margin-bottom:1.3rem}.step-dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:rgba(255,92,0,.1);color:var(--orange)}.card h2{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:2rem;line-height:1.05;letter-spacing:-.045em;margin:0 0 .65rem}.subtitle{color:var(--muted);font-size:.86rem;line-height:1.7;margin:0}.email-chip{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;padding:.65rem .8rem;border-radius:12px;background:#fff8ef;border:1px solid #f1dfcb;font-size:.78rem;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.otp-wrap{display:grid;grid-template-columns:repeat(6,1fr);gap:.6rem;margin:1.6rem 0 1rem}.otp-box{width:100%;aspect-ratio:1;border:1.5px solid var(--border);border-radius:14px;background:#fffaf4;text-align:center;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:1.5rem;font-weight:800;color:var(--ink);outline:none;transition:.2s}.otp-box:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,92,0,.1);transform:translateY(-2px)}.otp-box.filled{background:#fff;border-color:rgba(255,92,0,.4)}.verify-btn{width:100%;border:0;border-radius:14px;padding:.95rem 1rem;background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;box-shadow:0 10px 25px rgba(255,92,0,.22);transition:.2s}.verify-btn:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(255,92,0,.28)}.verify-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}.resend-row{text-align:center;margin-top:1rem;font-size:.78rem;color:var(--muted)}.resend-btn{border:0;background:none;color:var(--orange);font-weight:800;cursor:pointer;padding:.2rem}.resend-btn:disabled{color:#b8ab9b;cursor:not-allowed}.timer{font-variant-numeric:tabular-nums;font-weight:800;color:var(--ink)}.message{min-height:25px;text-align:center;margin-top:.9rem;font-size:.78rem;font-weight:700}.message.error{color:#d81b60}.message.success{color:#16a34a}.message.info{color:var(--muted)}.help{display:flex;justify-content:space-between;gap:1rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.7rem;color:var(--muted)}.help a{color:var(--ink);font-weight:700;text-decoration:none}@media(max-width:850px){.verify-shell{grid-template-columns:1fr}.visual{min-height:290px;padding:1.7rem}.visual h1{font-size:2.5rem;margin:.8rem 0}.visual p{font-size:.84rem}.trust{display:none}.panel{padding:1rem;align-items:start;padding-top:1.2rem}.card{border-radius:22px}.otp-wrap{gap:.4rem}}
+</style>
 </head>
 <body>
-<main style="min-height:100vh;display:grid;place-items:center;padding:24px">
-  <section style="width:min(520px,100%);padding:32px;border:1px solid rgba(255,255,255,.1);border-radius:24px;background:rgba(255,255,255,.04)">
-    <h1 style="margin:0 0 8px">Verify your email</h1>
-    <p style="color:#aaa">We sent a 6-digit code to <strong id="emailText"></strong>.</p>
-    <input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" style="width:100%;font-size:2rem;letter-spacing:.4em;text-align:center;padding:16px;margin:20px 0;border-radius:14px">
-    <button id="verify" class="btn-fire" style="width:100%">Verify email</button>
-    <button id="resend" class="btn-ghost" style="width:100%;margin-top:10px">Resend code</button>
-    <p id="msg" style="min-height:24px;color:#aaa"></p>
+<main class="verify-shell">
+  <section class="visual">
+    <div class="brand"><div class="brand-mark">Fx</div><span>Floox</span></div>
+    <div class="visual-copy"><span class="eyebrow">✦ One quick step</span><h1>You're almost<br><span>on stage.</span></h1><p>Verify your email and unlock your Floox profile, dashboard, messages and opportunities. Your next booking starts with a verified account.</p></div>
+    <div class="trust"><span>🔒 Secure verification</span><span>⚡ Takes less than a minute</span><span>🎵 Built for live talent</span></div>
+  </section>
+  <section class="panel">
+    <div class="card">
+      <div class="step"><span class="step-dot">1</span> ACCOUNT VERIFICATION</div>
+      <h2>Check your inbox.</h2>
+      <p class="subtitle">We've sent a 6-digit verification code to the email address you used to create your Floox account.</p>
+      <div class="email-chip">✉️ <span id="emailText">your@email.com</span></div>
+      <div class="otp-wrap" id="otpWrap" aria-label="6 digit verification code">
+        <input class="otp-box" inputmode="numeric" autocomplete="one-time-code" maxlength="1" aria-label="Digit 1">
+        <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 2">
+        <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 3">
+        <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 4">
+        <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 5">
+        <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 6">
+      </div>
+      <button class="verify-btn" id="verify">Verify & continue →</button>
+      <div class="resend-row">Didn't receive it? <button class="resend-btn" id="resend" disabled>Resend code <span class="timer" id="timer">(00:30)</span></button></div>
+      <div class="message info" id="msg">Enter the code above to continue.</div>
+      <div class="help"><span>Wrong email?</span><a href="floox-login.html">Return to login</a></div>
+    </div>
   </section>
 </main>
 <script src="floox-auth.js"></script>
 <script>
-(async () => {
-  const params = new URLSearchParams(location.search);
-  const email = (params.get('email') || '').trim().toLowerCase();
-  const role = (params.get('role') || 'fan').trim().toLowerCase();
-  const emailEl = document.getElementById('emailText');
-  const otpEl = document.getElementById('otp');
-  const verifyBtn = document.getElementById('verify');
-  const resendBtn = document.getElementById('resend');
-  const msgEl = document.getElementById('msg');
-
-  emailEl.textContent = email;
-
-  if (!email || !email.includes('@')) {
-    location.href = 'floox-login.html';
-    return;
-  }
-
-  const dashboardForRole = () => {
-    if (role === 'artist') return 'floox-dashboard-artist.html';
-    if (role === 'organiser' || role === 'organizer') return 'floox-dashboard-organiser.html';
-    return 'floox-dashboard-fan.html';
-  };
-
-  const setMessage = (text, type = 'info') => {
-    msgEl.textContent = text;
-    msgEl.style.color = type === 'error' ? '#ff6b9d' : type === 'success' ? '#4ade80' : '#aaa';
-  };
-
-  verifyBtn.onclick = async () => {
-    const otp = otpEl.value.trim();
-    if (!/^\d{6}$/.test(otp)) {
-      setMessage('Please enter the 6-digit verification code.', 'error');
-      return;
-    }
-
-    verifyBtn.disabled = true;
-    verifyBtn.textContent = 'Verifying…';
-
-    try {
-      const data = await FLOOX.verifyOtp(email, otp, 'registration');
-      setMessage('Email verified successfully. Redirecting…', 'success');
-      setTimeout(() => {
-        window.location.href = dashboardForRole();
-      }, 450);
-    } catch (err) {
-      setMessage(err.message || 'Verification failed. Please try again.', 'error');
-      verifyBtn.disabled = false;
-      verifyBtn.textContent = 'Verify email';
-    }
-  };
-
-  let resendBusy = false;
-  resendBtn.onclick = async () => {
-    if (resendBusy) return;
-    resendBusy = true;
-    resendBtn.disabled = true;
-    resendBtn.textContent = 'Sending…';
-
-    try {
-      const data = await FLOOX.resendOtp(email, 'registration');
-      setMessage(data.message || 'A new code has been sent.', 'success');
-    } catch (err) {
-      setMessage(err.message || 'Could not resend the code.', 'error');
-    } finally {
-      setTimeout(() => {
-        resendBusy = false;
-        resendBtn.disabled = false;
-        resendBtn.textContent = 'Resend code';
-      }, 1500);
-    }
-  };
-
-  otpEl.addEventListener('input', () => {
-    otpEl.value = otpEl.value.replace(/\D/g, '').slice(0, 6);
-  });
+(async()=>{
+  const params=new URLSearchParams(location.search);const email=(params.get('email')||'').trim().toLowerCase();const role=(params.get('role')||'fan').trim().toLowerCase();
+  if(!email||!email.includes('@')){location.href='floox-login.html';return;}
+  const emailEl=document.getElementById('emailText');emailEl.textContent=email;
+  const boxes=[...document.querySelectorAll('.otp-box')],verify=document.getElementById('verify'),resend=document.getElementById('resend'),msg=document.getElementById('msg'),timer=document.getElementById('timer');
+  const dashboard=()=>role==='artist'?'floox-dashboard-artist.html':(role==='organiser'||role==='organizer'?'floox-dashboard-organiser.html':'floox-dashboard-fan.html');
+  const setMsg=(text,type='info')=>{msg.textContent=text;msg.className='message '+type;};
+  const getOtp=()=>boxes.map(b=>b.value).join('');
+  boxes.forEach((box,i)=>{box.addEventListener('input',()=>{box.value=box.value.replace(/\D/g,'').slice(-1);box.classList.toggle('filled',!!box.value);if(box.value&&i<5)boxes[i+1].focus();if(getOtp().length===6)verify.focus()});box.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!box.value&&i>0){boxes[i-1].focus();boxes[i-1].value='';boxes[i-1].classList.remove('filled')}});box.addEventListener('paste',e=>{e.preventDefault();const text=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);text.split('').forEach((v,j)=>{if(boxes[j]){boxes[j].value=v;boxes[j].classList.add('filled')}});boxes[Math.min(text.length,6)-1]?.focus();});});
+  let seconds=30,resendBusy=false;const tick=()=>{if(seconds<=0){resend.disabled=false;timer.textContent='';return;}timer.textContent=`(00:${String(seconds).padStart(2,'0')})`;seconds--;setTimeout(tick,1000)};tick();
+  verify.onclick=async()=>{const otp=getOtp();if(!/^\d{6}$/.test(otp)){setMsg('Please enter all 6 digits of your verification code.','error');boxes.find(b=>!b.value)?.focus();return;}verify.disabled=true;verify.textContent='Verifying…';setMsg('Checking your code…','info');try{await FLOOX.verifyOtp(email,otp,'registration');setMsg('Email verified! Taking you to your dashboard…','success');setTimeout(()=>location.href=dashboard(),650);}catch(e){setMsg(e.message||'That code could not be verified. Please try again.','error');verify.disabled=false;verify.textContent='Verify & continue →';boxes.forEach(b=>b.classList.remove('filled'));boxes[0].focus();}};
+  resend.onclick=async()=>{if(resendBusy)return;resendBusy=true;resend.disabled=true;resend.textContent='Sending…';try{const d=await FLOOX.resendOtp(email,'registration');setMsg(d.message||'A fresh verification code has been sent.','success');seconds=30;setTimeout(()=>{resend.innerHTML='Resend code <span class="timer" id="timer">(00:30)</span>';},0);window.location.reload();}catch(e){setMsg(e.message||'Could not resend the code. Please try again.','error');resendBusy=false;resend.disabled=false;resend.innerHTML='Resend code <span class="timer" id="timer"></span>';}};
+  boxes[0].focus();
 })();
 </script>
 </body>
