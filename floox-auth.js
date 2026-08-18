@@ -50,5 +50,20 @@
   const fmtBytes=b=>{b=Number(b)||0;return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB'};
   function updateNav(){const u=getUser();document.querySelectorAll('[data-auth="login"]').forEach(e=>e.style.display=u?'none':'inline-flex');document.querySelectorAll('[data-auth="logout"]').forEach(e=>e.style.display=u?'inline-flex':'none');document.querySelectorAll('[data-auth="username"]').forEach(e=>e.textContent=String(u?.name||u?.email||'User').split(' ')[0]);document.querySelectorAll('[data-auth="dashboard"]').forEach(e=>{if(u){e.style.display='inline-flex';e.href=dashboardForRole(u.role);if(!e.dataset.flooxBound){e.dataset.flooxBound='1';e.addEventListener('click',ev=>{ev.preventDefault();goToDashboard(getUser())})}}else e.style.display='none'})}
   window.FLOOX={getToken,getUser,isLoggedIn,saveSession,clearSession,normaliseRole,dashboardForRole,dashboardUrl,goToDashboard,goToHome,requireAuth,redirectIfLoggedIn,apiGet,apiPost,apiDelete,login,register,verifyOtp,resendOtp,forgotPassword,resetPassword,changePassword,logout,getMe,updateMe,saveArtistProfile,saveOrganiserProfile,getProfile,getArtists,getOrganisers,getUsers,getEvents,toggleLike,getLikes,revealContact,getRevealsRemaining,sendMessage,getMessages,markMessagesRead,fileToBase64,uploadFile,updateNav,toast,fmtBytes};
-  document.addEventListener('DOMContentLoaded',()=>{try{updateNav();document.querySelectorAll('.sb-nav').forEach(nav=>{if(!nav.querySelector('[data-floox-messages]')){const a=document.createElement('a');a.className='sb-link';a.href='floox-messages.html';a.dataset.flooxMessages='1';a.innerHTML='<span class="sb-icon">✉</span>Messages';nav.appendChild(a)}})}catch(e){console.error('Floox navigation error:',e)}});
+  document.addEventListener('DOMContentLoaded',()=>{try{updateNav();document.querySelectorAll('.sb-nav').forEach(nav=>{if(!nav.querySelector('[data-floox-messages]')){const a=document.createElement('a');a.className='sb-link';a.href='floox-messages.html';a.dataset.flooxMessages='1';a.innerHTML='<span class="sb-icon">✉</span>Messages';nav.appendChild(a)}}catch(e){console.error('Floox navigation error:',e)}});
+
+  // Load the live organiser dashboard connector only on the organiser dashboard.
+  // Keeping it separate prevents dashboard-specific code from affecting authentication.
+  if (/floox-dashboard-organiser\.html$/i.test(location.pathname)) {
+    const loadLiveDashboard = () => {
+      if (document.querySelector('script[data-floox-organiser-live]')) return;
+      const s = document.createElement('script');
+      s.src = 'organiser-dashboard-live.js';
+      s.async = false;
+      s.dataset.flooxOrganiserLive = '1';
+      document.head.appendChild(s);
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadLiveDashboard, { once: true });
+    else loadLiveDashboard();
+  }
 })();
