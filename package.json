@@ -3,5 +3,6 @@
   "version":"3.0.0",
   "private":true,
   "engines":{"node":">=20"},
+  "scripts":{"vercel-build":"node scripts/fix-planner-theme.js"},
   "dependencies":{"bcryptjs":"^2.4.3","jsonwebtoken":"^9.0.2"}
 }
