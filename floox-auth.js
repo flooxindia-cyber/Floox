@@ -32,7 +32,7 @@
   async function saveOrganiserProfile(fields){const d=await apiPost('organiser-profile',fields,true);if(d.user)saveSession(getToken(),d.user);return d}
   const getProfile=id=>apiGet('get-profile?id='+encodeURIComponent(id),true);
   const getArtists=params=>apiGet('artists'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
-  const getOrganisers=params=>apiGet('organisers'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),true);
+  const getOrganisers=params=>apiGet('organisers'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
   const getUsers=params=>apiGet('users'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
   const getEvents=params=>apiGet('events'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
   const toggleLike=likedId=>apiPost('toggle-like',{likedId},true);
