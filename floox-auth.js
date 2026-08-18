@@ -32,7 +32,9 @@
   async function saveOrganiserProfile(fields){const d=await apiPost('organiser-profile',fields,true);if(d.user)saveSession(getToken(),d.user);return d}
   const getProfile=id=>apiGet('get-profile?id='+encodeURIComponent(id),true);
   const getArtists=params=>apiGet('artists'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
-  const getOrganisers=params=>apiGet('organisers'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
+  // Organiser discovery/profile pages are authenticated because the backend intentionally
+  // protects organiser details. Keep this helper consistent with that contract.
+  const getOrganisers=params=>apiGet('organisers'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),true);
   const getUsers=params=>apiGet('users'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
   const getEvents=params=>apiGet('events'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
   const toggleLike=likedId=>apiPost('toggle-like',{likedId},true);
@@ -52,18 +54,26 @@
   window.FLOOX={getToken,getUser,isLoggedIn,saveSession,clearSession,normaliseRole,dashboardForRole,dashboardUrl,goToDashboard,goToHome,requireAuth,redirectIfLoggedIn,apiGet,apiPost,apiDelete,login,register,verifyOtp,resendOtp,forgotPassword,resetPassword,changePassword,logout,getMe,updateMe,saveArtistProfile,saveOrganiserProfile,getProfile,getArtists,getOrganisers,getUsers,getEvents,toggleLike,getLikes,revealContact,getRevealsRemaining,sendMessage,getMessages,markMessagesRead,fileToBase64,uploadFile,updateNav,toast,fmtBytes};
   document.addEventListener('DOMContentLoaded',()=>{try{updateNav();document.querySelectorAll('.sb-nav').forEach(nav=>{if(!nav.querySelector('[data-floox-messages]')){const a=document.createElement('a');a.className='sb-link';a.href='floox-messages.html';a.dataset.flooxMessages='1';a.innerHTML='<span class="sb-icon">✉</span>Messages';nav.appendChild(a)}})}catch(e){console.error('Floox navigation error:',e)}});
 
-  // Load the live organiser dashboard connector only on the organiser dashboard.
-  // Keeping it separate prevents dashboard-specific code from affecting authentication.
+  // Dashboard-specific live connectors. These are deliberately loaded here because
+  // the dashboard HTML also contains legacy demo markup; the connectors replace that
+  // markup with live Supabase data after authentication is established.
+  function loadDashboardScript(file, marker){
+    if(document.querySelector(`script[data-${marker}]`)) return;
+    const s=document.createElement('script');
+    s.src=file+'?v=20260818';
+    s.async=false;
+    s.dataset[marker]='1';
+    document.head.appendChild(s);
+  }
   if (/floox-dashboard-organiser\.html$/i.test(location.pathname)) {
-    const loadLiveDashboard = () => {
-      if (document.querySelector('script[data-floox-organiser-live]')) return;
-      const s = document.createElement('script');
-      s.src = 'organiser-dashboard-live.js';
-      s.async = false;
-      s.dataset.flooxOrganiserLive = '1';
-      document.head.appendChild(s);
+    const load=()=>loadDashboardScript('organiser-dashboard-live.js','flooxOrganiserLive');
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+  }
+  if (/floox-dashboard-artist\.html$/i.test(location.pathname)) {
+    const load=()=>{
+      loadDashboardScript('artist-dashboard-live.js','flooxArtistLive');
+      loadDashboardScript('artist-dashboard-polish.js','flooxArtistPolish');
     };
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadLiveDashboard, { once: true });
-    else loadLiveDashboard();
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
   }
 })();
