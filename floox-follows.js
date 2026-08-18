@@ -72,6 +72,20 @@
     }
   }
 
+  function wrapDemoModalLike() {
+    if (typeof window.like !== 'function' || window.like.__flooxFollowWrapped) return;
+    const original = window.like;
+    const wrapped = async function(ev,id,name){
+      if (!isDemo(id)) return original(ev,id,name);
+      if (ev) ev.stopPropagation();
+      if (!logged()) { FLOOX.toast('Sign in to follow artists and organisers.'); return; }
+      const s=readDemo(); const followed=!s.has(id); if(followed)s.add(id);else s.delete(id); writeDemo(s);
+      const buttons=document.querySelectorAll('.actions .secondary'); buttons.forEach(b=>{if(b.textContent.includes('Follow')||b.textContent.includes('Following'))b.textContent=followed?'❤️ Following':'♡ Follow'});
+      FLOOX.toast(followed?`♥ Following ${name}`:`Removed ${name} from your follows`); window.dispatchEvent(new CustomEvent('floox:follows-changed'));
+    };
+    wrapped.__flooxFollowWrapped=true; window.like=wrapped;
+  }
+
   async function loadFollowedDashboard() {
     if(!/floox-dashboard-fan\.html$/i.test(location.pathname)||!logged())return;
     addFollowStyle();
@@ -85,12 +99,18 @@
       }
       section.querySelector('.floox-follow-count').textContent=`${profiles.length} followed`;
       const body=section.querySelector('.floox-follow-body');
+      const legacy=document.getElementById('savedList');
+      const legacyCount=document.getElementById('savedCount');
+      const legacyStat=document.getElementById('savedStat');
+      if(legacyCount)legacyCount.textContent=`${profiles.length} followed`;
+      if(legacyStat)legacyStat.textContent=profiles.filter(p=>p.role==='artist').length;
+      if(legacy)legacy.innerHTML=profiles.slice(0,4).map((p,i)=>{const n=p.stageName||p.orgName||p.org_name||p.name||'Floox profile',r=p.role==='organiser'?'Organiser':'Artist',c=p.city||'India';return `<div class="saved"><div class="saved-pic">${r==='Artist'?['🎤','🎸','🎧','🎹'][i%4]:'🎪'}</div><div class="saved-copy"><strong>${esc(n)}</strong><span>${esc(r)} · ${esc(c)}</span></div></div>`}).join('')||'<div style="padding:8px 0;color:var(--muted);font-size:.75rem">No follows yet. Start exploring artists and organisers.</div>';
       if(!profiles.length){body.innerHTML='<div class="floox-follow-empty">You are not following anyone yet. <a href="floox-search-results.html">Explore artists & organisers →</a></div>';return}
       body.innerHTML='<div class="floox-follow-grid">'+profiles.map(p=>{const id=p.id,name=p.stageName||p.orgName||p.org_name||p.name||'Floox profile',role=p.role==='organiser'?'Organiser':'Artist',city=p.city||'India',img=p.avatar?`<img src="${esc(p.avatar)}" alt="">`:role==='Artist'?'🎤':'🎪';return `<div class="floox-follow-item"><div class="floox-follow-avatar">${img}</div><div class="floox-follow-copy"><strong>${esc(name)}</strong><span>${esc(role)} · ${esc(city)}</span></div><button class="floox-unfollow" data-follow-id="${esc(id)}" data-follow-name="${esc(name)}">Unfollow</button></div>`}).join('')+'</div>';
       body.querySelectorAll('[data-follow-id]').forEach(b=>b.addEventListener('click',async()=>{const id=b.dataset.followId,name=b.dataset.followName;b.disabled=true;try{if(isDemo(id)){const s=readDemo();s.delete(id);writeDemo(s)}else await FLOOX.toggleLike(id);FLOOX.toast(`Removed ${name} from your follows`);window.dispatchEvent(new CustomEvent('floox:follows-changed'));loadFollowedDashboard()}catch(e){FLOOX.toast(e.message||'Could not update follow.');b.disabled=false}}));
     }catch(e){section.querySelector('.floox-follow-count').textContent='—';section.querySelector('.floox-follow-body').innerHTML='<div class="floox-follow-empty">Your followed profiles are temporarily unavailable.</div>'}
   }
 
-  function init(){addFollowStyle();decorateOrganisers();loadFollowedDashboard();const obs=new MutationObserver(()=>decorateOrganisers());if(document.body)obs.observe(document.body,{childList:true,subtree:true});window.addEventListener('floox:follows-changed',()=>{decorateOrganisers();loadFollowedDashboard()})}
+  function init(){addFollowStyle();wrapDemoModalLike();decorateOrganisers();loadFollowedDashboard();const obs=new MutationObserver(()=>{wrapDemoModalLike();decorateOrganisers()});if(document.body)obs.observe(document.body,{childList:true,subtree:true});window.addEventListener('floox:follows-changed',()=>{decorateOrganisers();loadFollowedDashboard()})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
