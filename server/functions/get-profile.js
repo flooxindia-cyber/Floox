@@ -81,11 +81,21 @@ exports.handler = async (event) => {
   if (!id) return json(400, { error: 'Profile ID is required.' });
 
   try {
-    // Self-profile views are free and do not consume the daily allowance.
     const isSelf = String(id) === String(decoded.id);
+    let target = null;
+    let demoProfile = null;
 
-    // Every registered user's first 5 unique full profiles per India calendar
-    // day are allowed. Re-opening the same profile does not consume another slot.
+    if (DEMO_ORGANISERS[id]) {
+      demoProfile = DEMO_ORGANISERS[id];
+    } else {
+      target = await findUser('id', 'eq', id);
+      if (!target) return json(404, { error: 'Profile not found.' });
+      if (!target.verified) return json(404, { error: 'This profile is not yet verified.' });
+    }
+
+    // The daily allowance applies only when opening someone else's full profile.
+    // The same profile can be reopened all day without consuming another slot.
+    let profileViewsRemaining = 5;
     if (!isSelf) {
       const usage = await consumeFullProfileView(decoded.id, id);
       if (!usage?.allowed) {
@@ -98,21 +108,16 @@ exports.handler = async (event) => {
           resetsOn: 'next India calendar day',
         });
       }
-
-      if (DEMO_ORGANISERS[id]) {
-        return json(200, {
-          user: publicUser(DEMO_ORGANISERS[id]),
-          profileViewsRemaining: Number(usage?.remaining ?? 0),
-          profileViewLimit: 5,
-        });
-      }
-    } else if (DEMO_ORGANISERS[id]) {
-      return json(200, { user: publicUser(DEMO_ORGANISERS[id]), profileViewsRemaining: 5, profileViewLimit: 5 });
+      profileViewsRemaining = Number(usage?.remaining ?? 0);
     }
 
-    const target = await findUser('id', 'eq', id);
-    if (!target) return json(404, { error: 'Profile not found.' });
-    if (!target.verified) return json(404, { error: 'This profile is not yet verified.' });
+    if (demoProfile) {
+      return json(200, {
+        user: publicUser(demoProfile),
+        profileViewsRemaining,
+        profileViewLimit: 5,
+      });
+    }
 
     // Keep the existing artist profile-view metric. This is separate from the
     // five-profile daily allowance above.
@@ -122,13 +127,6 @@ exports.handler = async (event) => {
         headers: { ...dbHeaders(), Prefer: 'return=minimal' },
         body: JSON.stringify({ artist_id: target.id, viewer_id: decoded.id }),
       }).catch(err => console.error('profile view tracking failed:', err));
-    }
-
-    // For self-profile views there is no daily allowance to decrement.
-    let profileViewsRemaining = 5;
-    if (!isSelf) {
-      const usage = await consumeFullProfileView(decoded.id, id);
-      profileViewsRemaining = Number(usage?.remaining ?? 0);
     }
 
     return json(200, {
