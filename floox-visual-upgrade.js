@@ -26,31 +26,24 @@
 
   function addStrip(host, image, title, text){
     if(!host || host.querySelector('.floox-visual-strip')) return;
-    const strip=document.createElement('div');
-    strip.className='floox-visual-strip';
-    strip.style.backgroundImage=`url('${image}')`;
-    strip.innerHTML=`<div class="floox-visual-copy"><b>${title}</b><span>${text}</span></div>`;
-    host.appendChild(strip);
+    const strip=document.createElement('div');strip.className='floox-visual-strip';strip.style.backgroundImage=`url('${image}')`;strip.innerHTML=`<div class="floox-visual-copy"><b>${title}</b><span>${text}</span></div>`;host.appendChild(strip);
   }
 
   function homepage(){
-    const hero=document.querySelector('.hero');
     const photo=document.querySelector('.hero-bg-photo');
     if(photo && !photo.getAttribute('src')) photo.src=IMG.concert;
     if(photo && !photo.complete) photo.onerror=()=>{photo.src=IMG.concert};
-
     const section=[...document.querySelectorAll('section,main > div')].find(x=>/How Floox Works/i.test(x.textContent||''));
     if(section) addStrip(section.parentElement||section, IMG.crowd, 'The stage is the product.', 'Show people what Floox feels like — live energy, real audiences and memorable performances.');
   }
 
   function search(){
-    const roots=document.querySelectorAll('.artist-photo,.org-avatar,.initial');
-    roots.forEach((el,i)=>{
-      if(el.querySelector('img')) return;
+    document.querySelectorAll('.artist-photo,.org-avatar,.initial').forEach(el=>{
+      if(el.querySelector('img') || el.dataset.flooxVisual) return;
       const text=(el.parentElement?.textContent||'').toLowerCase();
       const image=text.includes('dj')?IMG.dj:text.includes('band')?IMG.band:text.includes('singer')?IMG.singer:text.includes('wedding')?IMG.wedding:IMG.stage;
-      el.classList.add('floox-img-fallback');el.style.backgroundImage=`linear-gradient(180deg,rgba(16,10,2,.05),rgba(16,10,2,.5)),url('${image}')`;
-      if(el.classList.contains('initial')){el.textContent='';}
+      el.classList.add('floox-img-fallback');el.style.backgroundImage=`linear-gradient(180deg,rgba(16,10,2,.05),rgba(16,10,2,.5)),url('${image}')`;el.dataset.flooxVisual='1';
+      if(el.classList.contains('initial')) el.textContent='';
     });
   }
 
@@ -62,21 +55,18 @@
   function dashboard(){
     const content=document.querySelector('.content');
     if(!content || content.querySelector('.floox-dashboard-banner')) return;
-    const isArtist=/floox-dashboard-artist\.html/i.test(location.pathname);
-    const isOrg=/floox-dashboard-organiser\.html/i.test(location.pathname);
-    const isFan=/floox-dashboard-fan\.html/i.test(location.pathname);
+    const isArtist=/floox-dashboard-artist\.html/i.test(location.pathname),isOrg=/floox-dashboard-organiser\.html/i.test(location.pathname),isFan=/floox-dashboard-fan\.html/i.test(location.pathname);
     if(!isArtist&&!isOrg&&!isFan)return;
     const image=isArtist?IMG.stage:isOrg?IMG.event:IMG.concert;
     const title=isArtist?'Put your talent on the stage.':isOrg?'Build the event people remember.':'Discover what is happening live.';
     const text=isArtist?'Your portfolio should feel like a booking-ready professional profile.':isOrg?'Find talent, compare options and move from idea to inquiry quickly.':'Save artists, discover events and keep your live-music world in one place.';
-    const banner=document.createElement('div');banner.className='floox-dashboard-banner';banner.style.backgroundImage=`url('${image}')`;banner.innerHTML=`<div><b>${title}</b><span>${text}</span></div>`;
-    content.insertBefore(banner,content.firstChild);
+    const banner=document.createElement('div');banner.className='floox-dashboard-banner';banner.style.backgroundImage=`url('${image}')`;banner.innerHTML=`<div><b>${title}</b><span>${text}</span></div>`;content.insertBefore(banner,content.firstChild);
   }
 
   function authScreens(){
     if(!/floox-(login|artist-register|organiser-register|forgot)\.html$/i.test(location.pathname))return;
     const candidates=document.querySelectorAll('main,.auth-shell,.login-card,.register-card,.page');
-    candidates.forEach(el=>{if(el && !el.classList.contains('floox-login-art') && (el.className||'').toString().toLowerCase().includes('shell'))el.classList.add('floox-login-art')});
+    candidates.forEach(el=>{const cls=(el.className||'').toString().toLowerCase();if(el && cls.includes('shell')&&!el.classList.contains('floox-login-art'))el.classList.add('floox-login-art')});
   }
 
   function run(){
@@ -84,12 +74,13 @@
       if(/(^|\/)index\.html$/i.test(location.pathname)||location.pathname==='/')homepage();
       if(/floox-search-results\.html$/i.test(location.pathname))search();
       if(/floox-organiser-profile\.html$/i.test(location.pathname))profile();
-      dashboard();
-      authScreens();
+      dashboard();authScreens();
     }catch(e){console.warn('Floox visual upgrade:',e)}
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
   window.addEventListener('load',run,{once:true});
+  const observer=new MutationObserver(()=>{if(/floox-search-results\.html$/i.test(location.pathname))search()});
+  observer.observe(document.documentElement,{childList:true,subtree:true});
   window.addEventListener('floox:visual-refresh',run);
 })();
