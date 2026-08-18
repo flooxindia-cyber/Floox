@@ -32,8 +32,6 @@
   async function saveOrganiserProfile(fields){const d=await apiPost('organiser-profile',fields,true);if(d.user)saveSession(getToken(),d.user);return d}
   const getProfile=id=>apiGet('get-profile?id='+encodeURIComponent(id),true);
   const getArtists=params=>apiGet('artists'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
-  // Organiser discovery/profile pages are authenticated because the backend intentionally
-  // protects organiser details. Keep this helper consistent with that contract.
   const getOrganisers=params=>apiGet('organisers'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),true);
   const getUsers=params=>apiGet('users'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
   const getEvents=params=>apiGet('events'+(params&&Object.keys(params).length?'?'+new URLSearchParams(params):''),false);
@@ -53,27 +51,8 @@
   function updateNav(){const u=getUser();document.querySelectorAll('[data-auth="login"]').forEach(e=>e.style.display=u?'none':'inline-flex');document.querySelectorAll('[data-auth="logout"]').forEach(e=>e.style.display=u?'inline-flex':'none');document.querySelectorAll('[data-auth="username"]').forEach(e=>e.textContent=String(u?.name||u?.email||'User').split(' ')[0]);document.querySelectorAll('[data-auth="dashboard"]').forEach(e=>{if(u){e.style.display='inline-flex';e.href=dashboardForRole(u.role);if(!e.dataset.flooxBound){e.dataset.flooxBound='1';e.addEventListener('click',ev=>{ev.preventDefault();goToDashboard(getUser())})}}else e.style.display='none'})}
   window.FLOOX={getToken,getUser,isLoggedIn,saveSession,clearSession,normaliseRole,dashboardForRole,dashboardUrl,goToDashboard,goToHome,requireAuth,redirectIfLoggedIn,apiGet,apiPost,apiDelete,login,register,verifyOtp,resendOtp,forgotPassword,resetPassword,changePassword,logout,getMe,updateMe,saveArtistProfile,saveOrganiserProfile,getProfile,getArtists,getOrganisers,getUsers,getEvents,toggleLike,getLikes,revealContact,getRevealsRemaining,sendMessage,getMessages,markMessagesRead,fileToBase64,uploadFile,updateNav,toast,fmtBytes};
   document.addEventListener('DOMContentLoaded',()=>{try{updateNav();document.querySelectorAll('.sb-nav').forEach(nav=>{if(!nav.querySelector('[data-floox-messages]')){const a=document.createElement('a');a.className='sb-link';a.href='floox-messages.html';a.dataset.flooxMessages='1';a.innerHTML='<span class="sb-icon">✉</span>Messages';nav.appendChild(a)}})}catch(e){console.error('Floox navigation error:',e)}});
-
-  // Dashboard-specific live connectors. These are deliberately loaded here because
-  // the dashboard HTML also contains legacy demo markup; the connectors replace that
-  // markup with live Supabase data after authentication is established.
-  function loadDashboardScript(file, marker){
-    if(document.querySelector(`script[data-${marker}]`)) return;
-    const s=document.createElement('script');
-    s.src=file+'?v=20260818';
-    s.async=false;
-    s.dataset[marker]='1';
-    document.head.appendChild(s);
-  }
-  if (/floox-dashboard-organiser\.html$/i.test(location.pathname)) {
-    const load=()=>loadDashboardScript('organiser-dashboard-live.js','flooxOrganiserLive');
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
-  }
-  if (/floox-dashboard-artist\.html$/i.test(location.pathname)) {
-    const load=()=>{
-      loadDashboardScript('artist-dashboard-live.js','flooxArtistLive');
-      loadDashboardScript('artist-dashboard-polish.js','flooxArtistPolish');
-    };
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
-  }
+  function loadScript(file,marker){if(document.querySelector(`script[data-${marker}]`))return;const s=document.createElement('script');s.src=file+'?v=20260818';s.async=false;s.dataset[marker]='1';document.head.appendChild(s)}
+  if(/floox-dashboard-organiser\.html$/i.test(location.pathname)){const load=()=>loadScript('organiser-dashboard-live.js','flooxOrganiserLive');if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()}
+  if(/floox-dashboard-artist\.html$/i.test(location.pathname)){const load=()=>{loadScript('artist-dashboard-live.js','flooxArtistLive');loadScript('artist-dashboard-polish.js','flooxArtistPolish')};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()}
+  if(/(^|\/)index\.html$/i.test(location.pathname)||location.pathname==='/' ){const load=()=>loadScript('organiser-cards-live.js','flooxOrganiserCards');if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()}
 })();
