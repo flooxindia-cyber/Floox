@@ -50,8 +50,6 @@
     const city=(cEl.value||'').trim();
     if(!q&&!city)return;
 
-    // Only replace the organiser part when the query actually matches an organiser.
-    // This keeps the existing artist suggestions exactly as they are.
     try{
       const r=await FLOOX.getOrganisers({q:q||undefined,city:city||undefined,limit:8});
       const orgs=(r.organisers||[]).filter(o=>o.profile_complete!==false && o.profileComplete!==false);
@@ -59,18 +57,13 @@
 
       const qWords=(q+' '+city).toLowerCase().split(/\s+/).filter(Boolean);
       const matched=orgs.filter(o=>{
-        const hay=[
-          o.name,o.org_name,o.orgName,o.org_type,o.orgType,o.city,o.bio,
-          ...(Array.isArray(o.event_types)?o.event_types:[]),
-          ...(Array.isArray(o.eventTypes)?o.eventTypes:[]),
-          ...(Array.isArray(o.genres)?o.genres:[])
-        ].filter(Boolean).join(' ').toLowerCase();
+        const hay=[o.name,o.org_name,o.orgName,o.org_type,o.orgType,o.city,o.bio,
+          ...(Array.isArray(o.event_types)?o.event_types:[]),...(Array.isArray(o.eventTypes)?o.eventTypes:[]),...(Array.isArray(o.genres)?o.genres:[])]
+          .filter(Boolean).join(' ').toLowerCase();
         return qWords.every(w=>hay.includes(w));
       }).slice(0,8);
       if(!matched.length)return;
 
-      // Remove the hard-coded organiser section from the existing dropdown and
-      // replace it with real profiles, using the same visual treatment as artists.
       const existing=dd.querySelector('.sd-section:has(.sd-badge.org)');
       if(existing)existing.remove();
 
@@ -79,42 +72,40 @@
         const name=o.org_name||o.orgName||o.name||'Event Organiser';
         const type=o.org_type||o.orgType||'Event Organiser';
         const profileUrl='floox-organiser-profile.html?id='+encodeURIComponent(o.id||'');
-        const avatar=o.avatar
-          ? '<img src="'+esc(o.avatar)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
-          : '🎪';
+        const avatar=o.avatar ? '<img src="'+esc(o.avatar)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : '🎪';
         section+='<div class="sd-item" onclick="window.location.href=\''+profileUrl+'\'">'
-          +'<div class="sd-avatar">'+avatar+'</div>'
-          +'<div class="sd-info">'
-          +'<div class="sd-name">'+esc(name)+'</div>'
-          +'<div class="sd-meta">📍 '+esc(o.city||'India')+(type?'&nbsp;&middot;&nbsp;'+esc(type):'')+'</div>'
-          +'</div>'
-          +'<span class="sd-badge org">Organiser</span>'
-          +'</div>';
+          +'<div class="sd-avatar">'+avatar+'</div><div class="sd-info">'
+          +'<div class="sd-name">'+esc(name)+'</div><div class="sd-meta">📍 '+esc(o.city||'India')+(type?'&nbsp;&middot;&nbsp;'+esc(type):'')+'</div>'
+          +'</div><span class="sd-badge org">Organiser</span></div>';
       });
       section+='</div>';
+      if(dd.querySelector('.sd-section')) dd.insertAdjacentHTML('beforeend',section);
+      else {dd.innerHTML=section;dd.style.display='block';}
+    }catch(e){console.warn('Live organiser search:',e);}
+  }
 
-      // If the original dropdown already contains artist results, append organisers.
-      // Otherwise create the organiser dropdown from scratch.
-      if(dd.querySelector('.sd-section')){
-        dd.insertAdjacentHTML('beforeend',section);
-      }else{
-        dd.innerHTML=section;
-        dd.style.display='block';
+  // Replace the organiser CTA in the public home-page section with a true browse action.
+  // It intentionally does not expose the registration CTA here; users can still register
+  // through the organiser sign-up flow elsewhere in the site.
+  function setupBrowseAllOrganisers(){
+    const links=document.querySelectorAll('a,button');
+    links.forEach(el=>{
+      const text=(el.textContent||'').replace(/→|➜|➤|↗/g,'').trim().toLowerCase();
+      if(text==='join as organiser' || text==='join as organizer'){
+        el.textContent='BROWSE ALL ORGANISERS →';
+        el.setAttribute('href','floox-search-results.html?type=organiser');
+        el.removeAttribute('onclick');
       }
-    }catch(e){
-      console.warn('Live organiser search:',e);
-    }
+    });
   }
 
   function bindSearch(){
     const q=document.getElementById('searchQ');
     const c=document.getElementById('searchC');
     if(!q||!c)return;
-
     const original=window.liveSearch;
     const wrapped=function(){
       if(typeof original==='function')original();
-      // Debounce the API lookup so typing feels identical to the artist search.
       clearTimeout(wrapped._timer);
       wrapped._timer=setTimeout(liveOrganiserSearch,180);
     };
@@ -122,9 +113,10 @@
   }
 
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',()=>{load();bindSearch();},{once:true});
+    document.addEventListener('DOMContentLoaded',()=>{load();bindSearch();setupBrowseAllOrganisers();},{once:true});
   }else{
     load();
     bindSearch();
+    setupBrowseAllOrganisers();
   }
 })();
