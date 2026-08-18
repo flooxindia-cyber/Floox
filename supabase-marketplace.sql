@@ -16,11 +16,32 @@ create table if not exists public.availability (
 create index if not exists availability_user_date_idx on public.availability(user_id,date);
 alter table public.availability enable row level security;
 
+create table if not exists public.events (
+  id uuid primary key default gen_random_uuid(),
+  organiser_id uuid not null references public.users(id) on delete cascade,
+  name text not null,
+  description text default '',
+  event_date date,
+  venue text default '',
+  city text default '',
+  event_type text default 'Other',
+  budget numeric default 0,
+  genres text[] default '{}',
+  status text default 'draft' check (status in ('draft','published','upcoming','active','completed','cancelled')),
+  artists_booked integer default 0,
+  cover_image text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists events_organiser_idx on public.events(organiser_id,created_at desc);
+create index if not exists events_date_idx on public.events(event_date);
+alter table public.events enable row level security;
+
 create table if not exists public.quote_requests (
   id uuid primary key default gen_random_uuid(),
   requester_id uuid not null references public.users(id) on delete cascade,
   provider_id uuid not null references public.users(id) on delete cascade,
-  event_id uuid,
+  event_id uuid references public.events(id) on delete set null,
   event_name text default '',
   event_date date,
   city text default '',
@@ -100,24 +121,6 @@ create table if not exists public.notifications (
 );
 create index if not exists notifications_user_idx on public.notifications(user_id,created_at desc);
 alter table public.notifications enable row level security;
-
-create table if not exists public.events (
-  id uuid primary key default gen_random_uuid(),
-  owner_id uuid not null references public.users(id) on delete cascade,
-  name text not null,
-  event_type text default '',
-  event_date date,
-  city text default '',
-  venue text default '',
-  guest_count integer,
-  budget numeric,
-  notes text default '',
-  status text default 'planning' check (status in ('planning','active','completed','cancelled')),
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-create index if not exists events_owner_idx on public.events(owner_id,created_at desc);
-alter table public.events enable row level security;
 
 create table if not exists public.event_tasks (
   id uuid primary key default gen_random_uuid(),
