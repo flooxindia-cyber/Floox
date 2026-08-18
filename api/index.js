@@ -16,6 +16,7 @@ const HANDLERS = {
   messages: require('../server/functions/messages').handler,
   'mark-messages-read': require('../server/functions/mark-messages-read').handler,
   'organiser-profile': require('../server/functions/organiser-profile').handler,
+  'organiser-stats': require('../server/functions/organiser-stats').handler,
   organisers: require('../server/functions/organisers').handler,
   users: require('../server/functions/users').handler,
   register: require('../server/functions/register').handler,
