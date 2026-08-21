@@ -58,7 +58,7 @@
   if(/floox-dashboard-fan\.html$/i.test(location.pathname)){const load=()=>{loadScript('floox-follows.js','flooxFollows');loadScript('floox-marketplace.js','flooxMarketplace')};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()}
   if(/floox-search-results\.html$/i.test(location.pathname)){const load=()=>{loadScript('floox-follows.js','flooxFollows');loadScript('floox-marketplace.js','flooxMarketplace');loadScript('floox-profile-view-quota.js','flooxProfileQuota');loadScript('floox-booking-profile.js','flooxBookingProfile');loadScript('floox-global-events.js','flooxGlobalEvents')};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()}
   if(/floox-(organiser-profile|profile)\.html$/i.test(location.pathname)){const load=()=>loadScript('floox-profile-view-quota.js','flooxProfileQuota');if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()}
-  if(/(^|\/)index\.html$/i.test(location.pathname)||location.pathname==='/' ){
+  if(/(^|\/)index\.html$/i.test(location.pathname)||/floox-public\.html$/i.test(location.pathname)||location.pathname==='/' ){
     const style=document.createElement('style');style.textContent='.rv.visible{opacity:1!important;transform:translateY(0)!important;}';document.head.appendChild(style);
     const load=()=>{loadScript('organiser-cards-live.js','flooxOrganiserCards');loadScript('organiser-search-demo.js','flooxOrganiserDemoSearch');loadScript('floox-global-events.js','flooxGlobalEvents')};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()
   }
