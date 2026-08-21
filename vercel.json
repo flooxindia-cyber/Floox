@@ -6,49 +6,43 @@
       "schedule": "0 */4 * * *"
     }
   ],
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/floox-public.html", "destination": "/", "permanent": true },
+    { "source": "/floox-login.html", "destination": "/login", "permanent": true },
+    { "source": "/floox-search-results.html", "destination": "/discover", "permanent": true },
+    { "source": "/floox-dashboard-artist.html", "destination": "/artist/dashboard", "permanent": true },
+    { "source": "/floox-dashboard-organiser.html", "destination": "/organiser/dashboard", "permanent": true },
+    { "source": "/floox-dashboard-fan.html", "destination": "/fan/dashboard", "permanent": true }
+  ],
   "routes": [
+    { "src": "/login", "dest": "/floox-login.html" },
+    { "src": "/discover", "dest": "/floox-search-results.html" },
+    { "src": "/artist/dashboard", "dest": "/floox-dashboard-artist.html" },
+    { "src": "/organiser/dashboard", "dest": "/floox-dashboard-organiser.html" },
+    { "src": "/fan/dashboard", "dest": "/floox-dashboard-fan.html" },
     {
       "src": "/floox-search-results.html",
       "has": [{ "type": "query", "key": "type", "value": "artists" }],
-      "transforms": [
-        { "type": "request.query", "op": "set", "target": { "key": "type" }, "args": "artist" }
-      ],
+      "transforms": [{ "type": "request.query", "op": "set", "target": { "key": "type" }, "args": "artist" }],
       "continue": true
     },
     {
       "src": "/floox-search-results.html",
       "has": [{ "type": "query", "key": "type", "value": "events" }],
-      "transforms": [
-        { "type": "request.query", "op": "set", "target": { "key": "type" }, "args": "event" }
-      ],
+      "transforms": [{ "type": "request.query", "op": "set", "target": { "key": "type" }, "args": "event" }],
       "continue": true
     },
     {
       "src": "/floox-search-results.html",
       "has": [{ "type": "query", "key": "type", "value": "organisers" }],
-      "transforms": [
-        { "type": "request.query", "op": "set", "target": { "key": "type" }, "args": "organiser" }
-      ],
+      "transforms": [{ "type": "request.query", "op": "set", "target": { "key": "type" }, "args": "organiser" }],
       "continue": true
     },
-    {
-      "src": "/floox-auth.js",
-      "dest": "/api/auth-js"
-    },
-    {
-      "src": "/api/auth-js",
-      "dest": "/api/auth-js.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index?route=$1"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
+    { "src": "/floox-auth.js", "dest": "/api/auth-js" },
+    { "src": "/api/auth-js", "dest": "/api/auth-js.js" },
+    { "src": "/api/(.*)", "dest": "/api/index?route=$1" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
