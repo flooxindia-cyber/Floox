@@ -131,6 +131,21 @@ async function eventbrite({ keyword, locationAddress, startDateRange, pageSize =
   }));
 }
 
+async function bandsintown({ artist, date = 'upcoming' }) {
+  const appId = process.env.BANDSINTOWN_APP_ID;
+  if (!appId || !artist) return [];
+  const url = new URL(`https://rest.bandsintown.com/artists/${encodeURIComponent(artist)}/events`);
+  url.searchParams.set('app_id', appId); url.searchParams.set('date', date);
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error(`Bandsintown returned ${res.status}`);
+  const items = await res.json();
+  return (Array.isArray(items) ? items : []).map((item) => ({
+    provider: 'bandsintown', provider_id: String(item.id), title: item.title || `${artist} live`, description: item.description || '', category: 'Music', start_at: item.datetime || null, end_at: null, timezone: null,
+    venue_name: item.venue?.name || '', city: item.venue?.city || '', state: item.venue?.region || '', country: item.venue?.country || '', latitude: item.venue?.latitude ? Number(item.venue.latitude) : null, longitude: item.venue?.longitude ? Number(item.venue.longitude) : null,
+    image_url: item.artist?.image_url || '', organizer_name: artist, official_url: item.url || '', ticket_url: item.offers?.find((offer) => offer.type === 'Tickets')?.url || item.url || '', price_min: null, price_max: null, currency: null, source_updated_at: new Date().toISOString(),
+  }));
+}
+
 async function getCachedEvents(query = {}) {
   const keyword = clean(query.keyword || query.q);
   const city = clean(query.city);
@@ -165,12 +180,14 @@ async function getEvents(query = {}) {
   const countryCode = clean(query.countryCode);
   const region = clean(query.region);
   const source = clean(query.source).toLowerCase();
+  const bandsintownArtists = clean(query.artist || process.env.BANDSINTOWN_ARTISTS).split(',').map((name) => name.trim()).filter(Boolean).slice(0, 20);
   const limit = Math.min(Math.max(Number(query.limit) || 24, 1), 50);
   const startDateTime = query.startDateTime || new Date().toISOString();
 
   const jobs = [];
   if (!source || source === 'ticketmaster') jobs.push(ticketmaster({ keyword, city, countryCode, startDateTime, size: limit }));
   if (!source || source === 'eventbrite') jobs.push(eventbrite({ keyword, locationAddress: city || region, startDateRange: startDateTime, pageSize: limit }));
+  if ((!source || source === 'bandsintown') && bandsintownArtists.length) jobs.push(...bandsintownArtists.map((artist) => bandsintown({ artist })));
 
   const settled = await Promise.allSettled(jobs);
   const events = settled.flatMap((item) => item.status === 'fulfilled' ? item.value : []);
