@@ -3,7 +3,7 @@
 
 const DEFAULT_HEADERS = {
   'Content-Type': 'application/json',
-  'Cache-Control': 's-maxage=300, stale-while-revalidate=900',
+  'Cache-Control': 's-maxage=120, stale-while-revalidate=600',
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
@@ -18,6 +18,24 @@ function response(statusCode, body) {
 
 function clean(value, fallback = '') {
   return typeof value === 'string' ? value.trim() : fallback;
+}
+
+function supabaseHeaders() {
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!key) throw new Error('SUPABASE_SERVICE_KEY env var is not set');
+  return { Accept: 'application/json', apikey: key, Authorization: `Bearer ${key}` };
+}
+
+function supabaseUrl(table, qs = '') {
+  const base = process.env.SUPABASE_URL;
+  if (!base) throw new Error('SUPABASE_URL env var is not set');
+  return `${base}/rest/v1/${table}${qs ? `?${qs}` : ''}`;
+}
+
+async function readJson(res) {
+  const text = await res.text();
+  if (!text) return {};
+  try { return JSON.parse(text); } catch { return {}; }
 }
 
 function normalizeTicketmasterEvent(item) {
@@ -58,7 +76,6 @@ function normalizeTicketmasterEvent(item) {
 async function ticketmaster({ keyword, city, countryCode, startDateTime, size = 20 }) {
   const key = process.env.TICKETMASTER_API_KEY;
   if (!key) return [];
-
   const url = new URL('https://app.ticketmaster.com/discovery/v2/events.json');
   url.searchParams.set('apikey', key);
   url.searchParams.set('size', String(Math.min(Math.max(Number(size) || 20, 1), 50)));
@@ -67,10 +84,8 @@ async function ticketmaster({ keyword, city, countryCode, startDateTime, size = 
   if (city) url.searchParams.set('city', city);
   if (countryCode) url.searchParams.set('countryCode', countryCode);
   if (startDateTime) url.searchParams.set('startDateTime', startDateTime);
-
   const res = await fetch(url, { headers: { Accept: 'application/json' } });
   if (!res.ok) throw new Error(`Ticketmaster returned ${res.status}`);
-
   const json = await res.json();
   return (json._embedded?.events || []).map(normalizeTicketmasterEvent);
 }
@@ -78,7 +93,6 @@ async function ticketmaster({ keyword, city, countryCode, startDateTime, size = 
 async function eventbrite({ keyword, locationAddress, startDateRange, pageSize = 20 }) {
   const token = process.env.EVENTBRITE_API_TOKEN;
   if (!token) return [];
-
   const url = new URL('https://www.eventbriteapi.com/v3/events/search/');
   url.searchParams.set('status', 'live');
   url.searchParams.set('expand', 'venue,organizer,ticket_availability');
@@ -86,15 +100,10 @@ async function eventbrite({ keyword, locationAddress, startDateRange, pageSize =
   if (keyword) url.searchParams.set('q', keyword);
   if (locationAddress) url.searchParams.set('location.address', locationAddress);
   if (startDateRange) url.searchParams.set('start_date.range_start', startDateRange);
-
   const res = await fetch(url, {
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`Eventbrite returned ${res.status}`);
-
   const json = await res.json();
   return (json.events || []).map((item) => ({
     provider: 'eventbrite',
@@ -122,7 +131,35 @@ async function eventbrite({ keyword, locationAddress, startDateRange, pageSize =
   }));
 }
 
+async function getCachedEvents(query = {}) {
+  const keyword = clean(query.keyword || query.q);
+  const city = clean(query.city);
+  const countryCode = clean(query.countryCode);
+  const category = clean(query.category);
+  const limit = Math.min(Math.max(Number(query.limit) || 24, 1), 50);
+  const parts = [
+    'select=provider,provider_id,title,description,category,start_at,end_at,timezone,venue_name,city,state,country,latitude,longitude,image_url,organizer_name,official_url,ticket_url,price_min,price_max,currency,source_updated_at,last_synced_at',
+    `start_at=gte.${encodeURIComponent(new Date().toISOString())}`,
+    'order=start_at.asc',
+    `limit=${limit}`,
+  ];
+  if (countryCode) parts.push(`country=ilike.${encodeURIComponent(countryCode)}`);
+  if (city) parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
+  if (category) parts.push(`category=ilike.*${encodeURIComponent(category)}*`);
+  if (keyword) {
+    const safe = encodeURIComponent(keyword);
+    parts.push(`or=(title.ilike.*${safe}*,description.ilike.*${safe}*,city.ilike.*${safe}*,venue_name.ilike.*${safe}*,category.ilike.*${safe}*)`);
+  }
+  const res = await fetch(supabaseUrl('global_events', parts.join('&')), { headers: supabaseHeaders() });
+  const data = await readJson(res);
+  if (!res.ok || !Array.isArray(data)) return [];
+  return data;
+}
+
 async function getEvents(query = {}) {
+  const cached = await getCachedEvents(query);
+  if (cached.length && String(query.live || '') !== '1') return cached;
+
   const keyword = clean(query.keyword || query.q);
   const city = clean(query.city);
   const countryCode = clean(query.countryCode);
@@ -132,26 +169,21 @@ async function getEvents(query = {}) {
   const startDateTime = query.startDateTime || new Date().toISOString();
 
   const jobs = [];
-  if (!source || source === 'ticketmaster') {
-    jobs.push(ticketmaster({ keyword, city, countryCode, startDateTime, size: limit }));
-  }
-  if (!source || source === 'eventbrite') {
-    jobs.push(eventbrite({ keyword, locationAddress: city || region, startDateRange: startDateTime, pageSize: limit }));
-  }
+  if (!source || source === 'ticketmaster') jobs.push(ticketmaster({ keyword, city, countryCode, startDateTime, size: limit }));
+  if (!source || source === 'eventbrite') jobs.push(eventbrite({ keyword, locationAddress: city || region, startDateRange: startDateTime, pageSize: limit }));
 
   const settled = await Promise.allSettled(jobs);
   const events = settled.flatMap((item) => item.status === 'fulfilled' ? item.value : []);
-
   const byId = new Map();
   for (const event of events) {
     const key = `${event.provider}:${event.provider_id}`;
     if (!byId.has(key)) byId.set(key, event);
   }
-
-  return [...byId.values()]
-    .filter((event) => !countryCode || event.country === countryCode || event.country === countryCode.toUpperCase())
+  const live = [...byId.values()]
+    .filter((event) => !countryCode || String(event.country || '').toUpperCase() === countryCode.toUpperCase() || String(event.country || '').toLowerCase() === String(countryCode).toLowerCase())
     .sort((a, b) => String(a.start_at || '').localeCompare(String(b.start_at || '')))
     .slice(0, limit);
+  return live;
 }
 
 exports.handler = async (event) => {
@@ -164,7 +196,8 @@ exports.handler = async (event) => {
     return response(200, {
       ok: true,
       count: events.length,
-      updated_at: new Date().toISOString(),
+      updated_at: events[0]?.last_synced_at || events[0]?.source_updated_at || new Date().toISOString(),
+      live_fallback: !events[0]?.last_synced_at,
       events,
     });
   } catch (error) {
@@ -178,3 +211,4 @@ exports.handler = async (event) => {
 };
 
 exports.getEvents = getEvents;
+exports.getCachedEvents = getCachedEvents;
