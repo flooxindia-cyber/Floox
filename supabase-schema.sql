@@ -96,6 +96,73 @@ create trigger users_updated_at
   for each row execute function update_updated_at();
 
 -- ============================================================
+--  LIVE EXTERNAL EVENTS CACHE
+--  Used only by floox-global-events + global-events-sync.
+--  Existing organiser event data remains in the existing events table.
+-- ============================================================
+create table if not exists public.global_events (
+  id                  uuid primary key default gen_random_uuid(),
+  provider             text not null,
+  provider_id         text not null,
+  title               text not null,
+  description         text default '',
+  category            text default 'Other',
+  start_at            timestamptz,
+  end_at              timestamptz,
+  timezone            text,
+  venue_name          text default '',
+  city                text default '',
+  state               text default '',
+  country             text default '',
+  latitude            numeric,
+  longitude           numeric,
+  image_url            text default '',
+  organizer_name      text default '',
+  official_url        text default '',
+  ticket_url          text default '',
+  price_min           numeric,
+  price_max           numeric,
+  currency            text,
+  source_updated_at   timestamptz,
+  last_synced_at      timestamptz not null default now(),
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now(),
+  unique(provider, provider_id)
+);
+
+alter table public.global_events enable row level security;
+
+-- Public event discovery is read-only from the app. Writes are performed
+-- server-side with the Supabase service key by the scheduled sync function.
+drop policy if exists "Public global events are readable" on public.global_events;
+create policy "Public global events are readable"
+  on public.global_events for select using (true);
+
+create index if not exists global_events_start_idx
+  on public.global_events (start_at);
+create index if not exists global_events_country_idx
+  on public.global_events (country);
+create index if not exists global_events_city_idx
+  on public.global_events (city);
+create index if not exists global_events_category_idx
+  on public.global_events (category);
+create index if not exists global_events_provider_idx
+  on public.global_events (provider);
+
+create or replace function update_global_events_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists global_events_updated_at on public.global_events;
+create trigger global_events_updated_at
+  before update on public.global_events
+  for each row execute function update_global_events_updated_at();
+
+-- ============================================================
 --  NEW TABLES — Run this in Supabase Dashboard → SQL Editor
 --  (after the original schema above is already applied)
 -- ============================================================
