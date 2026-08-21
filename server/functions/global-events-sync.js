@@ -67,8 +67,8 @@ exports.handler = async (event) => {
     return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Unauthorized.' }) };
   }
   try {
-    const india = await getEvents({ countryCode: 'IN', limit: 50 });
-    const global = await getEvents({ limit: 100 });
+    const india = await getEvents({ countryCode: 'IN', limit: 50, live: '1' });
+    const global = await getEvents({ limit: 100, live: '1' });
     const unique = new Map();
     for (const item of [...india, ...global]) unique.set(`${item.provider}:${item.provider_id}`, item);
     const rows = [...unique.values()].map(toRow);
