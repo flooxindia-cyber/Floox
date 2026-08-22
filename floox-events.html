@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discover Events — Floox</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="floox-theme.css">
+</head>
+
+<body class="floox-dark">
+
+<header class="navbar">
+  <a href="index.html" class="logo">Floox</a>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="floox-search-results.html">Discover Artists</a>
+    <a href="floox-events.html" class="active">Events</a>
+  </nav>
+</header>
+
+<section class="events-hero">
+  <p class="eyebrow">LIVE WORLDWIDE EVENTS</p>
+  <h1>Discover Events Across India & The World</h1>
+  <p>Concerts • Comedy • Festivals • Sports • Conferences • Workshops</p>
+</section>
+
+<section class="events-search">
+
+  <input id="eventSearch" placeholder="Search artist, event or venue...">
+
+  <select id="eventCity">
+    <option value="">All Cities</option>
+    <option>Delhi</option>
+    <option>Mumbai</option>
+    <option>Bangalore</option>
+    <option>London</option>
+    <option>Dubai</option>
+    <option>New York</option>
+  </select>
+
+  <button id="searchEventsBtn">
+    Search Events
+  </button>
+
+</section>
+
+<section class="events-filters">
+
+  <button class="chip active">All</button>
+  <button class="chip">Concerts</button>
+  <button class="chip">Comedy</button>
+  <button class="chip">Festivals</button>
+  <button class="chip">Sports</button>
+  <button class="chip">Workshops</button>
+
+</section>
+
+<section class="events-grid" id="eventsGrid">
+
+  <div class="loading-events">
+    Loading live events...
+  </div>
+
+</section>
+
+<script src="events-live.js"></script>
+
+</body>
+</html>
