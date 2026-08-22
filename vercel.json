@@ -19,6 +19,7 @@
   "routes": [
     { "src": "/login", "dest": "/floox-login.html" },
     { "src": "/discover", "dest": "/floox-search-results.html" },
+    { "src": "/search", "dest": "/floox-search-results.html" },
     { "src": "/artist/dashboard", "dest": "/floox-dashboard-artist.html" },
     { "src": "/organiser/dashboard", "dest": "/floox-dashboard-organiser.html" },
     { "src": "/fan/dashboard", "dest": "/floox-dashboard-fan.html" },
