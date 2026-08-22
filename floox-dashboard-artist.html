@@ -221,6 +221,40 @@ textarea.finput{resize:vertical;min-height:100px}
 /* ── MOBILE OVERLAY ── */
 .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199}
 
+
+.empty-state{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:2.5rem 1rem;
+  border:1.5px dashed rgba(255,92,0,0.2);
+  border-radius:16px;
+  background:linear-gradient(180deg,rgba(255,92,0,0.03),rgba(255,45,120,0.02));
+}
+.empty-icon{
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--orange),var(--pink));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:1.8rem;
+  margin-bottom:1rem;
+}
+.empty-state h3{
+  font-family:var(--head);
+  font-size:1rem;
+  margin-bottom:.4rem;
+}
+.empty-state p{
+  color:var(--muted);
+  font-size:.82rem;
+}
+
 /* ── RESPONSIVE ── */
 @media(max-width:1100px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){
@@ -342,13 +376,13 @@ textarea.finput{resize:vertical;min-height:100px}
       </div>
       <div class="stat-card c3">
         <div class="stat-icon">👁</div>
-        <div class="stat-val"></div>
+        <div class="stat-val" id="profileViews">0</div>
         <div class="stat-label">Profile Views</div>
         <span class="stat-change up">↑ this week</span>
       </div>
       <div class="stat-card c4">
         <div class="stat-icon">💬</div>
-        <div class="stat-val">5</div>
+        <div class="stat-val" id="newEnquiries">0</div>
         <div class="stat-label">New Enquiries</div>
         <span class="stat-change up">↑ new</span>
       </div>
@@ -767,28 +801,10 @@ const GENRES = ['Bollywood','Punjabi','Hip-Hop','Rock','Classical','Jazz','EDM',
 const LANGS  = ['Hindi','English','Punjabi','Bengali','Tamil','Telugu','Marathi','Gujarati','Kannada'];
 const EVENTS = ['Corporate','Wedding','College Festival','Club Night','Concert','Private Party','Restaurant','Other'];
 
-// Demo bookings data
-const demoBookings = [
-  {id:1, event:'Pulse Nightclub — Saturday Night', organiser:'NightOut Co.', city:'Mumbai', date:'2026-06-14', fee:18000, status:'confirmed'},
-  {id:2, event:'TechSummit 2026 Afterparty', organiser:'EventPro', city:'Bengaluru', date:'2026-06-22', fee:25000, status:'pending'},
-  {id:3, event:'Sharma Wedding Reception', organiser:'Wedding Bells', city:'Delhi', date:'2026-07-05', fee:32000, status:'pending'},
-  {id:4, event:'IIT Techfest — Main Stage', organiser:'IIT Mumbai', city:'Mumbai', date:'2026-05-10', fee:15000, status:'completed'},
-  {id:5, event:'Rooftop Sundown Sessions', organiser:'Social House', city:'Pune', date:'2026-05-03', fee:8000, status:'completed'},
-];
-
-const demoEnquiries = [
-  {id:1, from:'Priya Events', event:'Corporate Gala Dinner', date:'2026-07-15', budget:'₹20,000 – ₹30,000', city:'Mumbai', msg:'We are organizing a corporate gala for 200 guests and would love to have you perform. Please share your availability.', time:'2h ago'},
-  {id:2, from:'Raj Weddings', event:'Wedding Reception', date:'2026-08-02', budget:'₹40,000 – ₹60,000', city:'Jaipur', msg:'Looking for a top-tier artist for a high-profile wedding. The event runs from 8 PM to midnight.', time:'5h ago'},
-  {id:3, from:'Club Zeta', event:'New Year Eve Party', date:'2026-12-31', budget:'₹50,000+', city:'Goa', msg:'We want to book you for our iconic NYE bash in Goa. This is a 4-hour set.', time:'1d ago'},
-];
-
-const demoActivity = [
-  {icon:'💬', type:'teal', text:'New enquiry from <strong>Priya Events</strong> for Corporate Gala', time:'2h ago'},
-  {icon:'✅', type:'green', text:'Booking confirmed — <strong>Pulse Nightclub</strong> on June 14', time:'1d ago'},
-  {icon:'💰', type:'orange', text:'Payment of <strong>₹15,000</strong> received from IIT Techfest', time:'3d ago'},
-  {icon:'👁', type:'teal', text:'Your profile was viewed <strong>18 times</strong> this week', time:'5d ago'},
-  {icon:'💬', type:'pink', text:'New enquiry from <strong>Club Zeta</strong> for NYE Party', time:'1d ago'},
-];
+// Production data (starts empty)
+let bookings = [];
+let enquiries = [];
+let activity = [];
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let user = null;
