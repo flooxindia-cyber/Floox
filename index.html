@@ -51,6 +51,218 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
     <a href="/search?type=artist" class="view-all" style="color:#ff8a4a;font-weight:800">Browse all artists →</a>
   </div>
   <div id="artistGrid" style="margin-top:25px"></div>
+  <div class="genre-grid">
+    <div class="gcard gc1 rv" onclick="goGenre('Bollywood')">
+      <img class="gcard-img" src="https://images.unsplash.com/photo-1604977042946-1eecc30f269e?w=400&q=75&auto=format&fit=crop" alt="Bollywood">
+      <div class="gcard-overlay"></div><div class="gcard-bg"></div>
+      <span class="gcard-emoji">🎬</span><div class="gcard-name">Bollywood</div><div class="gcard-count">480+ Artists</div>
+    </div>
+    <div class="gcard gc2 rv d1" onclick="goGenre('Classical')">
+      <img class="gcard-img" src="https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=400&q=75&auto=format&fit=crop" alt="Classical">
+      <div class="gcard-overlay"></div><div class="gcard-bg"></div>
+      <span class="gcard-emoji">🎻</span><div class="gcard-name">Classical</div><div class="gcard-count">310+ Artists</div>
+    </div>
+    <div class="gcard gc3 rv d2" onclick="goGenre('Rock')">
+      <img class="gcard-img" src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=75&auto=format&fit=crop" alt="Rock">
+      <div class="gcard-overlay"></div><div class="gcard-bg"></div>
+      <span class="gcard-emoji">🎸</span><div class="gcard-name">Rock & Indie</div><div class="gcard-count">290+ Artists</div>
+    </div>
+    <div class="gcard gc4 rv d3" onclick="goGenre('DJ')">
+      <img class="gcard-img" src="https://images.unsplash.com/photo-1493676304819-0d7a8d026dcf?w=400&q=75&auto=format&fit=crop" alt="DJ">
+      <div class="gcard-overlay"></div><div class="gcard-bg"></div>
+      <span class="gcard-emoji">🎛️</span><div class="gcard-name">Electronic / DJ</div><div class="gcard-count">260+ Artists</div>
+    </div>
+    <div class="gcard gc5 rv d4" onclick="goGenre('Folk')">
+      <img class="gcard-img" src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400&q=75&auto=format&fit=crop" alt="Folk">
+      <div class="gcard-overlay"></div><div class="gcard-bg"></div>
+      <span class="gcard-emoji">🪘</span><div class="gcard-name">Folk & Sufi</div><div class="gcard-count">195+ Artists</div>
+    </div>
+    <div class="gcard gc6 rv d4" onclick="goGenre('Jazz')">
+      <img class="gcard-img" src="https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&q=75&auto=format&fit=crop" alt="Jazz">
+      <div class="gcard-overlay"></div><div class="gcard-bg"></div>
+      <span class="gcard-emoji">🎷</span><div class="gcard-name">Jazz & Blues</div><div class="gcard-count">145+ Artists</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURED ARTISTS ────────────────────────────────────────────────────────── -->
+<section class="artists-bg" id="artists">
+  <!-- Now Playing Bar -->
+  <div class="now-playing rv">
+    <div class="np-live"><span class="np-dot"></span>Live on Floox</div>
+    <div class="np-vinyl">🎵</div>
+    <div class="np-info">
+      <div class="np-artist" id="npArtist">Rohan Mehta — Bollywood Live Set</div>
+      <div class="np-track" id="npTrack">🎤 Performing in Mumbai · 200+ watching</div>
+    </div>
+    <div class="np-bars">
+      <div class="np-bar"></div><div class="np-bar"></div><div class="np-bar"></div>
+      <div class="np-bar"></div><div class="np-bar"></div>
+    </div>
+  </div>
+
+  <div class="sec-head rv">
+    <div>
+      <div class="sec-eyebrow">Featured</div>
+      <h2 class="sec-title">Top Artists on Floox</h2>
+      <p class="sec-sub">Discover verified performers — tap ❤️ to follow. Organisers, click any card to book.</p>
+    </div>
+    <a href="floox-search-results.html" class="view-all">Browse all artists →</a>
+  </div>
+  <div class="artists-grid" id="artistGrid">
+    <!-- Skeletons -->
+    <div class="acard"><div class="ske ske-img"></div><div class="ske ske-line"></div><div class="ske ske-line s60"></div><div class="ske ske-line s40"></div></div>
+    <div class="acard"><div class="ske ske-img"></div><div class="ske ske-line"></div><div class="ske ske-line s60"></div><div class="ske ske-line s40"></div></div>
+    <div class="acard"><div class="ske ske-img"></div><div class="ske ske-line"></div><div class="ske ske-line s60"></div><div class="ske ske-line s40"></div></div>
+    <div class="acard"><div class="ske ske-img"></div><div class="ske ske-line"></div><div class="ske ske-line s60"></div><div class="ske ske-line s40"></div></div>
+  </div>
+</section>
+
+<!-- ── FEATURED ORGANISERS ─────────────────────────────────────────────────────── -->
+<section class="organisers-bg" id="organisers">
+  <div class="sec-head rv">
+    <div>
+      <div class="sec-eyebrow">Top Organisers</div>
+      <h2 class="sec-title">Trusted Event Organisers</h2>
+      <p class="sec-sub">Artists — these are the event professionals booking on Floox. Get on their radar.</p>
+    </div>
+    <a href="floox-organiser-register.html" class="view-all">Join as Organiser →</a>
+  </div>
+  <div class="org-grid" id="organiserGrid">
+    <div class="ocard rv">
+      <div class="ocard-header">
+        <div class="ocard-logo" style="background:linear-gradient(135deg,rgba(255,214,0,.3),rgba(255,92,0,.2))">🎪</div>
+        <div class="ocard-badge obadge-pro">Pro</div>
+      </div>
+      <div class="ocard-body">
+        <div class="ocard-name">Wavelength Events</div>
+        <div class="ocard-city">📍 Mumbai</div>
+        <div class="ocard-tags">
+          <span class="otag">Corporate</span><span class="otag">Concerts</span><span class="otag">Weddings</span>
+        </div>
+        <div class="ocard-stats">
+          <span>🎤 48 bookings</span><span>⭐ 4.9</span>
+        </div>
+        <p class="ocard-desc">Mumbai's premium event agency. We book 50+ artists per year across corporate galas, music festivals and private celebrations.</p>
+        <a href="floox-contact.html" class="ocard-cta">View & Connect →</a>
+      </div>
+    </div>
+    <div class="ocard rv d1">
+      <div class="ocard-header">
+        <div class="ocard-logo" style="background:linear-gradient(135deg,rgba(0,194,168,.3),rgba(124,58,237,.2))">🎶</div>
+        <div class="ocard-badge obadge-pro">Pro</div>
+      </div>
+      <div class="ocard-body">
+        <div class="ocard-name">Rhythm House Productions</div>
+        <div class="ocard-city">📍 Delhi NCR</div>
+        <div class="ocard-tags">
+          <span class="otag">Live Music</span><span class="otag">Festivals</span><span class="otag">Clubs</span>
+        </div>
+        <div class="ocard-stats">
+          <span>🎤 62 bookings</span><span>⭐ 4.8</span>
+        </div>
+        <p class="ocard-desc">Delhi's go-to for live music experiences. Specialising in concert production, venue management and artist management.</p>
+        <a href="floox-contact.html" class="ocard-cta">View & Connect →</a>
+      </div>
+    </div>
+    <div class="ocard rv d2">
+      <div class="ocard-header">
+        <div class="ocard-logo" style="background:linear-gradient(135deg,rgba(255,45,120,.3),rgba(124,58,237,.2))">🌟</div>
+        <div class="ocard-badge obadge-ver">Verified</div>
+      </div>
+      <div class="ocard-body">
+        <div class="ocard-name">Starlight Occasions</div>
+        <div class="ocard-city">📍 Bangalore</div>
+        <div class="ocard-tags">
+          <span class="otag">Weddings</span><span class="otag">Private</span><span class="otag">Corporate</span>
+        </div>
+        <div class="ocard-stats">
+          <span>🎤 35 bookings</span><span>⭐ 4.7</span>
+        </div>
+        <p class="ocard-desc">Crafting unforgettable celebrations in Bangalore. From intimate gatherings to grand weddings — we book the perfect talent.</p>
+        <a href="floox-contact.html" class="ocard-cta">View & Connect →</a>
+      </div>
+    </div>
+    <div class="ocard rv d3">
+      <div class="ocard-header">
+        <div class="ocard-logo" style="background:linear-gradient(135deg,rgba(34,197,94,.25),rgba(0,194,168,.2))">🏆</div>
+        <div class="ocard-badge obadge-new">New</div>
+      </div>
+      <div class="ocard-body">
+        <div class="ocard-name">Goa Beats Co.</div>
+        <div class="ocard-city">📍 Goa</div>
+        <div class="ocard-tags">
+          <span class="otag">Beach Events</span><span class="otag">DJ Nights</span><span class="otag">Festivals</span>
+        </div>
+        <div class="ocard-stats">
+          <span>🎤 18 bookings</span><span>⭐ 4.9</span>
+        </div>
+        <p class="ocard-desc">Goa's freshest event collective. We run beach parties, sunset DJ sessions, and multi-day music festivals on the coast.</p>
+        <a href="floox-contact.html" class="ocard-cta">View & Connect →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── VIDEO SPOTLIGHT ────────────────────────────────────────────────────────── -->
+<section class="spotlight-bg">
+  <div class="spotlight-grid">
+    <div class="spotlight-left rv-l">
+      <div class="sec-eyebrow" style="color:var(--t)">Watch</div>
+      <h2 class="sec-title">See Them Live</h2>
+      <p class="sec-sub" style="max-width:360px">Watch performance clips from India's most exciting artists — before you book them for your event.</p>
+      <a href="floox-public.html" class="view-all" style="margin-top:1.5rem;display:inline-flex;color:var(--t);border-color:rgba(0,194,168,.3)">Explore all artists →</a>
+    </div>
+    <div class="spotlight-vids rv-r">
+      <div class="svid" onclick="playVideo(this,'Ananya Sharma','Bollywood Pop')">
+        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(255,92,0,.3),rgba(255,45,120,.2))"></div>
+        <img class="svid-thumb-img" src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&q=80&auto=format&fit=crop" alt="Ananya Sharma">
+        <div class="svid-overlay"></div>
+        <div class="svid-play">▶️</div>
+        <div class="svid-info"><div class="svid-artist">Ananya Sharma</div><div class="svid-genre">Bollywood Pop · Mumbai</div></div>
+        <button class="like-btn" onclick="event.stopPropagation();toggleLike(this,'Ananya Sharma')" data-id="ananya"><span class="heart empty"></span></button>
+      </div>
+      <div class="svid" onclick="playVideo(this,'DJ Ravi','Electronic')">
+        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(0,194,168,.2))"></div>
+        <img class="svid-thumb-img" src="https://images.unsplash.com/photo-1493676304819-0d7a8d026dcf?w=600&q=80&auto=format&fit=crop" alt="DJ Ravi">
+        <div class="svid-overlay"></div>
+        <div class="svid-play">▶️</div>
+        <div class="svid-info"><div class="svid-artist">DJ Ravi</div><div class="svid-genre">Electronic / DJ · Bangalore</div></div>
+        <button class="like-btn" onclick="event.stopPropagation();toggleLike(this,'DJ Ravi')" data-id="djravi"><span class="heart empty"></span></button>
+      </div>
+      <div class="svid" onclick="playVideo(this,'Zubair Khan','Sufi Ghazal')">
+        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(0,194,168,.25),rgba(255,214,0,.15))"></div>
+        <img class="svid-thumb-img" src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=600&q=80&auto=format&fit=crop" alt="Zubair Khan">
+        <div class="svid-overlay"></div>
+        <div class="svid-play">▶️</div>
+        <div class="svid-info"><div class="svid-artist">Zubair Khan</div><div class="svid-genre">Sufi / Ghazal · Delhi</div></div>
+        <button class="like-btn" onclick="event.stopPropagation();toggleLike(this,'Zubair Khan')" data-id="zubair"><span class="heart empty"></span></button>
+      </div>
+      <div class="svid" onclick="playVideo(this,'The Strings Collective','Rock Indie')">
+        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(255,45,120,.25),rgba(124,58,237,.2))"></div>
+        <img class="svid-thumb-img" src="https://images.unsplash.com/photo-1468164016595-6108e4c60c8b?w=600&q=80&auto=format&fit=crop" alt="The Strings Collective">
+        <div class="svid-overlay"></div>
+        <div class="svid-play">▶️</div>
+        <div class="svid-info"><div class="svid-artist">The Strings Collective</div><div class="svid-genre">Rock & Indie · Pune</div></div>
+        <button class="like-btn" onclick="event.stopPropagation();toggleLike(this,'The Strings Collective')" data-id="strings"><span class="heart empty"></span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ────────────────────────────────────────────────────────────── -->
+<section class="how-bg" id="how">
+  <div class="sec-head rv">
+    <div>
+      <div class="sec-eyebrow">Process</div>
+      <h2 class="sec-title">How Floox Works</h2>
+    </div>
+  </div>
+  <div class="how-tabs">
+    <button class="htab on" onclick="setHowTab(this,'org')">For Event Organisers</button>
+    <button class="htab" onclick="setHowTab(this,'art')">For Artists</button>
+  </div>
+  <div class="steps" id="stepsGrid"></div>
 </section>
 </body>
 </html>
