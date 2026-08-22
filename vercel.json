@@ -4,7 +4,7 @@
   "crons": [
     {
       "path": "/api/global-events-sync",
-      "schedule": "0 */4 * * *"
+      "schedule": "0 6 * * *"
     }
   ],
   "redirects": [
