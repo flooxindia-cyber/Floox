@@ -343,15 +343,15 @@ textarea.finput{resize:vertical;min-height:80px}
     <div class="stat-grid">
       <div class="stat-card c1">
         <div class="stat-icon">🎪</div>
-        <div class="stat-val" id="totalEvents">5</div>
+        <div class="stat-val" id="totalEvents">0</div>
         <div class="stat-label">Total Events</div>
-        <span class="stat-change up">↑ 2 upcoming</span>
+        <span class="stat-change up">↑ 0 upcoming</span>
       </div>
       <div class="stat-card c2">
         <div class="stat-icon">🎤</div>
         <div class="stat-val" id="totalArtistsBooked">12</div>
         <div class="stat-label">Artists Booked</div>
-        <span class="stat-change up">↑ 3 pending</span>
+        <span class="stat-change up">↑ 0 pending</span>
       </div>
       <div class="stat-card c3">
         <div class="stat-icon">💰</div>
@@ -361,7 +361,7 @@ textarea.finput{resize:vertical;min-height:80px}
       </div>
       <div class="stat-card c4">
         <div class="stat-icon">⭐</div>
-        <div class="stat-val">4.7</div>
+        <div class="stat-val">-</div>
         <div class="stat-label">Avg Artist Rating</div>
         <span class="stat-change up">↑ Great track record</span>
       </div>
@@ -706,19 +706,11 @@ const GENRES = ['Bollywood','Punjabi','Hip-Hop','Rock','Classical','Jazz','EDM',
 const VENUES = ['Club / Lounge','Concert Hall','Outdoor Stage','Hotel Banquet','Restaurant','Private Venue','Corporate Space'];
 
 const demoEvents = [
-  {id:1, name:'Pulse Nightclub — Saturday Night', date:'2026-06-14', venue:'Pulse, Mumbai', type:'Club Night', budget:30000, status:'upcoming', artistsBooked:2},
-  {id:2, name:'TechSummit 2026 Afterparty', date:'2026-06-22', venue:'JW Marriott, Bengaluru', type:'Corporate', budget:80000, status:'upcoming', artistsBooked:1},
-  {id:3, name:'NYE Gala 2027', date:'2026-12-31', venue:'TBA, Goa', type:'Concert', budget:150000, status:'draft', artistsBooked:0},
-  {id:4, name:'Spring Music Festival', date:'2026-04-10', venue:'Mahalaxmi, Mumbai', type:'Concert', budget:200000, status:'completed', artistsBooked:5},
-  {id:5, name:'IIT Techfest Afterparty', date:'2026-05-10', venue:'IIT Campus, Mumbai', type:'College Festival', budget:40000, status:'completed', artistsBooked:2},
+ 
 ];
 
 const demoBookings = [
-  {id:1, artist:'DJ Arjun', event:'Pulse Nightclub — Saturday Night', date:'2026-06-14', fee:18000, status:'confirmed', city:'Mumbai'},
-  {id:2, artist:'Neha Saxena', event:'TechSummit 2026 Afterparty', date:'2026-06-22', fee:25000, status:'pending', city:'Bengaluru'},
-  {id:3, artist:'The Jazz Collective', event:'NYE Gala 2027', date:'2026-12-31', fee:45000, status:'pending', city:'Goa'},
-  {id:4, artist:'Aditya Kumar', event:'Spring Music Festival', date:'2026-04-10', fee:15000, status:'completed', city:'Mumbai'},
-  {id:5, artist:'Priya Sharma', event:'IIT Techfest', date:'2026-05-10', fee:8000, status:'completed', city:'Mumbai'},
+ 
 ];
 
 const demoArtists = [
