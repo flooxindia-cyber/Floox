@@ -158,6 +158,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15
 .bi-badge.confirmed{background:rgba(34,197,94,0.12);color:var(--green)}
 .bi-badge.completed{background:rgba(0,194,168,0.12);color:var(--teal)}
 .bi-badge.cancelled{background:rgba(255,45,120,0.1);color:var(--pink)}
+
+.enquiry-item{padding:1rem;border:1.5px solid var(--border);border-radius:12px;margin:0 1rem 0.75rem;transition:all 0.2s;cursor:pointer}
+.enquiry-item:first-child{margin-top:1rem}
+.enquiry-item:hover{border-color:var(--teal);box-shadow:0 4px 16px rgba(0,194,168,0.1)}
+.enquiry-item.active{border-color:var(--teal);background:rgba(0,194,168,0.05)}
+.enq-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem}
+.enq-from{font-family:var(--head);font-weight:700;font-size:0.88rem;color:var(--text)}
+.enq-time{font-size:0.7rem;color:var(--muted)}
+.enq-event{font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem}
+.enq-foot{display:flex;align-items:center;gap:0.5rem}
+.enq-budget{font-family:var(--head);font-weight:700;font-size:0.8rem;color:var(--text)}
+.msg-thread{max-height:320px;overflow:auto;margin-bottom:1rem;padding-right:0.3rem}
+.msg-bubble{max-width:82%;padding:0.6rem 0.8rem;border-radius:12px;font-size:0.8rem;line-height:1.55;margin-bottom:0.5rem;background:var(--bg)}
+.msg-bubble.mine{margin-left:auto;background:rgba(0,194,168,0.12)}
+.msg-bubble-meta{font-size:0.62rem;color:var(--muted);margin-top:0.3rem}
+.msg-reply textarea{width:100%;min-height:64px;border:1.5px solid var(--border);border-radius:12px;padding:0.6rem 0.8rem;font-family:var(--body);font-size:0.8rem;resize:none;outline:none}
+.msg-reply textarea:focus{border-color:var(--teal)}
+
+
+
 .bi-fee{font-family:var(--head);font-weight:800;font-size:0.9rem;color:var(--text);flex-shrink:0}
 
 /* ── NEW EVENT MODAL ── */
@@ -295,10 +315,37 @@ textarea.finput{resize:vertical;min-height:80px}
     <button class="sb-link" onclick="showPage('spend')">
       <span class="sb-icon">💸</span> Spend & Budget
     </button>
+<button class="sb-link" onclick="showPage('messages')" data-floox-messages="1">
+  <span class="sb-icon">💬</span> Messages
+  <span class="sb-badge" id="msgBadge" style="display:none">0</span>
+</button>
     <div class="sb-section">Discover</div>
     <button class="sb-link" onclick="showPage('artists')">
       <span class="sb-icon">🎤</span> Find Artists
     </button>
+
+<!-- ═══════════════════════════════════════ MESSAGES -->
+<div class="page-content" id="page-messages">
+  <div class="grid-2">
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-head"><span class="card-title">Conversations</span></div>
+        <div class="card-body" id="orgConvoList" style="padding:0"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Conversation</span></div>
+        <div class="card-body" id="orgConvoDetail" style="color:var(--muted);font-size:0.85rem;text-align:center;padding:2rem">
+          Select a conversation to view messages
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
     <button class="sb-link" onclick="showPage('saved')">
       <span class="sb-icon">❤️</span> Saved Artists
       <span class="sb-badge" id="followingBadge" style="display:none">0</span>
@@ -1344,7 +1391,7 @@ async function changePassword() {
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 const pageTitles = {
   overview:'Overview', events:'My Events', bookings:'Bookings',
-  spend:'Spend & Budget', artists:'Find Artists', saved:'Saved Artists',
+  spend:'Spend & Budget',messages: 'Messages', artists:'Find Artists', saved:'Saved Artists',
   profile:'Edit Profile', settings:'Settings'
 };
 const pageSubs = {
@@ -1352,6 +1399,7 @@ const pageSubs = {
   bookings:'Artist bookings across all events', spend:'Track your event budget & payments',
   artists:'Discover and book the perfect artist', saved:'Your shortlisted artists',
   profile:'Update your organiser profile', settings:'Account & notification settings'
+  messages: 'Conversations with artists and enquirers'
 };
 
 function showPage(name) {
@@ -1361,6 +1409,7 @@ function showPage(name) {
   if (event && event.currentTarget) event.currentTarget.classList.add('active');
   document.getElementById('pageTitle').textContent = pageTitles[name]||name;
   document.getElementById('pageSubtitle').textContent = pageSubs[name]||'';
+  if (name === 'messages' && window.renderOrganiserMessages) window.renderOrganiserMessages();
   closeSidebar();
 }
 
