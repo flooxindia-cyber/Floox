@@ -325,24 +325,6 @@ textarea.finput{resize:vertical;min-height:80px}
     </button>
 
 <!-- ═══════════════════════════════════════ MESSAGES -->
-<div class="page-content" id="page-messages">
-  <div class="grid-2">
-    <div>
-      <div class="card" style="margin-bottom:1rem">
-        <div class="card-head"><span class="card-title">Conversations</span></div>
-        <div class="card-body" id="orgConvoList" style="padding:0"></div>
-      </div>
-    </div>
-    <div>
-      <div class="card">
-        <div class="card-head"><span class="card-title">Conversation</span></div>
-        <div class="card-body" id="orgConvoDetail" style="color:var(--muted);font-size:0.85rem;text-align:center;padding:2rem">
-          Select a conversation to view messages
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 
 
@@ -553,6 +535,25 @@ textarea.finput{resize:vertical;min-height:80px}
     </div>
     <div class="artist-grid" id="artistGrid"></div>
   </div>
+<div class="page-content" id="page-messages">
+  <div class="grid-2">
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-head"><span class="card-title">Conversations</span></div>
+        <div class="card-body" id="orgConvoList" style="padding:0"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Conversation</span></div>
+        <div class="card-body" id="orgConvoDetail" style="color:var(--muted);font-size:0.85rem;text-align:center;padding:2rem">
+          Select a conversation to view messages
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
   <!-- ═══════════════════════════════════════ SAVED / FOLLOWING -->
   <div class="page-content" id="page-saved">
@@ -1398,7 +1399,7 @@ const pageSubs = {
   overview:'Manage your events & artist bookings', events:'All your events',
   bookings:'Artist bookings across all events', spend:'Track your event budget & payments',
   artists:'Discover and book the perfect artist', saved:'Your shortlisted artists',
-  profile:'Update your organiser profile', settings:'Account & notification settings'
+  profile:'Update your organiser profile', settings:'Account & notification settings',
   messages: 'Conversations with artists and enquirers'
 };
 
