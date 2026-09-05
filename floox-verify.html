@@ -48,6 +48,7 @@
   const boxes=[...document.querySelectorAll('.otp-box')],verify=document.getElementById('verify'),resend=document.getElementById('resend'),msg=document.getElementById('msg'),timer=document.getElementById('timer');
   const dashboard=()=>role==='artist'?'floox-dashboard-artist.html':(role==='organiser'||role==='organizer'?'floox-dashboard-organiser.html':'floox-dashboard-fan.html');
 const nextUrl=()=>params.get('from')==='messages'?('floox-messages.html'+(params.get('with')?'?with='+encodeURIComponent(params.get('with')):'')):dashboard();
+const nextUrl=()=>params.get('from')==='messages'?('floox-messages.html'+(params.get('with')?'?with='+encodeURIComponent(params.get('with')):'')):dashboard();
   const setMsg=(text,type='info')=>{msg.textContent=text;msg.className='message '+type;};
   const getOtp=()=>boxes.map(b=>b.value).join('');
   boxes.forEach((box,i)=>{box.addEventListener('input',()=>{box.value=box.value.replace(/\D/g,'').slice(-1);box.classList.toggle('filled',!!box.value);if(box.value&&i<5)boxes[i+1].focus();if(getOtp().length===6)verify.focus()});box.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!box.value&&i>0){boxes[i-1].focus();boxes[i-1].value='';boxes[i-1].classList.remove('filled')}});box.addEventListener('paste',e=>{e.preventDefault();const text=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);text.split('').forEach((v,j)=>{if(boxes[j]){boxes[j].value=v;boxes[j].classList.add('filled')}});boxes[Math.min(text.length,6)-1]?.focus();});});
