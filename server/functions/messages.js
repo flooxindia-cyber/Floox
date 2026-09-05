@@ -67,7 +67,7 @@ exports.handler = async (event) => {
     const messages = await readJson(res);
     if (!res.ok) throw new Error(messages.message || messages.error || 'Could not load messages.');
 
-    const ids = [...new Set((messages || []).flatMap(m => [m.sender_id, m.receiver_id]).filter(id => id && id !== decoded.id))];
+    const ids = [...new Set([...(messages || []).flatMap(m => [m.sender_id, m.receiver_id]), withId].filter(id => id && id !== decoded.id))];
     let users = [];
     if (ids.length) {
       const inList = ids.map(id => `"${String(id).replace(/"/g, '')}"`).join(',');
