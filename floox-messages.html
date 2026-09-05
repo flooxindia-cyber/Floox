@@ -31,7 +31,9 @@ const token=()=>localStorage.getItem('floox_token');
 const me=()=>{try{return JSON.parse(localStorage.getItem('floox_user')||'null')}catch{return null}};
 const logged=()=>!!token()&&!!me();
 if(!logged()){location.href='floox-login.html?from=messages';return;}
-const state={conversations:[],activeId:new URLSearchParams(location.search).get('with')||null,messages:[],poll:null};
+const withId=new URLSearchParams(location.search).get('with');
+if(!logged()){location.href='floox-login.html?from=messages'+(withId?'&with='+encodeURIComponent(withId):'');return;}
+const state={conversations:[],activeId:withId,messages:[],poll:null};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const initials=n=>String(n||'F').trim().split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'F';
