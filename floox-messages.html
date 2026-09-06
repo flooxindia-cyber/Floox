@@ -30,7 +30,6 @@ const API='/api';
 const token=()=>localStorage.getItem('floox_token');
 const me=()=>{try{return JSON.parse(localStorage.getItem('floox_user')||'null')}catch{return null}};
 const logged=()=>!!token()&&!!me();
-if(!logged()){location.href='floox-login.html?from=messages';return;}
 const withId=new URLSearchParams(location.search).get('with');
 if(!logged()){location.href='floox-login.html?from=messages'+(withId?'&with='+encodeURIComponent(withId):'');return;}
 const state={conversations:[],activeId:withId,messages:[],poll:null};
