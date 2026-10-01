@@ -109,9 +109,8 @@ async function updateUser(id, fields) {
 }
 
 /** Query artists with optional filters. Returns array. */
-async function queryArtists({ genre, city, q, id, limit = 20, offset = 0 } = {}) {
+async function queryArtists({ genre, city, q, limit = 20, offset = 0 } = {}) {
   const parts = [`role=eq.artist`, `profile_complete=eq.true`, `limit=${limit}`, `offset=${offset}`];
-  if (id) parts.push(`id=eq.${encodeURIComponent(id)}`);
   if (genre) parts.push(`genres=cs.{"${genre}"}`);           // contains
   if (city)  parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
   if (q)     parts.push(`or=(name.ilike.*${encodeURIComponent(q)}*,stage_name.ilike.*${encodeURIComponent(q)}*,bio.ilike.*${encodeURIComponent(q)}*)`);
