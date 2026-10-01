@@ -1628,87 +1628,63 @@ function renderArtists(artists){
 }
 
 // ── LOAD ARTISTS ────────────────────────────────────────────────────────────────
-// ── REAL ARTISTS — RANDOM ROTATION ───────────────────────────────────────────
-
 let realArtists = [];
 let artistRotationTimer = null;
 
-function shuffleArtists(list) {
-  const arr = [...list];
-
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+function shuffleArtists(list){
+  const arr=[...list];
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
   }
-
   return arr;
 }
 
-function showRandomArtists() {
+function showRandomArtists(){
+  if(!realArtists.length) return;
 
-  if (!realArtists.length) {
-    return;
-  }
+  const selected=shuffleArtists(realArtists).slice(0,4);
 
-  // Randomly shuffle the REAL artists
-  const shuffled = shuffleArtists(realArtists);
-
-  // Show 4 artists at a time
-  const selected = shuffled.slice(
-    0,
-    Math.min(4, shuffled.length)
-  );
-
-  const mapped = selected.map(a => ({
+  const mapped=selected.map(a=>({
     ...a,
-
-    // Real database fields returned by publicUser()
-    photo: a.avatar || null,
-
-    fee:
-      a.minFee
-        ? a.minFee + (a.maxFee ? ' – ' + a.maxFee : '')
-        : '',
-
-    badge:
-      a.profileComplete
-        ? 'ver'
-        : 'new',
-
-    likes: 0
+    photo:a.avatar||null,
+    fee:a.minFee
+      ? a.minFee+(a.maxFee?' – '+a.maxFee:'')
+      : (a.min_fee
+        ? a.min_fee+(a.max_fee?' – '+a.max_fee:'')
+        : ''),
+    badge:(a.profileComplete||a.profile_complete)?'ver':'new',
+    likes:0
   }));
 
   renderArtists(mapped);
 }
 
-async function loadArtists() {
-
-  try {
-
+async function loadArtists(){
+  try{
     console.log('Floox: Loading real artists...');
 
-    const res = await FLOOX.getArtists({
-      limit: 50
-    });
+    const res=await FLOOX.getArtists({limit:50});
+    console.log('Floox: Artists received:',res);
 
-    console.log('Floox: Artists received:', res);
+    if(!res || !Array.isArray(res.artists)){
+      throw new Error('Invalid artists response');
+    }
 
-    if (
-      !res ||
-      !Array.isArray(res.artists) ||
-      !res.artists.length
-    ) {
+    // Keep only actual registered artists.
+    realArtists=res.artists.filter(a =>
+      a &&
+      a.id &&
+      !String(a.id).startsWith('demo-') &&
+      !String(a.email||'').endsWith('@demo.floox.in')
+    );
 
-      console.warn('Floox: No real artists found.');
+    console.log('Floox: Real artists loaded:',realArtists.length);
 
-      // IMPORTANT:
-      // Do NOT display demo artists.
-      realArtists = [];
-
-      const grid = document.getElementById('artistGrid');
-
-      if (grid) {
-        grid.innerHTML = `
+    if(!realArtists.length){
+      const grid=document.getElementById('artistGrid');
+      if(grid){
+        grid.innerHTML=`
           <div style="
             grid-column:1/-1;
             text-align:center;
@@ -1719,53 +1695,25 @@ async function loadArtists() {
           </div>
         `;
       }
-
       return;
     }
 
-    // Store ONLY real artists
-    realArtists = res.artists.filter(
-      artist => artist && artist.id
-    );
-
-    console.log(
-      'Floox: Real artists loaded:',
-      realArtists.length
-    );
-
-    // Show the first random selection
     showRandomArtists();
 
-    // Stop any previous rotation timer
-    if (artistRotationTimer) {
+    if(artistRotationTimer){
       clearInterval(artistRotationTimer);
     }
 
-    /*
-     * Automatically change the artists every 15 seconds.
-     * The page does NOT reload.
-     */
-    artistRotationTimer = setInterval(() => {
+    // Change the four featured artists every 15 seconds without reloading.
+    artistRotationTimer=setInterval(showRandomArtists,15000);
 
-      showRandomArtists();
+  }catch(error){
+    console.error('Floox: Failed to load real artists:',error);
+    realArtists=[];
 
-    }, 15000);
-
-  } catch (error) {
-
-    console.error(
-      'Floox: Failed to load real artists:',
-      error
-    );
-
-    // NEVER fall back to demo artists.
-    realArtists = [];
-
-    const grid = document.getElementById('artistGrid');
-
-    if (grid) {
-
-      grid.innerHTML = `
+    const grid=document.getElementById('artistGrid');
+    if(grid){
+      grid.innerHTML=`
         <div style="
           grid-column:1/-1;
           text-align:center;
@@ -1776,14 +1724,6 @@ async function loadArtists() {
         </div>
       `;
     }
-  }
-}
-    // Don't display demo artists if no real artists exist
-    renderArtists([]);
-
-  }catch(e){
-    console.warn('Could not load real artists:',e);
-    renderArtists([]);
   }
 }
 // ── AUTH STATE + INIT ──────────────────────────────────────────────────────────
