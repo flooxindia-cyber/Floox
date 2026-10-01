@@ -9,11 +9,75 @@
     return Math.round(checks.filter(Boolean).length/checks.length*100);
   };
   function setCompletion(u){const pct=completion(u),label=document.getElementById('completePercent'),fill=document.getElementById('completeFill');if(label)label.textContent=pct+'%';if(fill)fill.style.width=pct+'%';}
-  const normalisePortfolio=u=>Array.isArray(u.portfolio)?u.portfolio:[];
+  const normalisePortfolio = u =>
+  Array.isArray(u.media_links) ? u.media_links : [];
   function mediaMarkup(item,i){const url=typeof item==='string'?item:item?.url||item?.src||'';if(!url)return'';const type=typeof item==='object'&&item?.type?item.type:(/\.(mp4|webm)(\?|$)/i.test(url)?'video':'image');return `<div class="media-item">${type==='video'?`<video src="${esc(url)}" controls muted></video>`:`<img src="${esc(url)}" alt="Portfolio">`}<span class="media-type-badge">${type.toUpperCase()}</span><button onclick="event.stopPropagation();window.removePersistentMedia(${i})" style="position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(255,45,120,.9);color:#fff;border:none;cursor:pointer;font-size:.65rem">✕</button></div>`;}
   function renderPersistentMedia(u){const grid=document.getElementById('mediaGallery');if(grid){const items=normalisePortfolio(u);grid.innerHTML=items.map(mediaMarkup).join('')+`<div class="media-add" onclick="triggerUpload('mediaFile')">➕<span>Add</span></div>`;const c=document.getElementById('mediaCount');if(c)c.textContent=`${items.length} item${items.length===1?'':'s'}`;}const audio=document.getElementById('audioLinkList'),links=Array.isArray(u.media_links)?u.media_links:[];if(audio)audio.innerHTML=links.map((l,i)=>`<div style="display:flex;align-items:center;gap:.5rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:.6rem .9rem;margin-bottom:.5rem"><span style="font-size:.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎵 ${esc(l)}</span><button onclick="window.removeAudioLink(${i})" style="background:none;border:none;cursor:pointer;color:var(--muted)">✕</button></div>`).join('');}
   async function save(fields){const d=await FLOOX.saveArtistProfile(fields);if(d.user){FLOOX.saveSession(FLOOX.getToken(),d.user);setCompletion(d.user);renderPersistentMedia(d.user);}return d;}
-  window.handleMediaUpload=async input=>{const files=Array.from(input.files||[]);if(!files.length)return;input.value='';try{const u=profile();let portfolio=normalisePortfolio(u).slice();for(const file of files){toast(`Uploading ${file.name}…`,'info');const r=await FLOOX.uploadFile(file,file.type.startsWith('video')?'video':'image');portfolio.push({url:r.url,type:r.resourceType||(file.type.startsWith('video')?'video':'image'),name:file.name});}await save({portfolio});toast('Media saved to your profile.','success');}catch(e){toast(e.message||'Upload failed.','error');}};
+  window.handleMediaUpload = async input => {
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+
+  input.value = '';
+
+  try {
+    const u = profile();
+    const mediaLinks = Array.isArray(u.media_links)
+      ? u.media_links.slice()
+      : [];
+
+    const cloudName = 'cqes6im5';
+    const uploadPreset = 'floox_artist_media';
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+        throw new Error(`${file.name} is not a supported image or video file.`);
+      }
+
+      if (file.size > 100 * 1024 * 1024) {
+        throw new Error(`${file.name} is larger than 100 MB.`);
+      }
+
+      toast(`Uploading ${file.name}…`, 'info');
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error?.message || 'Cloudinary upload failed.'
+        );
+      }
+
+      mediaLinks.push({
+        src: data.secure_url,
+        type: file.type.startsWith('video/') ? 'video' : 'image',
+        name: file.name,
+        publicId: data.public_id || '',
+        resourceType: data.resource_type || 'image'
+      });
+    }
+
+    await save({ mediaLinks });
+
+    toast('Media saved to your profile.','success');
+
+  } catch (e) {
+    console.error('Media upload failed:', e);
+    toast(e.message || 'Upload failed.','error');
+  }
+};
   window.removePersistentMedia=async i=>{try{const portfolio=normalisePortfolio(profile()).slice();portfolio.splice(i,1);await save({portfolio});toast('Media removed.','success');}catch(e){toast(e.message||'Could not remove media.','error');}};
   window.addAudioLink=async()=>{const input=document.getElementById('audioLink'),val=String(input?.value||'').trim();if(!val)return;try{const links=Array.isArray(profile().media_links)?profile().media_links.slice():[];links.push(val);await save({mediaLinks:links});input.value='';toast('Audio link saved.','success');}catch(e){toast(e.message||'Could not save link.','error');}};
   window.removeAudioLink=async i=>{try{const links=Array.isArray(profile().media_links)?profile().media_links.slice():[];links.splice(i,1);await save({mediaLinks:links});toast('Audio link removed.','success');}catch(e){toast(e.message||'Could not remove link.','error');}};
