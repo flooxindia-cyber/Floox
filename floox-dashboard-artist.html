@@ -1028,6 +1028,7 @@ async function saveProfile() {
   const fields = {
     name: document.getElementById('pName').value,
     stage_name: document.getElementById('pStageName').value,
+    media_links: mediaItems,
     phone: document.getElementById('pPhone').value,
     city: document.getElementById('pCity').value,
     bio: document.getElementById('pBio').value,
@@ -1112,14 +1113,15 @@ async function handleMediaUpload(input) {
 
       // Store Cloudinary URL locally for the next step
       mediaItems.push({
-        src: data.secure_url,
-        type: file.type.startsWith('video/') ? 'video' : 'image',
-        name: file.name,
-        publicId: data.public_id || '',
-        resourceType: data.resource_type || 'image'
-      });
+  src: data.secure_url,
+  type: file.type.startsWith('video/') ? 'video' : 'image',
+  name: file.name,
+  publicId: data.public_id || '',
+  resourceType: data.resource_type || 'image'
+});
 
-      renderMediaGrid();
+renderMediaGrid();
+markUnsaved();
 
     } catch (error) {
       console.error(`Upload failed for ${file.name}:`, error);
