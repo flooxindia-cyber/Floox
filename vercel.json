@@ -9,7 +9,6 @@
   ],
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
-    { "source": "/floox-public.html", "destination": "/", "permanent": true },
     { "source": "/floox-login.html", "destination": "/login", "permanent": true },
     { "source": "/floox-search-results.html", "destination": "/discover", "permanent": true },
     { "source": "/floox-dashboard-artist.html", "destination": "/artist/dashboard", "permanent": true },
