@@ -353,7 +353,7 @@ textarea.finput{resize:vertical;min-height:100px}
       </div>
     </div>
     <div class="topbar-right">
-      <a href="floox-public.html" class="tb-btn tb-ghost" target="_blank">👁 View Profile</a>
+      <a href="#" id="viewProfileBtn" class="tb-btn tb-ghost" target="_blank">👁 View Profile</a>
       <a href="floox-search-results.html" class="tb-btn tb-fire">🔍 Find Events</a>
       <div class="notif-btn" title="Notifications">🔔<span class="notif-dot"></span></div>
     </div>
@@ -824,6 +824,8 @@ document.addEventListener('DOMContentLoaded', () => {
     user = { name:'Arjun Sharma', role:'artist', email:'arjun@demo.com', stage_name:'DJ Arjun', city:'Mumbai', performer_type:'DJ', genres:['Bollywood','EDM'], min_fee:10000, max_fee:35000 };
   }
 
+  const viewProfileBtn = document.getElementById('viewProfileBtn');
+  if (viewProfileBtn && user?.id) viewProfileBtn.href = 'floox-profile.html?id=' + encodeURIComponent(user.id);
   populateUI();
   renderBookings();
   renderActivity();
