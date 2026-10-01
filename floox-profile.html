@@ -439,7 +439,7 @@
     try {
 
       const response = await fetch(
-        "/api/get-profile?id=" + encodeURIComponent(artistId),
+        "/api/artists?id=" + encodeURIComponent(artistId) + "&limit=1",
         {
           cache: "no-store"
         }
@@ -450,8 +450,7 @@
       }
 
       const data = await response.json();
-
-      const artist = data.user || data.artist || data.profile;
+      const artist = Array.isArray(data.artists) ? data.artists[0] : null;
 
       if (!artist) {
         throw new Error("Artist information was not returned.");
