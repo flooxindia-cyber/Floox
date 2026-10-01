@@ -4,31 +4,620 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Floox — Artist Profile</title>
-  <meta http-equiv="Cache-Control" content="no-store">
-  <script>
-    // Backward-compatible artist profile URL.
-    // The public profile implementation lives at floox-public.html.
-    (function () {
-      var target = new URL('floox-public.html', window.location.href);
-      window.location.search = window.location.search;
-      target.search = window.location.search;
-      window.location.replace(target.href);
-    })();
-  </script>
+
   <style>
-    html,body{margin:0;min-height:100%;background:#100a02;color:#fff;font-family:Arial,sans-serif}
-    main{min-height:100vh;display:grid;place-items:center;text-align:center;padding:24px}
-    .spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.15);border-top-color:#ff5c00;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
-    p{opacity:.65}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #100a02;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 20% 0%, rgba(255,92,0,.12), transparent 35%),
+        radial-gradient(circle at 80% 20%, rgba(255,140,0,.08), transparent 30%),
+        #100a02;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .topbar {
+      height: 70px;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: rgba(16,10,2,.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .logo {
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .logo span {
+      color: #ff5c00;
+    }
+
+    .back-btn {
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .back-btn:hover {
+      background: rgba(255,255,255,.1);
+    }
+
+    .container {
+      width: min(1100px, calc(100% - 32px));
+      margin: 35px auto 70px;
+    }
+
+    .loading,
+    .error {
+      min-height: 60vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border: 3px solid rgba(255,255,255,.15);
+      border-top-color: #ff5c00;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 18px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .profile {
+      display: none;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      gap: 30px;
+      padding: 30px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 24px;
+      background: linear-gradient(
+        135deg,
+        rgba(255,255,255,.07),
+        rgba(255,255,255,.025)
+      );
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+
+    .avatar {
+      width: 230px;
+      height: 230px;
+      border-radius: 20px;
+      object-fit: cover;
+      background: #25170b;
+      display: block;
+    }
+
+    .avatar-placeholder {
+      width: 230px;
+      height: 230px;
+      border-radius: 20px;
+      background: linear-gradient(135deg,#ff5c00,#ff9d45);
+      display: grid;
+      place-items: center;
+      font-size: 70px;
+      font-weight: 800;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,92,0,.14);
+      color: #ff9a62;
+      border: 1px solid rgba(255,92,0,.25);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.05;
+    }
+
+    .meta {
+      color: rgba(255,255,255,.65);
+      margin-bottom: 20px;
+      font-size: 15px;
+    }
+
+    .bio {
+      color: rgba(255,255,255,.82);
+      line-height: 1.7;
+      font-size: 16px;
+      max-width: 750px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 0;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: #ff5c00;
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .section {
+      margin-top: 25px;
+      padding: 28px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 20px;
+      background: rgba(255,255,255,.035);
+    }
+
+    .section h2 {
+      margin: 0 0 18px;
+      font-size: 22px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .info-card {
+      padding: 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.06);
+    }
+
+    .info-label {
+      color: rgba(255,255,255,.45);
+      font-size: 12px;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .info-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .error-box {
+      max-width: 550px;
+      padding: 35px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+    }
+
+    .error-box h2 {
+      margin-top: 0;
+    }
+
+    .error-box p {
+      color: rgba(255,255,255,.65);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 700px) {
+      .topbar {
+        padding: 0 16px;
+      }
+
+      .container {
+        width: calc(100% - 20px);
+        margin-top: 20px;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 20px;
+      }
+
+      .avatar,
+      .avatar-placeholder {
+        width: 150px;
+        height: 150px;
+      }
+
+      .avatar-placeholder {
+        font-size: 50px;
+      }
+
+      .section {
+        padding: 20px;
+      }
+    }
   </style>
 </head>
+
 <body>
-  <main>
-    <div>
-      <div class="spinner"></div>
-      <p>Opening artist profile…</p>
+
+  <header class="topbar">
+    <div class="logo">FL<span>OOX</span></div>
+
+    <button class="back-btn" onclick="history.back()">
+      ← Back
+    </button>
+  </header>
+
+  <main class="container">
+
+    <div id="loading" class="loading">
+      <div>
+        <div class="spinner"></div>
+        <div>Loading artist profile…</div>
+      </div>
     </div>
+
+    <div id="error" class="error" style="display:none;">
+      <div class="error-box">
+        <h2>Artist profile unavailable</h2>
+        <p id="errorMessage">
+          We couldn't load this artist profile.
+        </p>
+
+        <button class="btn btn-primary" onclick="location.href='/'">
+          Go to Floox
+        </button>
+      </div>
+    </div>
+
+    <div id="profile" class="profile">
+
+      <section class="hero">
+
+        <div id="photoContainer"></div>
+
+        <div>
+          <div class="badge">● FLOOX ARTIST</div>
+
+          <h1 id="artistName">Artist</h1>
+
+          <div class="meta" id="artistMeta"></div>
+
+          <div class="bio" id="artistBio"></div>
+
+          <div class="actions">
+            <button
+              class="btn btn-primary"
+              onclick="requestBooking()">
+              Request Booking
+            </button>
+
+            <button
+              class="btn btn-secondary"
+              onclick="shareProfile()">
+              Share Profile
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <section class="section">
+        <h2>Artist Details</h2>
+
+        <div class="grid">
+
+          <div class="info-card">
+            <div class="info-label">Category</div>
+            <div class="info-value" id="category">—</div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-label">Location</div>
+            <div class="info-value" id="location">—</div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-label">Experience</div>
+            <div class="info-value" id="experience">—</div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-label">Availability</div>
+            <div class="info-value" id="availability">—</div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
   </main>
+
+<script>
+
+  /*
+   * FLOOX ARTIST PROFILE
+   *
+   * URL format:
+   * floox-profile.html?id=ARTIST_ID
+   */
+
+  const params = new URLSearchParams(window.location.search);
+  const artistId = params.get("id");
+
+  const loading = document.getElementById("loading");
+  const error = document.getElementById("error");
+  const profile = document.getElementById("profile");
+
+  function showError(message) {
+    loading.style.display = "none";
+    profile.style.display = "none";
+    error.style.display = "grid";
+
+    document.getElementById("errorMessage").textContent = message;
+  }
+
+  function getInitials(name) {
+    if (!name) return "?";
+
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(x => x.charAt(0).toUpperCase())
+      .join("");
+  }
+
+  function firstValue(obj, keys) {
+    for (const key of keys) {
+      if (
+        obj &&
+        obj[key] !== undefined &&
+        obj[key] !== null &&
+        String(obj[key]).trim() !== ""
+      ) {
+        return obj[key];
+      }
+    }
+
+    return "";
+  }
+
+  async function loadArtist() {
+
+    if (!artistId) {
+      showError("No artist ID was provided in the profile URL.");
+      return;
+    }
+
+    try {
+
+      const response = await fetch(
+        "/api/get-profile?id=" + encodeURIComponent(artistId),
+        {
+          cache: "no-store"
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Artist profile not found.");
+      }
+
+      const data = await response.json();
+
+      const artist = data.user || data.artist || data.profile;
+
+      if (!artist) {
+        throw new Error("Artist information was not returned.");
+      }
+
+      renderArtist(artist);
+
+    } catch (err) {
+
+      console.error("Floox profile error:", err);
+
+      showError(
+        err.message ||
+        "Unable to load this artist profile."
+      );
+    }
+  }
+
+  function renderArtist(artist) {
+
+    const name = firstValue(
+      artist,
+      ["name", "full_name", "fullName", "display_name", "displayName"]
+    ) || "Floox Artist";
+
+    const category = firstValue(
+      artist,
+      ["category", "genre", "artist_type", "artistType", "type"]
+    ) || "Artist";
+
+    const location = firstValue(
+      artist,
+      ["location", "city", "base_city", "baseCity"]
+    ) || "India";
+
+    const bio = firstValue(
+      artist,
+      ["bio", "about", "description", "about_artist"]
+    ) || "Artist profile on Floox.";
+
+    const experience = firstValue(
+      artist,
+      ["experience", "experience_years", "experienceYears"]
+    ) || "—";
+
+    const availability = firstValue(
+      artist,
+      ["availability", "status"]
+    ) || "Available";
+
+    const image = firstValue(
+      artist,
+      [
+        "avatar",
+        "avatar_url",
+        "avatarUrl",
+        "profile_image",
+        "profileImage",
+        "photo",
+        "photo_url",
+        "photoUrl",
+        "image",
+        "image_url",
+        "imageUrl"
+      ]
+    );
+
+    document.title = name + " — Floox";
+
+    document.getElementById("artistName").textContent = name;
+
+    document.getElementById("artistMeta").textContent =
+      category + " • " + location;
+
+    document.getElementById("artistBio").textContent = bio;
+
+    document.getElementById("category").textContent = category;
+
+    document.getElementById("location").textContent = location;
+
+    document.getElementById("experience").textContent = experience;
+
+    document.getElementById("availability").textContent = availability;
+
+    const photoContainer =
+      document.getElementById("photoContainer");
+
+    if (image) {
+
+      const img = document.createElement("img");
+
+      img.className = "avatar";
+
+      img.src = image;
+
+      img.alt = name;
+
+      img.onerror = function() {
+        photoContainer.innerHTML =
+          '<div class="avatar-placeholder">' +
+          getInitials(name) +
+          '</div>';
+      };
+
+      photoContainer.appendChild(img);
+
+    } else {
+
+      photoContainer.innerHTML =
+        '<div class="avatar-placeholder">' +
+        getInitials(name) +
+        '</div>';
+    }
+
+    loading.style.display = "none";
+
+    error.style.display = "none";
+
+    profile.style.display = "block";
+  }
+
+  function requestBooking() {
+
+    if (!artistId) return;
+
+    location.href =
+      "floox-search-results.html?artist=" +
+      encodeURIComponent(artistId);
+  }
+
+  async function shareProfile() {
+
+    const url = window.location.href;
+
+    if (navigator.share) {
+
+      try {
+
+        await navigator.share({
+          title: document.title,
+          url: url
+        });
+
+      } catch (e) {}
+
+    } else {
+
+      try {
+
+        await navigator.clipboard.writeText(url);
+
+        alert("Profile link copied!");
+
+      } catch (e) {
+
+        prompt(
+          "Copy this profile link:",
+          url
+        );
+      }
+    }
+  }
+
+  loadArtist();
+
+</script>
+
 </body>
 </html>
