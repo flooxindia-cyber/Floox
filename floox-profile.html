@@ -379,6 +379,8 @@
 
   </main>
 
+<script src="floox-auth.js"></script>
+
 <script>
 
   /*
@@ -438,19 +440,11 @@
 
     try {
 
-      const response = await fetch(
-        "/api/get-profile?id=" + encodeURIComponent(artistId),
-        {
-          cache: "no-store"
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Artist profile not found.");
+      if (!window.FLOOX?.getProfile) {
+        throw new Error("Profile service is unavailable.");
       }
 
-      const data = await response.json();
-
+      const data = await FLOOX.getProfile(artistId);
       const artist = data.user || data.artist || data.profile;
 
       if (!artist) {
