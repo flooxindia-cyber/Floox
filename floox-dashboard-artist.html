@@ -331,7 +331,7 @@ textarea.finput{resize:vertical;min-height:100px}
   </nav>
 
   <div class="sb-bottom">
-    <a href="floox-public.html" class="sb-link" style="color:rgba(255,255,255,0.45)">
+    <a href="#" id="sidebarPublicProfileBtn" class="sb-link" style="color:rgba(255,255,255,0.45)">
       <span class="sb-icon">🌐</span> View Public Page
     </a>
     <button class="sb-logout" onclick="doLogout()">
@@ -826,6 +826,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const viewProfileBtn = document.getElementById('viewProfileBtn');
   if (viewProfileBtn && user?.id) viewProfileBtn.href = 'floox-profile.html?id=' + encodeURIComponent(user.id);
+  const sidebarPublicProfileBtn = document.getElementById('sidebarPublicProfileBtn');
+  if (sidebarPublicProfileBtn && user?.id) sidebarPublicProfileBtn.href = 'floox-profile.html?id=' + encodeURIComponent(user.id);
   populateUI();
   renderBookings();
   renderActivity();
