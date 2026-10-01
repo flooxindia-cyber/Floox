@@ -1029,10 +1029,15 @@ function markUnsaved() {
 }
 
 async function saveProfile() {
+  const existingLinks = Array.isArray(user?.media_links) ? user.media_links.slice() : [];
+  const mediaOnly = Array.isArray(mediaItems) ? mediaItems : [];
+  const audioOnly = existingLinks.filter(item => typeof item === 'string' || (item && typeof item === 'object' && item.type === 'audio'));
+  const mergedMediaLinks = [...mediaOnly, ...audioOnly];
+
   const fields = {
     name: document.getElementById('pName').value,
     stage_name: document.getElementById('pStageName').value,
-    media_links: mediaItems,
+    media_links: mergedMediaLinks,
     phone: document.getElementById('pPhone').value,
     city: document.getElementById('pCity').value,
     bio: document.getElementById('pBio').value,
@@ -1052,12 +1057,28 @@ async function saveProfile() {
       website: document.getElementById('pWebsite').value,
     }
   };
+
   try {
     if (typeof FLOOX !== 'undefined') {
-      await FLOOX.saveArtistProfile(fields);
+      const result = await FLOOX.saveArtistProfile(fields);
+      if (result?.user) {
+        user = result.user;
+        mediaItems = Array.isArray(user.media_links)
+          ? user.media_links.filter(item => item && typeof item === 'object' && (item.type === 'image' || item.type === 'video'))
+          : mediaOnly;
+        audioLinks = Array.isArray(user.media_links)
+          ? user.media_links.filter(item => typeof item === 'string' || (item && typeof item === 'object' && item.type === 'audio'))
+          : audioOnly;
+      } else {
+        user = {...user, ...fields};
+      }
+    } else {
+      user = {...user, ...fields};
     }
-    user = {...user, ...fields};
+
     populateUI();
+    renderMediaGrid();
+    renderAudioLinks();
     unsaved = false;
     document.getElementById('unsavedDot').classList.remove('show');
     document.getElementById('saveMsg').textContent = 'All changes saved';
