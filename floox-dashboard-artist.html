@@ -541,11 +541,14 @@ textarea.finput{resize:vertical;min-height:100px}
       <div class="form-body">
         <div class="fgroup">
           <label class="flabel">Cover Photo</label>
-          <div class="upload-zone" id="coverZone" onclick="triggerUpload('coverFile')">
-            <input type="file" id="coverFile" accept="image/*" onchange="handleCoverUpload(this)">
-            <div style="font-size:2rem;margin-bottom:0.5rem">🌄</div>
-            <div style="font-family:var(--head);font-weight:700;font-size:0.9rem">Upload Cover Photo</div>
-            <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem">1200×400px recommended · JPG, PNG</div>
+          <div style="display:flex;gap:.7rem;align-items:stretch">
+            <div class="upload-zone" id="coverZone" onclick="triggerUpload('coverFile')" style="flex:1">
+              <input type="file" id="coverFile" accept="image/*" onchange="handleCoverUpload(this)">
+              <div style="font-size:2rem;margin-bottom:0.5rem">🌄</div>
+              <div style="font-family:var(--head);font-weight:700;font-size:0.9rem">Upload Cover Photo</div>
+              <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem">1200×400px recommended · JPG, PNG</div>
+            </div>
+            <button type="button" onclick="removeCoverPhoto()" style="align-self:center;padding:.75rem 1rem;border:1px solid rgba(255,45,120,.35);background:rgba(255,45,120,.08);color:#d91f61;border-radius:10px;cursor:pointer;font-family:var(--body);font-weight:600">🗑 Remove</button>
           </div>
         </div>
         <div class="fgroup">
@@ -558,6 +561,7 @@ textarea.finput{resize:vertical;min-height:100px}
               <div style="font-family:var(--head);font-weight:700;font-size:0.85rem">Upload Photo</div>
               <div style="font-size:0.73rem;color:var(--muted)">Square · JPG, PNG</div>
             </div>
+            <button type="button" onclick="removeAvatarPhoto()" style="align-self:center;padding:.75rem 1rem;border:1px solid rgba(255,45,120,.35);background:rgba(255,45,120,.08);color:#d91f61;border-radius:10px;cursor:pointer;font-family:var(--body);font-weight:600">🗑 Remove</button>
           </div>
         </div>
       </div>
