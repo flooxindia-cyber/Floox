@@ -600,42 +600,42 @@ footer{background:var(--text);padding:5rem 5% 0;display:grid;grid-template-colum
   <h2 class="sec-title" style="color:#fff">Har <span style="background:linear-gradient(135deg,var(--yellow),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Dil Ki</span> Awaaz.</h2>
   <p class="sec-sub" style="color:rgba(255,255,255,0.45)">From classical ragas to electronic beats — India's every musical heartbeat is on Floox.</p>
   <div class="genre-grid">
-    <div class="genre-card gc1 reveal" onclick="showT('Bollywood artists loading...')">
+    <div class="genre-card gc1 reveal" onclick="location.href='floox-search-results.html?q=Bollywood'">
       <span class="genre-icon">🎬</span>
       <div class="genre-name">Bollywood</div>
       <div class="genre-count">480+ Artists</div>
     </div>
-    <div class="genre-card gc2 reveal" onclick="showT('Sufi & Ghazal artists loading...')">
+    <div class="genre-card gc2 reveal" onclick="location.href='floox-search-results.html?q=Sufi%20Ghazal'">
       <span class="genre-icon">🌙</span>
       <div class="genre-name">Sufi · Ghazal</div>
       <div class="genre-count">210+ Artists</div>
     </div>
-    <div class="genre-card gc3 reveal" onclick="showT('Classical artists loading...')">
+    <div class="genre-card gc3 reveal" onclick="location.href='floox-search-results.html?q=Classical'">
       <span class="genre-icon">🪗</span>
       <div class="genre-name">Classical</div>
       <div class="genre-count">340+ Artists</div>
     </div>
-    <div class="genre-card gc4 reveal" onclick="showT('Indie & Folk artists loading...')">
+    <div class="genre-card gc4 reveal" onclick="location.href='floox-search-results.html?q=Indie%20Folk'">
       <span class="genre-icon">🎸</span>
       <div class="genre-name">Indie · Folk</div>
       <div class="genre-count">295+ Artists</div>
     </div>
-    <div class="genre-card gc5 reveal" onclick="showT('Electronic & DJ artists loading...')">
+    <div class="genre-card gc5 reveal" onclick="location.href='floox-search-results.html?q=Electronic%20DJ'">
       <span class="genre-icon">🎧</span>
       <div class="genre-name">Electronic · DJ</div>
       <div class="genre-count">180+ Artists</div>
     </div>
-    <div class="genre-card gc6 reveal" onclick="showT('Devotional artists loading...')">
+    <div class="genre-card gc6 reveal" onclick="location.href='floox-search-results.html?q=Devotional'">
       <span class="genre-icon">🙏</span>
       <div class="genre-name">Devotional</div>
       <div class="genre-count">160+ Artists</div>
     </div>
-    <div class="genre-card gc7 reveal" onclick="showT('Jazz & Blues artists loading...')">
+    <div class="genre-card gc7 reveal" onclick="location.href='floox-search-results.html?q=Jazz%20Blues'">
       <span class="genre-icon">🎺</span>
       <div class="genre-name">Jazz · Blues</div>
       <div class="genre-count">90+ Artists</div>
     </div>
-    <div class="genre-card gc8 reveal" onclick="showT('Rock & Metal artists loading...')">
+    <div class="genre-card gc8 reveal" onclick="location.href='floox-search-results.html?q=Rock%20Metal'">
       <span class="genre-icon">🤘</span>
       <div class="genre-name">Rock · Metal</div>
       <div class="genre-count">120+ Artists</div>
@@ -877,26 +877,35 @@ document.querySelectorAll('.reveal,.reveal-l,.reveal-r').forEach((el,i)=>{el.sty
 
 
 // ── DYNAMIC PUBLIC ARTIST SCROLL ────────────────────────────────────────────
-async function loadPublicArtists() {
+let publicArtistsCache = [];
+let publicArtistsTimer = null;
+
+function shufflePublicArtists(list) {
+  const arr = [...list];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function renderPublicArtists() {
   const scroll = document.getElementById('publicArtistsScroll');
-  if (!scroll) return;
-  try {
-    const res   = await fetch('/api/artists?limit=20');
-    const data  = await res.json();
-    const artists = data.artists || [];
-    if (!artists.length) {
-      scroll.innerHTML = '<div style="flex-shrink:0;padding:2rem;color:rgba(255,255,255,.3);font-size:.85rem">No artists yet — be the first!</div>';
-      return;
-    }
-    scroll.innerHTML = artists.map(a => {
-      const name  = a.stageName || a.name;
-      const genre = (a.genres || []).join(' · ') || 'Artist';
-      const photo = a.avatar || '';
-      return `
-      <div class="acard" onclick="location.href='floox-search-results.html?q=${encodeURIComponent(name)}'">
+  if (!scroll || !publicArtistsCache.length) return;
+
+  const selected = shufflePublicArtists(publicArtistsCache).slice(0, 4);
+
+  scroll.innerHTML = selected.map(a => {
+    const name  = a.stageName || a.name || 'Floox Artist';
+    const genre = (a.genres || []).join(' · ') || a.performerType || 'Artist';
+    const photo = a.avatar || '';
+
+    return `
+      <div class="acard" onclick="location.href='floox-profile.html?id=${encodeURIComponent(a.id)}'" style="cursor:pointer">
         ${photo
-          ? `<img src="${photo}" class="acard-photo" alt="${name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&h=440&fit=crop&q=80'">`
-          : `<div class="acard-photo" style="display:flex;align-items:center;justify-content:center;font-size:3rem;background:linear-gradient(135deg,rgba(255,92,0,.15),rgba(255,45,120,.1))">🎤</div>`}
+          ? `<img src="${photo}" class="acard-photo" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+          : ''}
+        ${photo ? '' : `<div class="acard-photo" style="display:flex;align-items:center;justify-content:center;font-size:3rem;background:linear-gradient(135deg,rgba(255,92,0,.15),rgba(255,45,120,.1))">🎤</div>`}
         <div class="acard-body">
           <div class="acard-name">${name}</div>
           <div class="acard-genre">${genre}</div>
@@ -906,9 +915,35 @@ async function loadPublicArtists() {
           </div>
         </div>
       </div>`;
-    }).join('');
-  } catch(e) {
+  }).join('');
+}
+
+async function loadPublicArtists() {
+  const scroll = document.getElementById('publicArtistsScroll');
+  if (!scroll) return;
+
+  try {
+    const res = await fetch('/api/artists?limit=50', { cache: 'no-store' });
+    if (!res.ok) throw new Error('Artist API returned ' + res.status);
+
+    const data = await res.json();
+    publicArtistsCache = Array.isArray(data.artists)
+      ? data.artists.filter(a => a && a.id)
+      : [];
+
+    if (!publicArtistsCache.length) {
+      scroll.innerHTML = '<div style="flex-shrink:0;padding:2rem;color:rgba(255,255,255,.3);font-size:.85rem">No public artist profiles yet — be the first!</div>';
+      return;
+    }
+
+    renderPublicArtists();
+
+    clearInterval(publicArtistsTimer);
+    publicArtistsTimer = setInterval(renderPublicArtists, 12000);
+
+  } catch (e) {
     console.warn('Could not load artists', e);
+    scroll.innerHTML = '<div style="flex-shrink:0;padding:2rem;color:rgba(255,255,255,.3);font-size:.85rem">Artists are temporarily unavailable. Please try again shortly.</div>';
   }
 }
 
