@@ -1626,21 +1626,47 @@ function renderArtists(artists){
 // ── LOAD ARTISTS ────────────────────────────────────────────────────────────────
 async function loadArtists(){
   try{
-    const res=await FLOOX.getArtists({limit:4});
-    if(res.artists && res.artists.length){
-      const mapped=res.artists.map(a=>({
-        ...a,
-        photo:a.avatar||null,
-        fee:a.min_fee?(a.min_fee+(a.max_fee?' – '+a.max_fee:'')):'',
-        badge:a.profileComplete||a.profile_complete?'ver':'new',
-        likes:0,
-      }));
-      return renderArtists(mapped);
-    }
-  }catch(e){}
-  renderArtists(SAMPLE_ARTISTS);
-}
+    const res=await FLOOX.getArtists({limit:50});
 
+    if(res.artists && res.artists.length){
+
+      // Keep only real registered artists
+      const realArtists=res.artists.filter(a =>
+        a.id &&
+        !String(a.id).startsWith('demo-') &&
+        !String(a.email||'').endsWith('@demo.floox.in')
+      );
+
+      if(realArtists.length){
+
+        // Randomise the artists
+        const shuffled=[...realArtists].sort(()=>Math.random()-0.5);
+
+        // Select 4 random artists
+        const selected=shuffled.slice(0,4);
+
+        const mapped=selected.map(a=>({
+          ...a,
+          photo:a.avatar||null,
+          fee:a.min_fee
+            ? a.min_fee+(a.max_fee?' – '+a.max_fee:'')
+            : '',
+          badge:a.profileComplete||a.profile_complete?'ver':'new',
+          likes:0
+        }));
+
+        return renderArtists(mapped);
+      }
+    }
+
+    // Don't display demo artists if no real artists exist
+    renderArtists([]);
+
+  }catch(e){
+    console.warn('Could not load real artists:',e);
+    renderArtists([]);
+  }
+}
 // ── AUTH STATE + INIT ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded',()=>{
   // Highlight active nav link
