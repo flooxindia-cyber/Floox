@@ -862,8 +862,8 @@ function populateUI() {
   }
 
   // Stats
-  const completedCount = demoBookings.filter(b => b.status === 'completed').length;
-  document.getElementById('totalBookings').textContent = demoBookings.length;
+  const completedCount = bookings.filter(b => b.status === 'completed').length;
+document.getElementById('totalBookings').textContent = bookings.length;
   document.getElementById('pShows').textContent = completedCount;
 }
 
