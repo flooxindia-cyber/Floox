@@ -30,6 +30,11 @@
     document.head.appendChild(s);
   }
 
+  window.triggerUpload = id => {
+    const input = document.getElementById(id);
+    if (input) input.click();
+  };
+
   function setAvatarUI(u) {
     const avatar = document.getElementById('sbAvatar');
     const preview = document.getElementById('orgAvatarEditPreview');
@@ -94,7 +99,8 @@
   }
 
   function mediaItems(u) {
-    return Array.isArray(u?.media_links) ? u.media_links : [];
+    const links = u?.mediaLinks ?? u?.media_links;
+    return Array.isArray(links) ? links : [];
   }
 
   function renderMedia(u) {
@@ -134,12 +140,11 @@
   }
 
   async function save(fields) {
-    // Avatar is a common users field; persist it through the shared profile
-    // endpoint, while cover/media continue through the organiser profile flow.
-    const onlyAvatar = Object.keys(fields).length === 1 && Object.prototype.hasOwnProperty.call(fields, 'avatar');
-    const d = onlyAvatar
-      ? await FLOOX.updateMe(fields)
-      : await FLOOX.saveOrganiserProfile(fields);
+    const payload = { ...fields };
+    if (payload.avatar === undefined && payload.avatarUrl !== undefined) payload.avatar = payload.avatarUrl;
+    if (payload.coverImage === undefined && payload.cover_image !== undefined) payload.coverImage = payload.cover_image;
+    if (payload.mediaLinks === undefined && payload.media_links !== undefined) payload.mediaLinks = payload.media_links;
+    const d = await FLOOX.saveOrganiserProfile(payload);
     if (d.user) {
       user = d.user;
       FLOOX.saveSession(FLOOX.getToken(), d.user);
