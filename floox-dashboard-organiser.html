@@ -348,6 +348,9 @@ textarea.finput{resize:vertical;min-height:80px}
       <span class="sb-icon">❤️</span> Saved Artists
       <span class="sb-badge" id="followingBadge" style="display:none">0</span>
     </button>
+    <button class="sb-link" onclick="showPage('media')">
+      <span class="sb-icon">🎬</span> Media & Portfolio
+    </button>
     <div class="sb-section">Account</div>
     <button class="sb-link" onclick="showPage('profile')">
       <span class="sb-icon">✏️</span> Edit Profile
@@ -609,6 +612,42 @@ textarea.finput{resize:vertical;min-height:80px}
 
   <!-- ═══════════════════════════════════════ PROFILE -->
   <div class="page-content" id="page-profile">
+
+    <!-- Profile Images -->
+    <div class="form-section">
+      <div class="form-section-head">
+        <div class="fsh-icon orange">🖼</div>
+        <div><div class="fsh-title">Profile Images</div><div class="fsh-sub">Cover photo and organisation profile photo</div></div>
+      </div>
+      <div class="form-body">
+        <div class="fgroup">
+          <label class="flabel">Cover Photo</label>
+          <div style="display:flex;gap:.7rem;align-items:stretch">
+            <div class="org-upload-zone" id="orgCoverZone" onclick="triggerUpload('orgCoverFile')" style="flex:1">
+              <input type="file" id="orgCoverFile" accept="image/*" onchange="handleOrganiserCoverUpload(this)">
+              <div style="font-size:2rem;margin-bottom:.5rem">🌄</div>
+              <div style="font-family:var(--head);font-weight:700;font-size:.9rem">Upload Cover Photo</div>
+              <div style="font-size:.78rem;color:var(--muted);margin-top:.3rem">1200×400px recommended · JPG, PNG</div>
+            </div>
+            <button type="button" onclick="removeOrganiserCover()" style="align-self:center;padding:.75rem 1rem;border:1px solid rgba(255,45,120,.35);background:rgba(255,45,120,.08);color:#d91f61;border-radius:10px;cursor:pointer;font-family:var(--body);font-weight:600">🗑 Remove</button>
+          </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Profile Photo</label>
+          <div style="display:flex;align-items:center;gap:1.2rem">
+            <div class="profile-avatar" id="orgAvatarEditPreview" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:1.8rem;color:#fff;flex-shrink:0;overflow:hidden">O</div>
+            <div class="org-upload-zone" style="flex:1" onclick="triggerUpload('orgAvatarFile')">
+              <input type="file" id="orgAvatarFile" accept="image/*" onchange="handleOrganiserAvatarUpload(this)">
+              <div style="font-size:1.5rem;margin-bottom:.3rem">📷</div>
+              <div style="font-family:var(--head);font-weight:700;font-size:.85rem">Upload Photo</div>
+              <div style="font-size:.73rem;color:var(--muted)">Square · JPG, PNG</div>
+            </div>
+            <button type="button" onclick="removeOrganiserAvatar()" style="align-self:center;padding:.75rem 1rem;border:1px solid rgba(255,45,120,.35);background:rgba(255,45,120,.08);color:#d91f61;border-radius:10px;cursor:pointer;font-family:var(--body);font-weight:600">🗑 Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="form-section">
       <div class="form-section-head">
         <div class="fsh-icon teal">🏢</div>
@@ -682,6 +721,55 @@ textarea.finput{resize:vertical;min-height:80px}
         <span id="saveMsg">All changes saved</span>
       </div>
       <button class="tb-btn tb-teal" onclick="saveProfile()">💾 Save Profile</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ MEDIA PAGE -->
+  <div class="page-content" id="page-media">
+    <div class="grid-3-1">
+      <div>
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-head">
+            <span class="card-title">📸 Photos & Videos</span>
+            <span style="font-size:.75rem;color:var(--muted)" id="orgMediaCount">0 items</span>
+          </div>
+          <div class="card-body">
+            <div class="org-upload-zone" style="margin-bottom:1rem" onclick="triggerUpload('orgMediaFile')">
+              <input type="file" id="orgMediaFile" accept="image/*,video/*" multiple onchange="handleOrganiserMediaUpload(this)">
+              <div style="font-size:2rem;margin-bottom:.4rem">⬆️</div>
+              <div style="font-family:var(--head);font-weight:700;font-size:.9rem">Upload Photos / Videos</div>
+              <div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">JPG, PNG, MP4 · Multiple allowed</div>
+            </div>
+            <div class="org-media-grid" id="orgMediaGallery">
+              <div class="org-media-add" onclick="triggerUpload('orgMediaFile')">➕<span>Add</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">🎵 Audio Links</span></div>
+          <div class="card-body">
+            <div class="fgroup">
+              <label class="flabel">Spotify / SoundCloud / YouTube Link</label>
+              <div style="display:flex;gap:.5rem">
+                <input class="finput" id="orgAudioLink" placeholder="Paste any music or promotional link..." style="flex:1">
+                <button class="tb-btn tb-teal" style="padding:.7rem 1rem" onclick="addOrganiserAudioLink()">Add</button>
+              </div>
+            </div>
+            <div id="orgAudioLinkList"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Tips</span></div>
+          <div class="card-body" style="font-size:.8rem;color:var(--muted);line-height:1.8">
+            <div style="margin-bottom:.8rem">✅ Upload your organisation/venue cover</div>
+            <div style="margin-bottom:.8rem">✅ Add event and venue photos</div>
+            <div style="margin-bottom:.8rem">✅ Include promotional videos</div>
+            <div>✅ Strong profiles help artists understand your organisation</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
