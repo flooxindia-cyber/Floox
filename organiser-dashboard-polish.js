@@ -61,6 +61,32 @@
     `;
   }
 
+  function setDashboardProfileUI(u) {
+    const cover = document.getElementById('orgDashboardCoverImg');
+    const avatar = document.getElementById('orgDashboardAvatar');
+    const name = document.getElementById('orgDashboardName');
+    const type = document.getElementById('orgDashboardType');
+    const coverUrl = u?.cover_image || u?.coverImage || '';
+    const avatarUrl = u?.avatar || '';
+    const orgName = u?.org_name || u?.orgName || u?.name || 'Your Organisation';
+    const orgType = u?.org_type || u?.orgType || 'Organisation';
+    const city = u?.city || 'Your City';
+
+    if (cover) {
+      cover.src = coverUrl;
+      cover.style.display = coverUrl ? 'block' : 'none';
+    }
+    if (avatar) {
+      if (avatarUrl) {
+        avatar.innerHTML = `<img src="${esc(avatarUrl)}" alt="Organisation profile photo">`;
+      } else {
+        avatar.textContent = String(orgName).charAt(0).toUpperCase();
+      }
+    }
+    if (name) name.textContent = orgName;
+    if (type) type.textContent = orgType + ' · ' + city;
+  }
+
   function mediaItems(u) {
     return Array.isArray(u?.media_links) ? u.media_links : [];
   }
@@ -251,6 +277,7 @@
       user = u;
       setAvatarUI(u);
       setCoverUI(u);
+      setDashboardProfileUI(u);
       renderMedia(u);
     } catch(e) {
       console.warn('Organiser profile refresh:', e);
