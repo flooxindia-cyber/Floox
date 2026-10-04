@@ -286,6 +286,19 @@ textarea.finput{resize:vertical;min-height:80px}
   .topbar{padding:0.8rem 1rem}
   .artist-grid{grid-template-columns:repeat(2,1fr)}
 }
+
+
+
+.org-upload-zone{border:2.5px dashed var(--border);border-radius:16px;padding:1.8rem;text-align:center;cursor:pointer;transition:all .3s;position:relative;background:#FAFAF8}
+.org-upload-zone:hover{border-color:var(--teal);background:rgba(0,194,168,.04)}
+.org-upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.org-media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem}
+.org-media-item{aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;background:var(--border)}
+.org-media-item img,.org-media-item video{width:100%;height:100%;object-fit:cover}
+.org-media-type-badge{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.65);color:#fff;font-size:.6rem;font-weight:700;padding:.12rem .4rem;border-radius:4px}
+.org-media-add{border:2.5px dashed var(--border);border-radius:12px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:1.6rem}
+.org-media-add:hover{border-color:var(--teal);color:var(--teal)}
+.org-media-add span{font-size:.7rem;font-weight:700;margin-top:.4rem}
 </style>
 </head>
 <body>
@@ -953,6 +966,7 @@ function populateUI() {
   document.getElementById('sbUsername').textContent = name;
   document.getElementById('sbOrgName').textContent = user.org_name || 'Your Organisation';
   document.getElementById('sbAvatar').textContent = name.charAt(0).toUpperCase();
+  if (typeof renderOrganiserImages === 'function') renderOrganiserImages();
 }
 
 // ── OVERVIEW ──────────────────────────────────────────────────────────────────
@@ -1518,7 +1532,122 @@ function createEvent(status) {
   document.getElementById('evDesc').value = '';
   showToast(status === 'draft' ? 'Event saved as draft 📝' : 'Event published! 🎉', 'success');
 }
+// ── ORGANISER UPLOADS ──
+const CLD_CLOUD = 'cqes6im5';
+const CLD_PRESET = 'floox_artist_media';
+let orgMediaItems = [];
 
+function triggerUpload(id) { const el = document.getElementById(id); if (el) el.click(); }
+
+async function cloudinaryUpload(file, resource) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLD_PRESET);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLD_CLOUD}/${resource}/upload`, { method:'POST', body: fd });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'Cloudinary upload failed.');
+  return data;
+}
+
+async function persistOrganiser(fields) {
+  if (typeof FLOOX !== 'undefined' && FLOOX.saveOrganiserProfile) {
+    const result = await FLOOX.saveOrganiserProfile(fields);
+    user = result?.user ? result.user : { ...user, ...fields };
+    try { FLOOX.saveSession(FLOOX.getToken(), user); } catch(e) {}
+  } else {
+    user = { ...user, ...fields };
+  }
+}
+
+function renderOrganiserImages() {
+  const initial = ((user.org_name || user.name || 'O').charAt(0) || 'O').toUpperCase();
+  const av = user.avatar, cv = user.cover_image;
+  const avHTML = av ? `<img src="${av}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : initial;
+  ['orgAvatarEditPreview','orgDashboardAvatar'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = avHTML; });
+  const sb = document.getElementById('sbAvatar');
+  if (sb) sb.innerHTML = av ? `<img src="${av}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px">` : initial;
+  const img = document.getElementById('orgDashboardCoverImg');
+  if (img) { if (cv) { img.src = cv; img.style.display = 'block'; } else { img.removeAttribute('src'); img.style.display = 'none'; } }
+}
+
+async function handleOrganiserCoverUpload(input) {
+  const file = input.files?.[0]; if (!file) return;
+  try {
+    if (!file.type.startsWith('image/')) throw new Error('Please select an image file.');
+    if (file.size > 10*1024*1024) throw new Error('Cover photo must be 10 MB or smaller.');
+    showToast('Uploading cover photo…', 'info');
+    const data = await cloudinaryUpload(file, 'image');
+    await persistOrganiser({ cover_image: data.secure_url });
+    user.cover_image = data.secure_url;
+    renderOrganiserImages();
+    showToast('Cover photo saved ✅', 'success');
+  } catch (e) { console.error(e); showToast(e.message || 'Cover upload failed', 'error'); }
+  input.value = '';
+}
+
+async function handleOrganiserAvatarUpload(input) {
+  const file = input.files?.[0]; if (!file) return;
+  try {
+    if (!file.type.startsWith('image/')) throw new Error('Please select an image file.');
+    if (file.size > 10*1024*1024) throw new Error('Profile photo must be 10 MB or smaller.');
+    showToast('Uploading profile photo…', 'info');
+    const data = await cloudinaryUpload(file, 'image');
+    await persistOrganiser({ avatar: data.secure_url });
+    user.avatar = data.secure_url;
+    renderOrganiserImages();
+    showToast('Profile photo saved ✅', 'success');
+  } catch (e) { console.error(e); showToast(e.message || 'Profile photo upload failed', 'error'); }
+  input.value = '';
+}
+
+async function removeOrganiserCover() {
+  try { await persistOrganiser({ cover_image: '' }); user.cover_image = ''; renderOrganiserImages(); showToast('Cover photo removed', 'success'); }
+  catch (e) { showToast(e.message || 'Could not remove', 'error'); }
+}
+async function removeOrganiserAvatar() {
+  try { await persistOrganiser({ avatar: '' }); user.avatar = ''; renderOrganiserImages(); showToast('Profile photo removed', 'success'); }
+  catch (e) { showToast(e.message || 'Could not remove', 'error'); }
+}
+
+function renderOrganiserMedia() {
+  const grid = document.getElementById('orgMediaGallery'); if (!grid) return;
+  grid.innerHTML = orgMediaItems.map((m,i) => `
+    <div class="org-media-item">
+      ${m.type==='video' ? `<video src="${m.src}" muted controls></video>` : `<img src="${m.src}" alt="${m.name||''}">`}
+      <span class="org-media-type-badge">${(m.type||'image').toUpperCase()}</span>
+      <button onclick="removeOrganiserMedia(${i})" style="position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(255,45,120,.9);color:#fff;border:none;cursor:pointer;font-size:.65rem">✕</button>
+    </div>`).join('') + `<div class="org-media-add" onclick="triggerUpload('orgMediaFile')">➕<span>Add</span></div>`;
+  const c = document.getElementById('orgMediaCount');
+  if (c) c.textContent = orgMediaItems.length + ' item' + (orgMediaItems.length !== 1 ? 's' : '');
+}
+
+async function handleOrganiserMediaUpload(input) {
+  const files = Array.from(input.files || []); if (!files.length) return;
+  let added = 0;
+  for (const file of files) {
+    try {
+      if (file.size > 100*1024*1024) { showToast(`${file.name} is over 100 MB`, 'error'); continue; }
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) { showToast(`${file.name} is not an image/video`, 'error'); continue; }
+      showToast(`Uploading ${file.name}…`, 'info');
+      const data = await cloudinaryUpload(file, 'auto');
+      orgMediaItems.push({ src: data.secure_url, type: file.type.startsWith('video/') ? 'video' : 'image', name: file.name, publicId: data.public_id || '', resourceType: data.resource_type || 'image' });
+      added++; renderOrganiserMedia();
+    } catch (e) { console.error(e); showToast(`Failed: ${file.name} — ${e.message}`, 'error'); }
+  }
+  input.value = '';
+  if (added) await saveOrganiserMedia();
+}
+
+async function saveOrganiserMedia() {
+  try { await persistOrganiser({ media_links: orgMediaItems }); showToast('Media saved ✅', 'success'); }
+  catch (e) { console.error(e); showToast(e.message || 'Uploaded, but could not save to profile', 'error'); }
+}
+function removeOrganiserMedia(i) { orgMediaItems.splice(i,1); renderOrganiserMedia(); saveOrganiserMedia(); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  orgMediaItems = Array.isArray(user?.media_links) ? user.media_links.filter(m => m && typeof m === 'object' && (m.type==='image'||m.type==='video')) : [];
+  renderOrganiserImages(); renderOrganiserMedia();
+});
 // ── PASSWORD ──────────────────────────────────────────────────────────────────
 async function changePassword() {
   const cur = document.getElementById('curPwd').value;
