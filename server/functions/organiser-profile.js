@@ -58,9 +58,25 @@ exports.handler = async (event) => {
       if (body[camel] !== undefined) patch[snake] = body[camel];
     });
 
-    const updated = await updateUser(decoded.id, patch);
+    // Organiser profile images must use the same canonical DB fields as the
+    // artist flow, while accepting either frontend naming convention.
+    if (body.coverImage !== undefined || body.cover_image !== undefined) {
+      patch.cover_image = body.coverImage !== undefined
+        ? body.coverImage
+        : body.cover_image;
+    }
+    if (body.avatar !== undefined) {
+      patch.avatar = body.avatar;
+    }
+
+    await updateUser(decoded.id, patch);
+
+    // Re-read the organiser so the response/session always contains the
+    // persisted cover/avatar values rather than relying on the PATCH payload.
+    const refreshed = await findUser('id', 'eq', decoded.id);
+
     return json(200, {
-      user: publicUser(updated),
+      user: publicUser(refreshed),
       message: 'Organiser profile saved! You can now discover and book artists on Floox.',
     });
   } catch (err) {
