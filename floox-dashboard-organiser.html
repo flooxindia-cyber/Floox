@@ -734,14 +734,14 @@ textarea.finput{resize:vertical;min-height:80px}
             <span style="font-size:.75rem;color:var(--muted)" id="orgMediaCount">0 items</span>
           </div>
           <div class="card-body">
-            <div class="org-upload-zone" style="margin-bottom:1rem" onclick="triggerUpload('orgMediaFile')">
+            <div class="org-upload-zone" style="margin-bottom:1rem" onclick="if(event.target.id!=='orgMediaFile') document.getElementById('orgMediaFile').click()">
               <input type="file" id="orgMediaFile" accept="image/*,video/*" multiple onchange="handleOrganiserMediaUpload(this)">
               <div style="font-size:2rem;margin-bottom:.4rem">⬆️</div>
               <div style="font-family:var(--head);font-weight:700;font-size:.9rem">Upload Photos / Videos</div>
               <div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">JPG, PNG, MP4 · Multiple allowed</div>
             </div>
             <div class="org-media-grid" id="orgMediaGallery">
-              <div class="org-media-add" onclick="triggerUpload('orgMediaFile')">➕<span>Add</span></div>
+              <div class="org-media-add" onclick="document.getElementById('orgMediaFile').click()">➕<span>Add</span></div>
             </div>
           </div>
         </div>
