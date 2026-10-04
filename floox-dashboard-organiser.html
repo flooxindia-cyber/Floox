@@ -140,6 +140,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15
 .ac-btn:hover{border-color:var(--teal);color:var(--teal)}
 .ac-btn.book{background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff;border:none}
 .artist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem}
+/* Organiser profile snapshot */
+.org-profile-cover{height:130px;background:linear-gradient(135deg,var(--teal),var(--purple));position:relative;overflow:hidden}.org-profile-cover-img{width:100%;height:100%;object-fit:cover}.org-profile-avatar-wrap{position:absolute;bottom:-34px;left:1.4rem}.org-profile-avatar{width:72px;height:72px;border-radius:50%;border:4px solid #fff;background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:800;font-size:1.6rem;color:#fff;overflow:hidden}.org-profile-avatar img{width:100%;height:100%;object-fit:cover}.org-profile-info{padding:2.6rem 1.4rem 1.4rem}.org-profile-name{font-family:var(--head);font-weight:800;font-size:1.1rem;letter-spacing:-.3px}.org-profile-sub{font-size:.78rem;color:var(--muted);margin-top:.15rem}.org-profile-actions{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end}
 
 /* ── BOOKINGS ── */
 .booking-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border)}
@@ -454,6 +456,19 @@ textarea.finput{resize:vertical;min-height:80px}
     </div>
 
     <div class="grid-2">
+      <div class="card" style="overflow:visible">
+        <div class="org-profile-cover" id="orgDashboardCover">
+          <img id="orgDashboardCoverImg" class="org-profile-cover-img" src="" alt="" style="display:none">
+          <div class="org-profile-avatar-wrap">
+            <div class="org-profile-avatar" id="orgDashboardAvatar">O</div>
+          </div>
+        </div>
+        <div class="org-profile-info">
+          <div class="org-profile-name" id="orgDashboardName">Your Organisation</div>
+          <div class="org-profile-sub" id="orgDashboardType">Organisation · Your City</div>
+          <div class="org-profile-actions"><a href="#" onclick="showPage('profile');return false" style="font-size:.78rem;font-family:var(--head);font-weight:700;color:var(--teal);text-decoration:none">Edit Profile →</a></div>
+        </div>
+      </div>
       <div class="card">
         <div class="card-head">
           <span class="card-title">Recent Bookings</span>
