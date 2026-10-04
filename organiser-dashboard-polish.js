@@ -61,6 +61,12 @@
     `;
   }
 
+  function setPublicProfileLink(u) {
+    const btn = document.getElementById('orgPublicProfileBtn');
+    if (!btn || !u?.id) return;
+    btn.href = 'floox-organiser-profile.html?id=' + encodeURIComponent(u.id);
+  }
+
   function setDashboardProfileUI(u) {
     const cover = document.getElementById('orgDashboardCoverImg');
     const avatar = document.getElementById('orgDashboardAvatar');
@@ -278,6 +284,7 @@
       setAvatarUI(u);
       setCoverUI(u);
       setDashboardProfileUI(u);
+      setPublicProfileLink(u);
       renderMedia(u);
     } catch(e) {
       console.warn('Organiser profile refresh:', e);
