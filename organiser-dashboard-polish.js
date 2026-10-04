@@ -134,13 +134,20 @@
   }
 
   async function save(fields) {
-    const d = await FLOOX.saveOrganiserProfile(fields);
+    // Avatar is a common users field; persist it through the shared profile
+    // endpoint, while cover/media continue through the organiser profile flow.
+    const onlyAvatar = Object.keys(fields).length === 1 && Object.prototype.hasOwnProperty.call(fields, 'avatar');
+    const d = onlyAvatar
+      ? await FLOOX.updateMe(fields)
+      : await FLOOX.saveOrganiserProfile(fields);
     if (d.user) {
       user = d.user;
       FLOOX.saveSession(FLOOX.getToken(), d.user);
       if (typeof populateUI === 'function') populateUI();
       setAvatarUI(d.user);
       setCoverUI(d.user);
+      setDashboardProfileUI(d.user);
+      setPublicProfileLink(d.user);
       renderMedia(d.user);
     }
     return d;
