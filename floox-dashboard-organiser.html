@@ -1460,21 +1460,24 @@ function markUnsaved() {
 async function saveProfile() {
   const fields = {
     name: document.getElementById('pName').value,
-    org_name: document.getElementById('pOrgName').value,
+    orgName: document.getElementById('pOrgName').value,
     phone: document.getElementById('pPhone').value,
     city: document.getElementById('pCity').value,
-    org_type: document.getElementById('pOrgType').value,
+    orgType: document.getElementById('pOrgType').value,
     website: document.getElementById('pWebsite').value,
-    gst_number: document.getElementById('pGst').value,
+    gstNumber: document.getElementById('pGst').value,
     bio: document.getElementById('pBio').value,
-    events_per_year: document.getElementById('pEventsPerYear').value,
-    budget_range: document.getElementById('pBudgetRange').value,
-    preferred_genres: prefGenres,
-    venue_types: selVenueTypes,
+    eventsPerYear: document.getElementById('pEventsPerYear').value,
+    budgetRange: document.getElementById('pBudgetRange').value,
+    preferredGenres: prefGenres,
+    venueTypes: selVenueTypes,
   };
   try {
-    if (typeof FLOOX !== 'undefined') await FLOOX.saveOrganiserProfile(fields);
-    user = {...user,...fields};
+    if (typeof FLOOX !== 'undefined') {
+      const result = await FLOOX.saveOrganiserProfile(fields);
+      if (result?.user) user = result.user;
+      else user = {...user,...fields};
+    }
     populateUI();
     unsaved = false;
     document.getElementById('unsavedDot').classList.remove('show');
