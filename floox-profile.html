@@ -121,17 +121,10 @@ function render(u){
     ? metaBox('City',u.city)+metaBox('Experience',u.experience)+metaBox('Performer type',u.performerType)+metaBox('Verification',u.verified?'✓ Verified':'Profile')
     : metaBox('City',u.city)+metaBox('Organiser type',u.orgType)+metaBox('Events / year',u.eventsPerYear)+metaBox('Verification',u.verified?'✓ Verified':'Profile');
 
-  let contact;
-  if(logged()){
-    contact=`<div class="contact">📧 ${esc(u.email||'Not provided')}<br>📱 ${esc(u.phone||'Not provided')}${u.website?`<br>🌐 ${esc(u.website)}`:''}</div>`;
-  }else{
-    contact=`<div class="nudge">🔒 Sign in to view contact details and send a booking enquiry.<br><a href="floox-login.html?from=profile&id=${encodeURIComponent(u.id)}&role=${role}">Sign in to Floox →</a></div>`;
-  }
+  const signin='floox-login.html?from=profile&id='+encodeURIComponent(u.id)+'&role='+role;
+  const full=logged();
 
-  document.getElementById('root').innerHTML=`
-  <article class="profile-card">
-    <div class="cover">${cover}<div class="avatar">${avatar}</div></div>
-    <div class="body">
+  const head=`
       <div class="head">
         <div>
           <h1 class="name">${esc(name)}</h1>
@@ -139,8 +132,11 @@ function render(u){
           <div class="sub">📍 ${esc(u.city||'India')}</div>
         </div>
         ${u.verified?'<span class="verified">✓ Verified</span>':''}
-      </div>
+      </div>`;
 
+  let inner;
+  if(full){
+    inner=head+`
       <div class="actions">
         <button class="secondary" id="followBtn" onclick="toggleFollow()">${likes.has(u.id)?'❤️ Following':'♡ Follow'}</button>
         <button class="primary" onclick="messageProfile()">✉️ ${isArtist?'Message Artist':'Send Enquiry'} →</button>
@@ -154,8 +150,20 @@ function render(u){
 
       ${genres.length?`<section class="section"><h2>${isArtist?'Genres':'Preferred genres'}</h2><div class="tags">${genres.map(g=>`<span class="tag">${esc(g)}</span>`).join('')}</div></section>`:''}
 
-      <section class="section"><h2>Contact</h2>${contact}</section>
-    </div>
+      <section class="section"><h2>Contact</h2>
+        <div class="contact">📧 ${esc(u.email||'Not provided')}<br>📱 ${esc(u.phone||'Not provided')}${u.website?`<br>🌐 ${esc(u.website)}`:''}</div>
+      </section>`;
+  }else{
+    inner=head+`
+      <section class="section">
+        <div class="nudge">🔒 Sign in to view the full profile, contact details and send a booking enquiry.<br><a href="${signin}">Sign in to Floox →</a></div>
+      </section>`;
+  }
+
+  document.getElementById('root').innerHTML=`
+  <article class="profile-card">
+    <div class="cover">${cover}<div class="avatar">${avatar}</div></div>
+    <div class="body">${inner}</div>
   </article>`;
 }
 
@@ -179,14 +187,24 @@ function messageProfile(){
 
 (async function init(){
   if(!pid){showError('No profile selected','Go back and pick an artist or organiser.');return}
+  // Guests: organisers API is login-only, so show the locked card without fetching anything
+  if(!logged()&&role==='organiser'){renderLocked();return}
   try{
     if(logged()){try{const d=await getJSON('/api/get-likes',{headers:{Authorization:'Bearer '+token()}});likes=new Set(d.likes||[])}catch(_){}}
     let u=await fetchProfile();
     if(!u)throw new Error('Profile not found');
     profile=u;
     render(u);
-  }catch(e){showError('Could not load profile',e.message)}
+  }catch(e){
+    if(!logged()){renderLocked();return}
+    showError('Could not load profile',e.message)
+  }
 })();
+
+function renderLocked(){
+  const signin='floox-login.html?from=profile&id='+encodeURIComponent(pid)+'&role='+role;
+  document.getElementById('root').innerHTML=`<div class="state"><div class="ic">🔒</div><h3>Sign in to view this profile</h3><p>Create a free Floox account or sign in to see full profiles, contact details and send enquiries.</p><a href="${signin}">Sign in to Floox →</a></div>`;
+}
 
 function showError(title,msg){
   document.getElementById('root').innerHTML=`<div class="state"><div class="ic">⚠️</div><h3>${esc(title)}</h3><p>${esc(msg)}</p><a href="floox-search-results.html">← Back to Discover</a></div>`;
