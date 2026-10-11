@@ -4,7 +4,7 @@
 const {
   corsOk, json,
   queryArtists, countArtists,
-  publicUser,
+  listingUser,
 } = require('./_utils');
 
 exports.handler = async (event) => {
@@ -30,7 +30,7 @@ exports.handler = async (event) => {
       countArtists(filters),
     ]);
 
-    const artists = rawArtists.map(publicUser);
+    const artists = rawArtists.map(listingUser);
     return json(200, { artists, total, offset: filters.offset, limit: filters.limit });
   } catch (err) {
     console.error('artists error:', err);

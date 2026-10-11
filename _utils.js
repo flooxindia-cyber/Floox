@@ -110,7 +110,7 @@ async function updateUser(id, fields) {
 
 /** Query artists with optional filters. Returns array. */
 async function queryArtists({ genre, city, q, id, limit = 20, offset = 0 } = {}) {
-  const parts = [`role=eq.artist`, `limit=${limit}`, `offset=${offset}`];
+  const parts = [`role=eq.artist`, `profile_complete=eq.true`, `limit=${limit}`, `offset=${offset}`];
   if (id)    parts.push(`id=eq.${encodeURIComponent(id)}`);          // lookup by UUID
   if (genre) parts.push(`genres=cs.{"${genre}"}`);                   // contains
   if (city)  parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
@@ -125,7 +125,7 @@ async function queryArtists({ genre, city, q, id, limit = 20, offset = 0 } = {})
 
 /** Count artists matching optional filters */
 async function countArtists({ genre, city, q } = {}) {
-  const parts = [`role=eq.artist`];
+  const parts = [`role=eq.artist`, `profile_complete=eq.true`];
   if (genre) parts.push(`genres=cs.{"${genre}"}`);
   if (city)  parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
   if (q)     parts.push(`or=(name.ilike.*${encodeURIComponent(q)}*,stage_name.ilike.*${encodeURIComponent(q)}*,bio.ilike.*${encodeURIComponent(q)}*)`);
@@ -174,7 +174,25 @@ function publicUser(u) {
     coverImage:       cover_image,
     riderNotes:       rider_notes,
     profileComplete:  profile_complete,
+    // additive aliases (snake_case originals stay in ...rest)
+    eventsPerYear:    u.events_per_year,
+    preferredGenres:  u.preferred_genres || [],
+    venueTypes:       u.venue_types || [],
+    budgetRange:      u.budget_range,
   };
+}
+
+// ── LISTING SERIALISATION ─────────────────────────────────────────────────────
+// Safe version of publicUser for search/list endpoints: no contact details and
+// nothing that looks like a secret (otp / token / hash / reset codes).
+function listingUser(u) {
+  const p = publicUser(u);
+  if (!p) return null;
+  for (const k of ['email', 'phone', 'whatsapp', 'website', 'gst_number', 'gstNumber']) delete p[k];
+  for (const k of Object.keys(p)) {
+    if (/(otp|token|hash|secret|reset)/i.test(k)) delete p[k];
+  }
+  return p;
 }
 
 module.exports = {
@@ -183,5 +201,5 @@ module.exports = {
   hashPassword, checkPassword,
   findUser, createUser, updateUser,
   queryArtists, countArtists,
-  publicUser,
+  publicUser, listingUser,
 };

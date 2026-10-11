@@ -7,7 +7,7 @@
 const {
   corsOk, json,
   verifyToken, extractBearer,
-  findUser, publicUser,
+  findUser, listingUser,
 } = require('./_utils');
 
 // ── Supabase helpers (inlined since _utils doesn't export queryOrganisers) ───
@@ -88,7 +88,7 @@ exports.handler = async (event) => {
       countOrganisers(filters),
     ]);
 
-    const organisers = rawOrgs.map(publicUser);
+    const organisers = rawOrgs.map(listingUser);
     return json(200, { organisers, total, offset: filters.offset, limit: filters.limit });
   } catch (err) {
     console.error('organisers error:', err);

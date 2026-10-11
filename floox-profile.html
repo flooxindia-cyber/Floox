@@ -57,7 +57,16 @@ body:before{content:"";position:fixed;inset:0;z-index:-2;background:radial-gradi
 
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9000;background:#1b1007;border:1px solid rgba(255,92,0,.35);padding:10px 16px;border-radius:100px;font-size:.78rem;font-weight:800;box-shadow:0 10px 35px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:.25s}.toast.show{opacity:1}
 
-@media(max-width:720px){.grid{grid-template-columns:1fr 1fr}.body{padding:66px 20px 26px}.avatar{left:20px;width:96px;height:96px;bottom:-46px}.cover{height:190px}.nav-btn:not(.nav-join){display:none}}
+.cover img.real{filter:none;opacity:.9}
+.media-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.vid{aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000;border:1px solid var(--line)}
+.vid iframe,.vid video{width:100%;height:100%;border:0;display:block}
+.photo{aspect-ratio:4/3;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:rgba(255,255,255,.04)}
+.photo img{width:100%;height:100%;object-fit:cover}
+.linkcard{display:block;padding:13px 15px;border:1px solid var(--line);background:rgba(255,255,255,.035);border-radius:14px;font-size:.82rem;font-weight:800;color:#ff8a4a;word-break:break-all}
+.linkcard:hover{border-color:var(--o)}
+.cap{font-size:.7rem;color:var(--muted);margin-top:5px;font-weight:700}
+@media(max-width:720px){.media-grid{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}.body{padding:66px 20px 26px}.avatar{left:20px;width:96px;height:96px;bottom:-46px}.cover{height:190px}.nav-btn:not(.nav-join){display:none}}
 </style>
 </head>
 <body>
@@ -107,19 +116,86 @@ async function fetchProfile(){
 
 function metaBox(label,val){return `<div class="meta-box"><small>${label}</small><span>${esc(val||'—')}</span></div>`}
 
+
+// ---- media (videos / photos / links) ---------------------------------------
+function safeUrl(v){try{const x=new URL(String(v).trim());return(x.protocol==='https:'||x.protocol==='http:')?x.href:''}catch{return''}}
+function mediaList(u){
+  const out=[];
+  [u.mediaLinks,u.media_links,Array.isArray(u.portfolio)?u.portfolio:null].forEach(arr=>{
+    if(!Array.isArray(arr))return;
+    arr.forEach(it=>{
+      const raw=typeof it==='string'?it:(it&&(it.url||it.link||it.src||it.href));
+      const url=safeUrl(raw);
+      if(!url)return;
+      if(out.some(x=>x.url===url))return;
+      out.push({url,title:typeof it==='object'&&it?(it.title||it.caption||it.name||''):'',hint:typeof it==='object'&&it?String(it.type||it.mediaType||'').toLowerCase():''});
+    });
+  });
+  return out;
+}
+function classify(m){
+  const u=new URL(m.url),h=u.hostname.replace(/^www\./,''),path=u.pathname.toLowerCase();
+  let id='';
+  if(h==='youtu.be')id=u.pathname.slice(1).split('/')[0];
+  else if(h.endsWith('youtube.com')){
+    if(u.pathname==='/watch')id=u.searchParams.get('v')||'';
+    else{const mm=u.pathname.match(/^\/(shorts|embed|live)\/([\w-]{6,})/);if(mm)id=mm[2]}
+  }
+  if(/^[\w-]{6,20}$/.test(id))return{kind:'youtube',id};
+  if(h==='vimeo.com'||h==='player.vimeo.com'){const mm=u.pathname.match(/(\d{5,})/);if(mm)return{kind:'vimeo',id:mm[1]}}
+  if(/\.(mp4|webm|mov|m4v|ogv)$/.test(path)||m.hint==='video')return{kind:'video'};
+  if(/\.(jpe?g|png|webp|gif|avif)$/.test(path)||m.hint==='image')return{kind:'image'};
+  return{kind:'link',host:h};
+}
+function mediaCard(m){
+  const c=classify(m),cap=m.title?`<div class="cap">${esc(m.title)}</div>`:'';
+  if(c.kind==='youtube')return `<div><div class="vid"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/${esc(c.id)}" title="${esc(m.title||'Video')}" allow="accelerometer;clipboard-write;encrypted-media;picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>${cap}</div>`;
+  if(c.kind==='vimeo')return `<div><div class="vid"><iframe loading="lazy" src="https://player.vimeo.com/video/${esc(c.id)}" title="${esc(m.title||'Video')}" allow="fullscreen;picture-in-picture" allowfullscreen></iframe></div>${cap}</div>`;
+  if(c.kind==='video')return `<div><div class="vid"><video controls preload="metadata" playsinline src="${esc(m.url)}"></video></div>${cap}</div>`;
+  if(c.kind==='image')return `<div><a class="photo" style="display:block" href="${esc(m.url)}" target="_blank" rel="noopener"><img loading="lazy" src="${esc(m.url)}" alt="${esc(m.title||'')}"></a>${cap}</div>`;
+  return `<a class="linkcard" href="${esc(m.url)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(m.title||c.host)} ↗</a>`;
+}
+function mediaSections(u){
+  const items=mediaList(u).map(m=>({m,c:classify(m)}));
+  const vids=items.filter(x=>['youtube','vimeo','video'].includes(x.c.kind));
+  const pics=items.filter(x=>x.c.kind==='image');
+  const links=items.filter(x=>x.c.kind==='link');
+  let h='';
+  if(vids.length)h+=`<section class="section"><h2>Videos</h2><div class="media-grid">${vids.map(x=>mediaCard(x.m)).join('')}</div></section>`;
+  if(pics.length)h+=`<section class="section"><h2>Photos</h2><div class="media-grid">${pics.map(x=>mediaCard(x.m)).join('')}</div></section>`;
+  if(links.length)h+=`<section class="section"><h2>More links</h2><div class="media-grid">${links.map(x=>mediaCard(x.m)).join('')}</div></section>`;
+  return h;
+}
+function tagSection(title,arr){arr=(Array.isArray(arr)?arr:[]).filter(Boolean);return arr.length?`<section class="section"><h2>${title}</h2><div class="tags">${arr.map(g=>`<span class="tag">${esc(g)}</span>`).join('')}</div></section>`:''}
+function socialSection(u){
+  const s=u.socialLinks&&typeof u.socialLinks==='object'?u.socialLinks:{};
+  const rows=Object.entries(s).filter(([,v])=>v).map(([k,v])=>{const url=safeUrl(v);const label=k.charAt(0).toUpperCase()+k.slice(1);return url?`<a class="linkcard" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`:`<div class="linkcard" style="color:#fff">${esc(label)}: ${esc(v)}</div>`});
+  return rows.length?`<section class="section"><h2>Social</h2><div class="media-grid">${rows.join('')}</div></section>`:'';
+}
+function feeText(u){
+  const mn=Number(u.minFee),mx=Number(u.maxFee);
+  const cur=(!u.currency||u.currency==='INR')?'₹':u.currency+' ';
+  const f=n=>cur+n.toLocaleString('en-IN');
+  if(mn>0&&mx>0)return f(mn)+' – '+f(mx);
+  if(mn>0)return 'From '+f(mn);
+  if(mx>0)return 'Up to '+f(mx);
+  return '';
+}
+
 function render(u){
   const isArtist=role==='artist';
   const name=u.stageName||u.orgName||u.name||'Floox profile';
   const type=isArtist?(u.performerType||'Artist'):(u.orgType||'Event Organiser');
-  const genres=(u.genres||u.preferredGenres||[]);
+  const epy=u.eventsPerYear??u.events_per_year;
+  const genres=(isArtist?u.genres:(u.preferredGenres||u.preferred_genres))||[];
   document.title=name+' — Floox';
 
   const avatar=u.avatar?`<img src="${esc(u.avatar)}" alt="">`:initials(name);
-  const cover=u.avatar?`<img src="${esc(u.avatar)}" alt="">`:'';
+  const cover=u.coverImage?`<img class="real" src="${esc(u.coverImage)}" alt="">`:(u.avatar?`<img src="${esc(u.avatar)}" alt="">`:'');
 
   const meta=isArtist
     ? metaBox('City',u.city)+metaBox('Experience',u.experience)+metaBox('Performer type',u.performerType)+metaBox('Verification',u.verified?'✓ Verified':'Profile')
-    : metaBox('City',u.city)+metaBox('Organiser type',u.orgType)+metaBox('Events / year',u.eventsPerYear)+metaBox('Verification',u.verified?'✓ Verified':'Profile');
+    : metaBox('City',u.city)+metaBox('Organiser type',u.orgType)+metaBox('Events / year',epy)+metaBox('Verification',u.verified?'✓ Verified':'Profile');
 
   const signin='floox-login.html?from=profile&id='+encodeURIComponent(u.id)+'&role='+role;
   const full=logged();
@@ -148,7 +224,11 @@ function render(u){
 
       <section class="section"><h2>Details</h2><div class="grid">${meta}</div></section>
 
-      ${genres.length?`<section class="section"><h2>${isArtist?'Genres':'Preferred genres'}</h2><div class="tags">${genres.map(g=>`<span class="tag">${esc(g)}</span>`).join('')}</div></section>`:''}
+      ${tagSection(isArtist?'Genres':'Preferred genres',genres)}
+      ${isArtist?tagSection('Languages',u.languages)+tagSection('Performance types',u.performanceTypes)+tagSection('Event types',u.eventTypes):tagSection('Venue types',u.venue_types||u.venueTypes)}
+      ${isArtist&&feeText(u)?`<section class="section"><h2>Fee range</h2><div class="grid"><div class="meta-box" style="grid-column:span 2"><small>Typical fee</small><span>${esc(feeText(u))}</span></div></div></section>`:''}
+      ${mediaSections(u)}
+      ${socialSection(u)}
 
       <section class="section"><h2>Contact</h2>
         <div class="contact">📧 ${esc(u.email||'Not provided')}<br>📱 ${esc(u.phone||'Not provided')}${u.website?`<br>🌐 ${esc(u.website)}`:''}</div>
