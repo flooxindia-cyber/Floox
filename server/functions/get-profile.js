@@ -3,9 +3,7 @@
 // Directory data remains safe for guests; this endpoint is the authenticated
 // full-profile view.
 //
-// Full-profile viewing is limited to 5 unique profiles per registered user per
-// India calendar day. Re-opening a profile already viewed today does not use
-// another slot. A user's own profile is never counted.
+// There is no daily limit on full-profile views.
 
 const {
   corsOk, json,
@@ -50,19 +48,6 @@ function dbUrl(table, qs = '') {
   if (!base) throw new Error('SUPABASE_URL env var is not set');
   return `${base}/rest/v1/${table}${qs ? '?' + qs : ''}`;
 }
-async function consumeFullProfileView(viewerId, profileId) {
-  const r = await fetch(dbUrl('rpc/consume_full_profile_view'), {
-    method: 'POST',
-    headers: dbHeaders(),
-    body: JSON.stringify({ p_viewer_id: viewerId, p_profile_id: profileId }),
-  });
-  const text = await r.text();
-  let data = {};
-  try { data = text ? JSON.parse(text) : {}; } catch { throw new Error('Invalid profile-view limit response.'); }
-  if (!r.ok) throw new Error(data?.message || data?.hint || 'Could not check profile-view limit.');
-  return Array.isArray(data) ? data[0] : data;
-}
-
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return corsOk();
   if (event.httpMethod !== 'GET') return json(405, { error: 'Method not allowed' });
@@ -81,7 +66,6 @@ exports.handler = async (event) => {
   if (!id) return json(400, { error: 'Profile ID is required.' });
 
   try {
-    const isSelf = String(id) === String(decoded.id);
     let target = null;
     let demoProfile = null;
 
@@ -93,34 +77,11 @@ exports.handler = async (event) => {
       if (!target.verified) return json(404, { error: 'This profile is not yet verified.' });
     }
 
-    // The daily allowance applies only when opening someone else's full profile.
-    // The same profile can be reopened all day without consuming another slot.
-    let profileViewsRemaining = 5;
-    if (!isSelf) {
-      const usage = await consumeFullProfileView(decoded.id, id);
-      if (!usage?.allowed) {
-        return json(429, {
-          error: 'You have reached today\'s limit of 5 full profile views.',
-          code: 'PROFILE_VIEW_LIMIT_REACHED',
-          limit: 5,
-          viewedToday: Number(usage?.viewed_today || 5),
-          remaining: 0,
-          resetsOn: 'next India calendar day',
-        });
-      }
-      profileViewsRemaining = Number(usage?.remaining ?? 0);
-    }
-
     if (demoProfile) {
-      return json(200, {
-        user: publicUser(demoProfile),
-        profileViewsRemaining,
-        profileViewLimit: 5,
-      });
+      return json(200, { user: publicUser(demoProfile) });
     }
 
-    // Keep the existing artist profile-view metric. This is separate from the
-    // five-profile daily allowance above.
+    // Keep the artist profile-view metric shown on the artist dashboard.
     if (target.role === 'artist' && target.id !== decoded.id) {
       fetch(dbUrl('profile_views'), {
         method: 'POST',
@@ -129,16 +90,9 @@ exports.handler = async (event) => {
       }).catch(err => console.error('profile view tracking failed:', err));
     }
 
-    return json(200, {
-      user: publicUser(target),
-      profileViewsRemaining,
-      profileViewLimit: 5,
-    });
+    return json(200, { user: publicUser(target) });
   } catch (err) {
     console.error('get-profile error:', err);
-    if (err?.message?.includes('profile-view')) {
-      return json(503, { error: 'Profile-view limit service is temporarily unavailable. Please try again.' });
-    }
     return json(500, { error: 'Could not load profile. Please try again.' });
   }
 };
