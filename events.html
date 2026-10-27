@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Events near you | Floox</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; background: #f7f7f8; }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 16px; }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .filters select, .filters label { padding: 8px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .card { background: #fff; border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .card img { width: 100%; height: 160px; object-fit: cover; background: #ddd; }
+    .card .body { padding: 12px; }
+    .badge { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #eef; margin-right: 4px; }
+    .empty { text-align: center; color: #666; padding: 40px 0; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Events near you</h1>
+  <div class="filters">
+    <select id="cityFilter"><option value="">All cities</option></select>
+    <select id="dateFilter">
+      <option value="all">Any date</option>
+      <option value="today">Today</option>
+      <option value="week">Next 7 days</option>
+    </select>
+    <select id="catFilter"><option value="">All categories</option></select>
+    <label><input type="checkbox" id="freeOnly"> Free only</label>
+    <a href="add-event.html">+ Add event</a>
+  </div>
+  <div id="grid" class="grid"></div>
+  <div id="empty" class="empty" style="display:none">Koi event nahi mila. Filters badal ke dekho.</div>
+</div>
+
+<script>
+  // Apne existing pages wala URL aur anon key yahan daalo
+  const supabase = window.supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function fmt(dt) {
+    return new Date(dt).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short',
+      hour: 'numeric', minute: '2-digit'
+    });
+  }
+
+  async function loadFilters() {
+    const { data } = await supabase.from('events').select('city, category')
+      .eq('status', 'live').gte('start_at', new Date().toISOString());
+    const cities = [...new Set((data || []).map(e => e.city).filter(Boolean))].sort();
+    const cats = [...new Set((data || []).map(e => e.category).filter(Boolean))].sort();
+    cities.forEach(c => cityFilter.add(new Option(c, c)));
+    cats.forEach(c => catFilter.add(new Option(c, c)));
+  }
+
+  async function loadEvents() {
+    let q = supabase.from('events').select('*')
+      .eq('status', 'live')
+      .gte('start_at', new Date().toISOString())
+      .order('start_at', { ascending: true })
+      .limit(60);
+
+    if (cityFilter.value) q = q.eq('city', cityFilter.value);
+    if (catFilter.value) q = q.eq('category', catFilter.value);
+    if (freeOnly.checked) q = q.eq('is_free', true);
+
+    const now = new Date();
+    if (dateFilter.value === 'today') {
+      const end = new Date(now); end.setHours(23, 59, 59, 999);
+      q = q.lte('start_at', end.toISOString());
+    } else if (dateFilter.value === 'week') {
+      q = q.lte('start_at', new Date(now.getTime() + 7 * 86400000).toISOString());
+    }
+
+    const { data, error } = await q;
+    if (error) { console.error(error); return; }
+
+    grid.innerHTML = (data || []).map(e => `
+      <a class="card" href="event.html?id=${encodeURIComponent(e.id)}">
+        <img src="${esc(e.poster_url || '')}" alt="" loading="lazy">
+        <div class="body">
+          <h3>${esc(e.title)}</h3>
+          <div>${esc(fmt(e.start_at))}</div>
+          <div>${esc([e.venue, e.city].filter(Boolean).join(', '))}</div>
+          <div style="margin-top:6px">
+            <span class="badge">${e.is_free ? 'Free' : '₹' + esc(e.price ?? '')}</span>
+            ${e.looking_for_artists ? '<span class="badge">Looking for artists</span>' : ''}
+          </div>
+        </div>
+      </a>`).join('');
+    empty.style.display = (data || []).length ? 'none' : 'block';
+  }
+
+  [cityFilter, dateFilter, catFilter, freeOnly].forEach(el => el.addEventListener('change', loadEvents));
+  loadFilters().then(loadEvents);
+</script>
+</body>
+</html>

@@ -1,43 +1,36 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-const supabase = createClient(
- process.env.SUPABASE_URL,
- process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const COLS = 'id,title,description,category,city,area,venue,start_at,end_at,is_free,price,price_note,age_limit,ticket_link,poster_url,artist_slots_open,source,external_platform';const IST = 5.5 * 3600 * 1000;
 
-export default async function handler(req,res){
+export default async function handler(req, res) {
+  if (req.method !== 'GET') return res.status(405).end();
+  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+  const { id, city, category, range, free, limit } = req.query;
 
- const city = req.query.city || "";
- const keyword = req.query.keyword || "";
+  let q = supabase.from('events').select(COLS).eq('status', 'live').eq('is_public', true);
 
- const url =
-`https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env.TICKETMASTER_API_KEY}&size=20&city=${city}&keyword=${keyword}`;
+  if (id) {
+    const { data, error } = await q.eq('id', id).maybeSingle();
+    if (error) return res.status(500).json({ error: 'Server error' });
+    return data ? res.status(200).json({ event: data }) : res.status(404).json({ error: 'Not found' });
+  }
 
- const response = await fetch(url);
- const data = await response.json();
+  q = q.gte('start_at', new Date().toISOString()).order('start_at', { ascending: true })
+       .limit(Math.min(Number(limit) || 30, 60));
+  if (city) q = q.eq('city', city);
+  if (category) q = q.eq('category', category);
+  if (free === '1') q = q.eq('is_free', true);
 
- const events =
- data._embedded?.events?.map(event=>({
+  const n = new Date(Date.now() + IST);
+  if (range === 'today') {
+    const end = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), 23, 59, 59, 999) - IST);
+    q = q.lte('start_at', end.toISOString());
+  } else if (range === 'week') {
+    q = q.lte('start_at', new Date(Date.now() + 7 * 86400000).toISOString());
+  }
 
- id:event.id,
- title:event.name,
- description:event.info || "",
- category:event.classifications?.[0]?.segment?.name || "Event",
- city:event._embedded?.venues?.[0]?.city?.name || "",
- country:event._embedded?.venues?.[0]?.country?.name || "",
- venue:event._embedded?.venues?.[0]?.name || "",
- event_date:event.dates?.start?.dateTime,
- image_url:event.images?.[0]?.url,
- booking_url:event.url,
- price:event.priceRanges?.length
- ? `${event.priceRanges[0].min}-${event.priceRanges[0].max} ${event.priceRanges[0].currency}`
- : "Check website",
- source:"Ticketmaster"
-
- })) || [];
-
- await supabase.from("events_cache").upsert(events);
-
- res.status(200).json(events);
-
+  const { data, error } = await q;
+  if (error) return res.status(500).json({ error: 'Server error' });
+  return res.status(200).json({ events: data });
 }

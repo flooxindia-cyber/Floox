@@ -527,74 +527,17 @@ footer{background:var(--text);padding:5rem 5% 0;display:grid;grid-template-colum
   <div class="sec-chip chip-teal">🎪 Upcoming Events</div>
   <h2 class="sec-title">Aapke <span style="background:linear-gradient(135deg,var(--teal),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Sheher</span> Mein.</h2>
   <p class="sec-sub">Live listings from organisers actively looking for artists right now — and shows you can look forward to.</p>
-  <div class="events-grid">
-    <div class="ecard reveal">
-      <div class="ecard-img-wrap">
-        <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&h=360&fit=crop&q=80" class="ecard-img" alt="Sangeet Night">
-        <span class="ecard-genre-tag" style="background:rgba(255,92,0,0.85);color:#fff">Bollywood</span>
-      </div>
-      <div class="ecard-body">
-        <div class="edate">Dec 14 · Mumbai</div>
-        <div class="ename">Bandra Sangeet Night 2025</div>
-        <div class="evenue">📍 Mehboob Studio, Bandra West</div>
-        <div class="efoot"><span class="eslots"><strong>3</strong> artist slots open</span><button class="ebtn" onclick="showT('Opening event details...')">Learn More</button></div>
-      </div>
-    </div>
-    <div class="ecard reveal">
-      <div class="ecard-img-wrap">
-        <img src="https://images.unsplash.com/photo-1506157786151-b8491531f063?w=600&h=360&fit=crop&q=80" class="ecard-img" alt="NYE Delhi">
-        <span class="ecard-genre-tag" style="background:rgba(124,58,237,0.85);color:#fff">Multi-Genre</span>
-      </div>
-      <div class="ecard-body">
-        <div class="edate">Dec 31 · Delhi</div>
-        <div class="ename">NYE Countdown Bash</div>
-        <div class="evenue">📍 Jawaharlal Nehru Stadium</div>
-        <div class="efoot"><span class="eslots"><strong>5</strong> artist slots open</span><button class="ebtn" onclick="showT('Opening event details...')">Learn More</button></div>
-      </div>
-    </div>
-    <div class="ecard reveal">
-      <div class="ecard-img-wrap">
-        <img src="https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=600&h=360&fit=crop&q=80" class="ecard-img" alt="Sufi Jaipur">
-        <span class="ecard-genre-tag" style="background:rgba(0,130,110,0.85);color:#fff">Sufi · Ghazal</span>
-      </div>
-      <div class="ecard-body">
-        <div class="edate">Jan 5 · Jaipur</div>
-        <div class="ename">Pink City Sufi Evening</div>
-        <div class="evenue">📍 Amer Fort Lawns</div>
-        <div class="efoot"><span class="eslots"><strong>2</strong> artist slots open</span><button class="ebtn" onclick="showT('Opening event details...')">Learn More</button></div>
-      </div>
-    </div>
-    <div class="ecard reveal">
-      <div class="ecard-img-wrap">
-        <img src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&h=360&fit=crop&q=80" class="ecard-img" alt="Indie Bengaluru">
-        <span class="ecard-genre-tag" style="background:rgba(255,45,120,0.85);color:#fff">Indie · Rock</span>
-      </div>
-      <div class="ecard-body">
-        <div class="edate">Jan 12 · Bengaluru</div>
-        <div class="ename">Indie Bangalore Vol. 7</div>
-        <div class="evenue">📍 Hard Rock Cafe, MG Road</div>
-        <div class="efoot"><span class="eslots"><strong>4</strong> artist slots open</span><button class="ebtn" onclick="showT('Opening event details...')">Learn More</button></div>
-      </div>
-    </div>
-    <div class="ecard reveal">
-      <div class="ecard-img-wrap">
-        <img src="https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=600&h=360&fit=crop&q=80" class="ecard-img" alt="Classical Pune">
-        <span class="ecard-genre-tag" style="background:rgba(255,140,0,0.85);color:#fff">Classical</span>
-      </div>
-      <div class="ecard-body">
-        <div class="edate">Jan 19 · Pune</div>
-        <div class="ename">Sawai Gandharva Tribute Night</div>
-        <div class="evenue">📍 Bal Gandharva Rang Mandir</div>
-        <div class="efoot"><span class="eslots"><strong>6</strong> artist slots open</span><button class="ebtn" onclick="showT('Opening event details...')">Learn More</button></div>
-      </div>
-    </div>
-    <div class="ecard reveal" style="background:linear-gradient(135deg,rgba(255,92,0,0.05),rgba(255,45,120,0.05));border-color:rgba(255,92,0,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;text-align:center;padding:2rem">
-      <div style="font-size:3rem;margin-bottom:1rem">🎪</div>
-      <div style="font-family:var(--head);font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">More Events Coming</div>
-      <div style="font-size:0.86rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">New events posted every week across 28 Indian cities.</div>
-      <button class="btn btn-fire" style="font-size:0.82rem" onclick="document.getElementById('notify').scrollIntoView({behavior:'smooth'})">🔔 Get Notified</button>
-    </div>
-  </div>
+  <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin:1.5rem 0;align-items:center">
+  <select id="fCity"><option value="">All cities</option></select>
+  <select id="fRange">
+    <option value="">Any date</option>
+    <option value="today">Today</option>
+    <option value="week">Next 7 days</option>
+  </select>
+  <label><input type="checkbox" id="fFree"> Free only</label>
+</div>
+<div class="events-grid" id="eventsGrid"></div>
+<p id="eventsEmpty" style="display:none;text-align:center;color:var(--muted)">Abhi koi event nahi mila.</p>
 </section>
 
 <!-- ══ GENRE EXPLORER ══ -->
@@ -942,6 +885,63 @@ async function loadPublicArtists() {
     ws.onerror = () => ws.close();
   } catch(_) {}
 })();
+// ── EVENTS ──────────────────────────────
+const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const EV_GENRE_BG = {
+  'Bollywood':'rgba(255,92,0,.85)','Multi-Genre':'rgba(124,58,237,.85)','Sufi · Ghazal':'rgba(0,130,110,.85)',
+  'Indie · Rock':'rgba(255,45,120,.85)','Classical':'rgba(255,140,0,.85)'
+};
+const fmtEvDate = d => new Date(d).toLocaleDateString('en-IN', {day:'numeric', month:'short', timeZone:'Asia/Kolkata'});
+
+async function loadEvents() {
+  const grid = document.getElementById('eventsGrid');
+  if (!grid) return;
+  const fCity = document.getElementById('fCity');
+  const fRange = document.getElementById('fRange');
+  const fFree = document.getElementById('fFree');
+
+  const p = new URLSearchParams();
+  if (fCity.value) p.set('city', fCity.value);
+  if (fRange.value) p.set('range', fRange.value);
+  if (fFree.checked) p.set('free', '1');
+
+  try {
+    const r = await fetch('/api/events?' + p);
+    const { events = [] } = await r.json();
+
+    if (!fCity.dataset.filled) {
+      [...new Set(events.map(e => e.city))].sort().forEach(c => fCity.add(new Option(c, c)));
+      fCity.dataset.filled = '1';
+    }
+
+    grid.innerHTML = events.map(e => {
+      const ext = e.source === 'external';
+      const info = ext
+        ? 'via ' + escHtml(e.external_platform || 'partner')
+        : (e.artist_slots_open > 0
+            ? '<strong>' + escHtml(e.artist_slots_open) + '</strong> artist slots open'
+            : (e.is_free ? 'Free entry' : '₹' + escHtml(e.price ?? '')));
+      return `
+      <div class="ecard reveal vis">
+        <div class="ecard-img-wrap">
+          ${e.poster_url ? `<img src="${escHtml(e.poster_url)}" class="ecard-img" alt="${escHtml(e.title)}" loading="lazy">` : ''}
+          ${e.category ? `<span class="ecard-genre-tag" style="background:${EV_GENRE_BG[e.category] || 'rgba(255,92,0,.85)'};color:#fff">${escHtml(e.category)}</span>` : ''}
+        </div>
+        <div class="ecard-body">
+          <div class="edate">${escHtml(fmtEvDate(e.start_at))} · ${escHtml(e.city)}</div>
+          <div class="ename">${escHtml(e.title)}</div>
+          <div class="evenue">📍 ${escHtml(e.venue || e.area || e.city)}</div>
+          <div class="efoot"><span class="eslots">${info}</span>
+            <a class="ebtn" href="floox-event.html?id=${encodeURIComponent(e.id)}" style="text-decoration:none;display:inline-block">View Details</a></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('eventsEmpty').style.display = events.length ? 'none' : 'block';
+  } catch (err) { console.warn('Could not load events', err); }
+}
+['fCity','fRange','fFree'].forEach(id => document.getElementById(id).addEventListener('change', loadEvents));
+loadEvents();
 
 loadPublicArtists();
 
