@@ -1,0 +1,66 @@
+import { createClient } from '@supabase/supabase-js';
+import { timingSafeEqual } from 'crypto';
+import { makeKey, canonLink, findDuplicate, safeHttps } from '../lib/dedupe.js';
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+function authorized(req) {
+  const given = Buffer.from(String(req.headers['x-ingest-key'] || ''));
+  const real = Buffer.from(String(process.env.INGEST_KEY || ''));
+  return real.length > 0 && given.length === real.length && timingSafeEqual(given, real);
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+  if (!authorized(req)) return res.status(401).json({ error: 'Unauthorized' });
+
+  const items = Array.isArray(req.body?.events) ? req.body.events.slice(0, 50) : [];
+  const result = { inserted: 0, updated: 0, duplicates: 0, rejected: [] };
+
+  for (const b of items) {
+    const link = safeHttps(b.ticket_link);
+    const start = new Date(b.start_at);
+    if (!b.title || !b.city || !link || !b.external_platform || isNaN(start) || start < new Date()) {
+      result.rejected.push(b.title || '(no title)');
+      continue;
+    }
+    const row = {
+      source: 'external',
+      external_platform: b.external_platform,
+      external_id: b.external_id || null,
+      title: String(b.title).trim().slice(0, 150),
+      description: b.description ? String(b.description).slice(0, 2000) : null,
+      category: b.category || null,
+      city: b.city, area: b.area || null, venue: b.venue || null,
+      start_at: start.toISOString(),
+      end_at: b.end_at ? new Date(b.end_at).toISOString() : null,
+      is_free: !!b.is_free, price_note: b.price_note || null, age_limit: b.age_limit || null,
+      ticket_link: link,
+      poster_url: b.poster_url ? safeHttps(b.poster_url) : null,
+      status: 'live', is_public: true,
+      dedupe_key: makeKey({ title: b.title, city: b.city, start_at: start.toISOString() }),
+      canonical_link: canonLink(link)
+    };
+
+    // 1) same platform + same id: sirf update (status ko chhedna nahi)
+    if (row.external_id) {
+      const { data: ex } = await supabase.from('events').select('id')
+        .eq('external_platform', row.external_platform).eq('external_id', row.external_id).maybeSingle();
+      if (ex) {
+        const { status, ...upd } = row;
+        const { error } = await supabase.from('events').update(upd).eq('id', ex.id);
+        error ? result.rejected.push(row.title) : result.updated++;
+        continue;
+      }
+    }
+    // 2) kisi aur ne pehle daal diya (user ya doosra feed): skip
+    if (await findDuplicate(supabase, row)) { result.duplicates++; continue; }
+
+    // 3) naya event
+    const { error } = await supabase.from('events').insert(row);
+    if (error?.code === '23505') result.duplicates++;
+    else if (error) result.rejected.push(row.title);
+    else result.inserted++;
+  }
+  return res.status(200).json(result);
+}
