@@ -218,8 +218,20 @@ async function getEvents(query = {}) {
     const key = `${event.provider}:${event.provider_id}`;
     if (!byId.has(key)) byId.set(key, event);
   }
+  // Expand 2-letter country codes to full names so they match stored values like "India"
+  const COUNTRY_CODE_MAP = { IN: 'India', US: 'United States', GB: 'United Kingdom', AU: 'Australia', CA: 'Canada' };
+  const countryFull = countryCode ? (COUNTRY_CODE_MAP[countryCode.toUpperCase()] || '').toLowerCase() : '';
+  const countryUpper = countryCode ? countryCode.toUpperCase() : '';
+
   const live = [...byId.values()]
-    .filter((event) => !countryCode || String(event.country || '').toUpperCase() === countryCode.toUpperCase() || String(event.country || '').toLowerCase() === String(countryCode).toLowerCase())
+    .filter((event) => {
+      if (!countryCode) return true;
+      const c = String(event.country || '');
+      // Match by 2-letter code OR full name (e.g. "IN" matches "India")
+      return c.toUpperCase() === countryUpper ||
+             c.toLowerCase() === String(countryCode).toLowerCase() ||
+             (countryFull && c.toLowerCase() === countryFull);
+    })
     .sort((a, b) => String(a.start_at || '').localeCompare(String(b.start_at || '')))
     .slice(0, limit);
 
