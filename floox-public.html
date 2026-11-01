@@ -387,6 +387,7 @@ footer{background:var(--text);padding:5rem 5% 0;display:grid;grid-template-colum
   </a>
   <ul class="nav-links">
     <li><a href="#discover">Discover Events</a></li>
+    <li><a href="/events" style="color:var(--orange)">🎪 All Events</a></li>
     <li><a href="floox-platform.html">For Artists</a></li>
     <li><a href="floox-platform.html">For Organisers</a></li>
     <li><a href="floox-contact.html">Plan Event</a></li>
@@ -403,6 +404,7 @@ footer{background:var(--text);padding:5rem 5% 0;display:grid;grid-template-colum
 <div class="mob-menu" id="mobMenu">
   <span class="mob-x" onclick="toggleMob()">✕</span>
   <a href="#discover" onclick="toggleMob()">Discover Events</a>
+  <a href="/events" style="color:var(--orange)" onclick="toggleMob()">🎪 All Events</a>
   <a href="floox-artist-register.html" onclick="toggleMob()">For Artists</a>
   <a href="floox-organiser-register.html" onclick="toggleMob()">For Organisers</a>
   <a href="floox-contact.html" onclick="toggleMob()">Plan Event</a>
@@ -526,7 +528,7 @@ footer{background:var(--text);padding:5rem 5% 0;display:grid;grid-template-colum
 <section class="discover-section" id="discover">
   <div class="sec-chip chip-teal">🎪 Upcoming Events</div>
   <h2 class="sec-title">Aapke <span style="background:linear-gradient(135deg,var(--teal),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Sheher</span> Mein.</h2>
-  <p class="sec-sub">Live listings from organisers actively looking for artists right now — and shows you can look forward to.</p>
+  <p class="sec-sub">Live events from BookMyShow, District & Floox organisers — all in one place. Click to book on the official site.</p>
   <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin:1.5rem 0;align-items:center">
   <select id="fCity"><option value="">All cities</option></select>
   <select id="fRange">
@@ -535,9 +537,17 @@ footer{background:var(--text);padding:5rem 5% 0;display:grid;grid-template-colum
     <option value="week">Next 7 days</option>
   </select>
   <label><input type="checkbox" id="fFree"> Free only</label>
+  <span style="margin-left:auto;font-size:0.75rem;color:var(--muted);font-family:var(--head)">
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#E31837;margin-right:3px"></span>BMS &nbsp;
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#6C2BF6;margin-right:3px"></span>District &nbsp;
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--orange);margin-right:3px"></span>Floox
+  </span>
 </div>
 <div class="events-grid" id="eventsGrid"></div>
 <p id="eventsEmpty" style="display:none;text-align:center;color:var(--muted)">Abhi koi event nahi mila.</p>
+<div style="text-align:center;margin-top:2rem">
+  <a href="/events" class="btn btn-ghost" style="font-size:0.85rem">See All Events →</a>
+</div>
 </section>
 
 <!-- ══ GENRE EXPLORER ══ -->
@@ -893,51 +903,130 @@ const EV_GENRE_BG = {
 };
 const fmtEvDate = d => new Date(d).toLocaleDateString('en-IN', {day:'numeric', month:'short', timeZone:'Asia/Kolkata'});
 
+const SRC_META = {
+  bookmyshow: { label:'BookMyShow', color:'#E31837', short:'BMS' },
+  district:   { label:'District',   color:'#6C2BF6', short:'District' },
+  ticketmaster:{ label:'Ticketmaster', color:'#026CDF', short:'TM' },
+  eventbrite: { label:'Eventbrite', color:'#F05537', short:'EB' },
+  floox:      { label:'Floox',      color:'#FF5C00', short:'Floox' },
+};
+
 async function loadEvents() {
   const grid = document.getElementById('eventsGrid');
   if (!grid) return;
-  const fCity = document.getElementById('fCity');
+  const fCity  = document.getElementById('fCity');
   const fRange = document.getElementById('fRange');
-  const fFree = document.getElementById('fFree');
+  const fFree  = document.getElementById('fFree');
 
   const p = new URLSearchParams();
-  if (fCity.value) p.set('city', fCity.value);
+  if (fCity.value)  p.set('city', fCity.value);
   if (fRange.value) p.set('range', fRange.value);
   if (fFree.checked) p.set('free', '1');
 
-  try {
-    const r = await fetch('/api/events?' + p);
-    const { events = [] } = await r.json();
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted);font-family:var(--head)">Loading events…</div>';
 
+  try {
+    // Fetch Floox organiser events + BMS/District global events in parallel
+    const gp = new URLSearchParams({ countryCode:'IN', limit:'12' });
+    if (fCity.value) gp.set('city', fCity.value);
+
+    const [flooxRes, globalRes] = await Promise.allSettled([
+      fetch('/api/events?' + p).then(r => r.json()).catch(() => ({ events:[] })),
+      fetch('/api/global-events?' + gp).then(r => r.json()).catch(() => ({ events:[] })),
+    ]);
+
+    const flooxEvents  = (flooxRes.value?.events || []).map(e => ({ ...e, _src:'floox' }));
+    const globalEvents = (globalRes.value?.events || []).filter(e => e.provider !== 'floox');
+
+    // Populate city dropdown from both sources
     if (!fCity.dataset.filled) {
-      [...new Set(events.map(e => e.city))].sort().forEach(c => fCity.add(new Option(c, c)));
+      const cities = [...new Set([
+        ...flooxEvents.map(e => e.city),
+        ...globalEvents.map(e => e.city),
+      ])].filter(Boolean).sort();
+      cities.forEach(c => fCity.add(new Option(c, c)));
       fCity.dataset.filled = '1';
     }
 
-    grid.innerHTML = events.map(e => {
-      const ext = e.source === 'external';
-      const info = ext
-        ? 'via ' + escHtml(e.external_platform || 'partner')
-        : (e.artist_slots_open > 0
-            ? '<strong>' + escHtml(e.artist_slots_open) + '</strong> artist slots open'
-            : (e.is_free ? 'Free entry' : '₹' + escHtml(e.price ?? '')));
+    // Normalise Floox events to same shape as global events
+    const normFloox = flooxEvents.map(e => ({
+      _key: 'floox:' + e.id,
+      provider: 'floox',
+      title: e.title,
+      category: e.category || '',
+      start_at: e.start_at,
+      city: e.city || '',
+      venue_name: e.venue || e.area || e.city || '',
+      image_url: e.poster_url || '',
+      ticket_url: null,
+      official_url: 'floox-event.html?id=' + encodeURIComponent(e.id),
+      price_min: e.is_free ? 0 : (e.price || null),
+      _floox_slots: e.artist_slots_open || 0,
+      _floox_free: e.is_free,
+    }));
+
+    const normGlobal = globalEvents.map(e => ({
+      _key: (e.provider||'ext') + ':' + (e.provider_id||e.id),
+      provider: e.provider || 'external',
+      title: e.title,
+      category: e.category || '',
+      start_at: e.start_at,
+      city: e.city || '',
+      venue_name: e.venue_name || '',
+      image_url: e.image_url || '',
+      ticket_url: e.ticket_url || e.official_url || '',
+      official_url: e.official_url || '',
+      price_min: e.price_min,
+      _floox_slots: 0,
+      _floox_free: e.price_min === 0,
+    }));
+
+    // Merge, deduplicate by key, sort by date
+    const seen = new Set();
+    const all = [...normFloox, ...normGlobal].filter(e => {
+      if (seen.has(e._key)) return false;
+      seen.add(e._key);
+      return true;
+    }).sort((a,b) => String(a.start_at||'').localeCompare(String(b.start_at||'')));
+
+    if (!all.length) {
+      grid.innerHTML = '';
+      document.getElementById('eventsEmpty').style.display = 'block';
+      return;
+    }
+    document.getElementById('eventsEmpty').style.display = 'none';
+
+    grid.innerHTML = all.map(e => {
+      const src = SRC_META[e.provider] || { label: e.provider, color:'#888', short: e.provider };
+      const isFloox = e.provider === 'floox';
+      const bookUrl = e.ticket_url || e.official_url || '';
+      const btnLabel = isFloox ? 'View Details' : ('Book on ' + src.short + ' ↗');
+      const btnTarget = isFloox ? '_self' : '_blank';
+      const priceStr = e._floox_free || e.price_min === 0
+        ? 'Free entry'
+        : (e.price_min ? '₹' + escHtml(String(e.price_min)) : '');
+      const slotsStr = e._floox_slots > 0
+        ? '<strong style="color:var(--green)">' + escHtml(String(e._floox_slots)) + '</strong> artist slots'
+        : priceStr;
+
       return `
       <div class="ecard reveal vis">
         <div class="ecard-img-wrap">
-          ${e.poster_url ? `<img src="${escHtml(e.poster_url)}" class="ecard-img" alt="${escHtml(e.title)}" loading="lazy">` : ''}
-          ${e.category ? `<span class="ecard-genre-tag" style="background:${EV_GENRE_BG[e.category] || 'rgba(255,92,0,.85)'};color:#fff">${escHtml(e.category)}</span>` : ''}
+          ${e.image_url ? `<img src="${escHtml(e.image_url)}" class="ecard-img" alt="${escHtml(e.title)}" loading="lazy">` : '<div style="height:100px;background:linear-gradient(135deg,rgba(255,92,0,0.1),rgba(124,58,237,0.1))"></div>'}
+          ${e.category ? `<span class="ecard-genre-tag" style="background:${EV_GENRE_BG[e.category]||'rgba(255,92,0,.85)'};color:#fff">${escHtml(e.category)}</span>` : ''}
+          <span style="position:absolute;top:12px;right:12px;background:${src.color};color:#fff;font-family:var(--head);font-size:0.6rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:100px;letter-spacing:0.05em">${escHtml(src.short)}</span>
         </div>
         <div class="ecard-body">
           <div class="edate">${escHtml(fmtEvDate(e.start_at))} · ${escHtml(e.city)}</div>
           <div class="ename">${escHtml(e.title)}</div>
-          <div class="evenue">📍 ${escHtml(e.venue || e.area || e.city)}</div>
-          <div class="efoot"><span class="eslots">${info}</span>
-            <a class="ebtn" href="floox-event.html?id=${encodeURIComponent(e.id)}" style="text-decoration:none;display:inline-block">View Details</a></div>
+          <div class="evenue">📍 ${escHtml(e.venue_name || e.city)}</div>
+          <div class="efoot"><span class="eslots">${slotsStr}</span>
+            ${bookUrl ? `<a class="ebtn" href="${escHtml(bookUrl)}" target="${btnTarget}" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;background:${isFloox?'rgba(255,92,0,0.08)':src.color};color:${isFloox?'var(--orange)':'#fff'};border-color:${isFloox?'rgba(255,92,0,0.15)':src.color}">${escHtml(btnLabel)}</a>` : ''}
+          </div>
         </div>
       </div>`;
     }).join('');
 
-    document.getElementById('eventsEmpty').style.display = events.length ? 'none' : 'block';
   } catch (err) { console.warn('Could not load events', err); }
 }
 ['fCity','fRange','fFree'].forEach(id => document.getElementById(id).addEventListener('change', loadEvents));
