@@ -996,23 +996,35 @@ async function loadEvents() {
     }
     document.getElementById('eventsEmpty').style.display = 'none';
 
+    const FALLBACK_IMGS = {
+      'Music Festival':'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&h=340&fit=crop&q=75',
+      'Concert':'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&h=340&fit=crop&q=75',
+      'Electronic':'https://images.unsplash.com/photo-1571266028243-d220c6a4a5eb?w=600&h=340&fit=crop&q=75',
+      'Bollywood':'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&h=340&fit=crop&q=75',
+      'Indie':'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&h=340&fit=crop&q=75',
+      'Rock':'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&h=340&fit=crop&q=75',
+      'default':'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=340&fit=crop&q=75',
+    };
+
     grid.innerHTML = all.map(e => {
       const src = SRC_META[e.provider] || { label: e.provider, color:'#888', short: e.provider };
       const isFloox = e.provider === 'floox';
-      const bookUrl = e.ticket_url || e.official_url || '';
-      const btnLabel = isFloox ? 'View Details' : ('Book on ' + src.short + ' ↗');
-      const btnTarget = isFloox ? '_self' : '_blank';
+      const imgSrc = e.image_url || FALLBACK_IMGS[e.category] || FALLBACK_IMGS.default;
+      const detailKey = `${e.provider}:${e._key?.split(':').slice(1).join(':') || e.provider_id || ''}`;
+      const detailUrl = isFloox
+        ? `/floox-event.html?id=${encodeURIComponent(e.id||'')}`
+        : `/floox-event-detail.html?key=${encodeURIComponent(detailKey)}`;
       const priceStr = e._floox_free || e.price_min === 0
-        ? 'Free entry'
-        : (e.price_min ? '₹' + escHtml(String(e.price_min)) : '');
+        ? '<span style="color:#22a06b;font-weight:700">Free entry</span>'
+        : (e.price_min ? '₹' + escHtml(String(Number(e.price_min).toLocaleString('en-IN'))) : '');
       const slotsStr = e._floox_slots > 0
         ? '<strong style="color:var(--green)">' + escHtml(String(e._floox_slots)) + '</strong> artist slots'
         : priceStr;
 
       return `
-      <div class="ecard reveal vis">
+      <div class="ecard reveal vis" onclick="(function(){try{sessionStorage.setItem('floox_event_${escHtml(detailKey)}',JSON.stringify(${JSON.stringify(JSON.stringify(e))}))}catch(e){}window.location.href='${escHtml(detailUrl)}';})()" style="cursor:pointer">
         <div class="ecard-img-wrap">
-          ${e.image_url ? `<img src="${escHtml(e.image_url)}" class="ecard-img" alt="${escHtml(e.title)}" loading="lazy">` : '<div style="height:100px;background:linear-gradient(135deg,rgba(255,92,0,0.1),rgba(124,58,237,0.1))"></div>'}
+          <img src="${escHtml(imgSrc)}" class="ecard-img" alt="${escHtml(e.title)}" loading="lazy" onerror="this.src='${FALLBACK_IMGS.default}'">
           ${e.category ? `<span class="ecard-genre-tag" style="background:${EV_GENRE_BG[e.category]||'rgba(255,92,0,.85)'};color:#fff">${escHtml(e.category)}</span>` : ''}
           <span style="position:absolute;top:12px;right:12px;background:${src.color};color:#fff;font-family:var(--head);font-size:0.6rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:100px;letter-spacing:0.05em">${escHtml(src.short)}</span>
         </div>
@@ -1021,7 +1033,7 @@ async function loadEvents() {
           <div class="ename">${escHtml(e.title)}</div>
           <div class="evenue">📍 ${escHtml(e.venue_name || e.city)}</div>
           <div class="efoot"><span class="eslots">${slotsStr}</span>
-            ${bookUrl ? `<a class="ebtn" href="${escHtml(bookUrl)}" target="${btnTarget}" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;background:${isFloox?'rgba(255,92,0,0.08)':src.color};color:${isFloox?'var(--orange)':'#fff'};border-color:${isFloox?'rgba(255,92,0,0.15)':src.color}">${escHtml(btnLabel)}</a>` : ''}
+            <span class="ebtn" style="background:${isFloox?'rgba(255,92,0,0.08)':src.color};color:${isFloox?'var(--orange)':'#fff'};border:1px solid ${isFloox?'rgba(255,92,0,0.15)':src.color}">View details →</span>
           </div>
         </div>
       </div>`;

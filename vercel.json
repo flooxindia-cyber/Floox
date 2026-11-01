@@ -19,6 +19,7 @@
   ],
   "routes": [
     { "src": "/login", "dest": "/floox-login.html" },
+    { "src": "/event-detail", "dest": "/floox-event-detail.html" },
     { "src": "/events", "dest": "/floox-events.html" },
     { "src": "/discover", "dest": "/floox-search-results.html" },
     { "src": "/search", "dest": "/floox-search-results.html" },

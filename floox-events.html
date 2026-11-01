@@ -527,6 +527,26 @@
     return ec === uc || ec.includes(uc) || uc.includes(ec);
   }
 
+  // ── Fallback images by category ────────────────────────────────────────────
+  const FALLBACK_IMGS = {
+    'Music Festival': 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&h=340&fit=crop&q=80',
+    'Concert':        'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&h=340&fit=crop&q=80',
+    'Electronic':     'https://images.unsplash.com/photo-1571266028243-d220c6a4a5eb?w=600&h=340&fit=crop&q=80',
+    'Bollywood':      'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&h=340&fit=crop&q=80',
+    'Indie':          'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&h=340&fit=crop&q=80',
+    'Rock':           'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&h=340&fit=crop&q=80',
+    'Music':          'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=340&fit=crop&q=80',
+    'default':        'https://images.unsplash.com/photo-1506157786151-b8491531f063?w=600&h=340&fit=crop&q=80',
+  };
+
+  function getFallbackImg(event) {
+    const cat = String(event.category || '');
+    for (const key of Object.keys(FALLBACK_IMGS)) {
+      if (key !== 'default' && cat.toLowerCase().includes(key.toLowerCase())) return FALLBACK_IMGS[key];
+    }
+    return FALLBACK_IMGS['default'];
+  }
+
   // ── Card render ────────────────────────────────────────────────────────────
   function renderCard(event) {
     const imgSrc  = safeUrl(event.image_url);
@@ -535,19 +555,29 @@
     const nearby  = isNearby(event);
     const srcName = sourceName(event.provider);
     const srcCls  = sourceCls(event.provider);
+    const fallback = getFallbackImg(event);
 
-    const imgMarkup = imgSrc !== '#'
-      ? `<img src="${esc(imgSrc)}" alt="${esc(event.title)}" loading="lazy" referrerpolicy="no-referrer">`
-      : `<div class="ev-no-img">🎟️</div>`;
+    // Detail page key — same format as floox-public.html
+    const isFloox = event.provider === 'floox';
+    const detailKey = `${event.provider}:${event.provider_id}`;
+    const detailUrl = isFloox
+      ? `/floox-event.html?id=${encodeURIComponent(event.id || '')}`
+      : `/floox-event-detail.html?key=${encodeURIComponent(detailKey)}`;
+
+    // Always show an image — real URL or Unsplash fallback
+    const finalImg = imgSrc !== '#' ? imgSrc : fallback;
+    const imgMarkup = `<img src="${esc(finalImg)}" alt="${esc(event.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${esc(fallback)}'">`;
 
     const ctaMarkup = bookUrl !== '#'
-      ? `<a class="ev-cta" href="${esc(bookUrl)}" target="_blank" rel="noopener noreferrer">
+      ? `<a class="ev-cta" href="${esc(bookUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
            Book on ${esc(srcName)} ↗
          </a>`
       : `<div class="ev-cta-nolink">No booking link available</div>`;
 
     return `
-<article class="ev-card">
+<article class="ev-card" role="button" tabindex="0" style="cursor:pointer"
+  onclick="(function(){try{sessionStorage.setItem('floox_event_detail','${encodeURIComponent(JSON.stringify(event))}');}catch(e){}window.location.href='${detailUrl}';})()"
+  onkeydown="if(event.key==='Enter'||event.key===' '){this.click();}">
   <div class="ev-img">
     ${imgMarkup}
     <span class="ev-source-badge ${srcCls}">${esc(srcName)}</span>
@@ -574,7 +604,6 @@
     ${ctaMarkup}
   </div>
 </article>`;
-  }
 
   // ── Filter + sort ──────────────────────────────────────────────────────────
   function applyFilters() {

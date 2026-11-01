@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Event — Floox</title>
+<link rel="icon" href="https://res.cloudinary.com/cqes6im5/image/upload/v1/floox/floox-icon.png" onerror="this.remove()">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#FF5C00;--bg:#fff;--text:#111;--muted:#666;--border:#e8e3dc;
+  --head:'Syne',sans-serif;--body:'Inter',sans-serif;
+  --bms:#E31837;--dist:#6C2BF6;--floox:#FF5C00;--tm:#026CDF;--eb:#F05537;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 5%;display:flex;align-items:center;height:64px;gap:1rem}
+.nav-logo{font-family:var(--head);font-weight:800;font-size:1.4rem;color:var(--orange);text-decoration:none;margin-right:auto}
+.nav-back{font-family:var(--head);font-size:0.82rem;font-weight:700;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:0.4rem;transition:color 0.2s}
+.nav-back:hover{color:var(--text)}
+
+/* ── HERO ── */
+.hero{position:relative;width:100%;height:420px;overflow:hidden;background:#111}
+.hero-img{width:100%;height:100%;object-fit:cover;display:block;opacity:0.75;transition:opacity 0.4s}
+.hero-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(0,0,0,0.85) 100%)}
+.hero-meta{position:absolute;bottom:0;left:0;right:0;padding:2.5rem 5%}
+.hero-badge{display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.9rem;border-radius:100px;font-family:var(--head);font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fff;margin-bottom:1rem}
+.hero-title{font-family:var(--head);font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:#fff;line-height:1.15;margin-bottom:0.5rem;text-shadow:0 2px 20px rgba(0,0,0,0.4)}
+.hero-sub{font-size:1rem;color:rgba(255,255,255,0.75);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+
+/* ── LAYOUT ── */
+.container{max-width:900px;margin:0 auto;padding:3rem 5%}
+.layout{display:grid;grid-template-columns:1fr 340px;gap:3rem;align-items:start}
+
+/* ── LEFT COLUMN ── */
+.section-label{font-family:var(--head);font-size:0.68rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange);margin-bottom:0.75rem}
+.about-text{font-size:1rem;line-height:1.75;color:#333;white-space:pre-line}
+.details-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.5rem}
+.detail-item{background:#f9f6f2;border-radius:14px;padding:1.1rem 1.3rem}
+.detail-icon{font-size:1.2rem;margin-bottom:0.4rem}
+.detail-label{font-family:var(--head);font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.25rem}
+.detail-val{font-family:var(--head);font-size:0.95rem;font-weight:700;color:var(--text)}
+
+/* ── MAP PLACEHOLDER ── */
+.map-wrap{border-radius:16px;overflow:hidden;height:200px;background:#f0ece6;margin-top:1.5rem;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.9rem;border:1.5px solid var(--border)}
+
+/* ── RIGHT COLUMN — TICKET CARD ── */
+.ticket-card{background:#fff;border:1.5px solid var(--border);border-radius:24px;padding:2rem;position:sticky;top:80px;box-shadow:0 8px 32px rgba(0,0,0,0.07)}
+.ticket-price{font-family:var(--head);font-size:2rem;font-weight:800;color:var(--text);margin-bottom:0.25rem}
+.ticket-price-sub{font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem}
+.ticket-btn{display:block;width:100%;padding:1rem;border-radius:14px;font-family:var(--head);font-size:1rem;font-weight:700;color:#fff;text-align:center;text-decoration:none;transition:all 0.2s;cursor:pointer;border:none;margin-bottom:0.75rem}
+.ticket-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.ticket-btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text);display:block;width:100%;padding:0.85rem;border-radius:14px;font-family:var(--head);font-size:0.85rem;font-weight:700;text-align:center;text-decoration:none;transition:all 0.2s}
+.ticket-btn-ghost:hover{border-color:var(--orange);color:var(--orange)}
+.ticket-divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
+.ticket-info-row{display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--muted);margin-bottom:0.6rem}
+.ticket-info-row:last-child{margin-bottom:0}
+.ticket-badge{display:inline-flex;align-items:center;gap:0.35rem;padding:0.25rem 0.7rem;border-radius:100px;font-family:var(--head);font-size:0.65rem;font-weight:700;letter-spacing:0.06em;color:#fff;margin-bottom:1.5rem}
+
+/* ── LOADING / ERROR ── */
+#loadingState{text-align:center;padding:6rem 2rem;color:var(--muted)}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+#errorState{text-align:center;padding:6rem 2rem;display:none}
+#mainContent{display:none}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .layout{grid-template-columns:1fr}
+  .hero{height:280px}
+  .hero-title{font-size:1.6rem}
+  .ticket-card{position:static;margin-top:2rem}
+  .details-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Floox</a>
+  <a href="javascript:history.back()" class="nav-back">← Back</a>
+  <a href="/events" class="nav-back">All Events</a>
+</nav>
+
+<!-- Loading -->
+<div id="loadingState">
+  <div class="spinner"></div>
+  <p>Loading event…</p>
+</div>
+
+<!-- Error -->
+<div id="errorState">
+  <p style="font-size:3rem;margin-bottom:1rem">😕</p>
+  <h2 style="font-family:var(--head);margin-bottom:0.5rem">Event not found</h2>
+  <p style="color:var(--muted);margin-bottom:2rem">This event may have passed or the link is broken.</p>
+  <a href="/events" style="font-family:var(--head);font-weight:700;color:var(--orange);text-decoration:none">Browse all events →</a>
+</div>
+
+<!-- Main content -->
+<div id="mainContent">
+  <!-- Hero -->
+  <div class="hero">
+    <img id="heroImg" class="hero-img" src="" alt="" loading="eager">
+    <div class="hero-gradient"></div>
+    <div class="hero-meta">
+      <div id="heroBadge" class="hero-badge"></div>
+      <h1 id="heroTitle" class="hero-title"></h1>
+      <div id="heroSub" class="hero-sub"></div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="container">
+    <div class="layout">
+      <!-- Left -->
+      <div>
+        <p class="section-label">About this event</p>
+        <p id="aboutText" class="about-text"></p>
+
+        <div class="details-grid" id="detailsGrid"></div>
+
+        <div id="mapWrap" class="map-wrap" style="display:none">
+          <span>📍 <span id="mapLabel"></span></span>
+        </div>
+      </div>
+
+      <!-- Right — Ticket card -->
+      <div>
+        <div class="ticket-card">
+          <div id="ticketBadge" class="ticket-badge"></div>
+          <div id="ticketPrice" class="ticket-price"></div>
+          <div id="ticketPriceSub" class="ticket-price-sub"></div>
+          <a id="ticketBtn" class="ticket-btn" href="#" target="_blank" rel="noopener noreferrer">Get Tickets ↗</a>
+          <a href="/events" class="ticket-btn-ghost">Browse more events</a>
+          <hr class="ticket-divider">
+          <div class="ticket-info-row">🔒 Tickets sold by the official platform</div>
+          <div class="ticket-info-row">↗ You'll be redirected to the official booking site</div>
+          <div class="ticket-info-row">✓ Floox does not handle payment or ticketing</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SRC_META = {
+  bookmyshow:  { label:'BookMyShow',  color:'#E31837', short:'BMS' },
+  district:    { label:'District',    color:'#6C2BF6', short:'District' },
+  ticketmaster:{ label:'Ticketmaster',color:'#026CDF', short:'TM' },
+  eventbrite:  { label:'Eventbrite',  color:'#F05537', short:'EB' },
+  floox:       { label:'Floox',       color:'#FF5C00', short:'Floox' },
+};
+
+const FALLBACK_IMAGES = {
+  'Music Festival': 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop&q=80',
+  'Concert':        'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=1200&h=600&fit=crop&q=80',
+  'Electronic':     'https://images.unsplash.com/photo-1571266028243-d220c6a4a5eb?w=1200&h=600&fit=crop&q=80',
+  'Bollywood':      'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&h=600&fit=crop&q=80',
+  'Indie':          'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=1200&h=600&fit=crop&q=80',
+  'Rock':           'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1200&h=600&fit=crop&q=80',
+  'default':        'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&h=600&fit=crop&q=80',
+};
+
+function esc(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+
+function fmtDate(d, includeTime = true) {
+  if (!d) return 'TBA';
+  const opts = { weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone:'Asia/Kolkata' };
+  if (includeTime) { opts.hour = '2-digit'; opts.minute = '2-digit'; opts.hour12 = true; }
+  return new Date(d).toLocaleString('en-IN', opts);
+}
+
+function fmtPrice(min, max, currency) {
+  if (min === 0 || min === null && max === 0) return 'Free';
+  const sym = currency === 'INR' ? '₹' : (currency || '');
+  if (min && max && min !== max) return `${sym}${Number(min).toLocaleString('en-IN')} – ${sym}${Number(max).toLocaleString('en-IN')}`;
+  if (min) return `${sym}${Number(min).toLocaleString('en-IN')} onwards`;
+  return 'Check official site';
+}
+
+async function loadEvent() {
+  const params = new URLSearchParams(location.search);
+  // Support ?provider=bookmyshow&id=xxx OR ?key=bookmyshow:xxx
+  const keyParam = params.get('key');
+  let provider = params.get('provider');
+  let providerId = params.get('id');
+
+  if (keyParam && keyParam.includes(':')) {
+    [provider, ...rest] = keyParam.split(':');
+    providerId = rest.join(':');
+  }
+
+  // Also support passing full event as JSON in sessionStorage (set by listing page)
+  const cached = sessionStorage.getItem('floox_event_' + (keyParam || `${provider}:${providerId}`));
+  if (cached) {
+    try { return renderEvent(JSON.parse(cached)); } catch {}
+  }
+
+  if (!provider || !providerId) {
+    showError();
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/global-events?countryCode=IN&limit=50`);
+    const data = await res.json();
+    const event = (data.events || []).find(e =>
+      e.provider === provider && String(e.provider_id) === String(providerId)
+    );
+    if (!event) { showError(); return; }
+    renderEvent(event);
+  } catch {
+    showError();
+  }
+}
+
+function renderEvent(e) {
+  document.title = `${e.title} — Floox`;
+
+  const src = SRC_META[e.provider] || { label: e.provider, color:'#888', short: e.provider };
+
+  // Hero image
+  const img = document.getElementById('heroImg');
+  const imgSrc = e.image_url || FALLBACK_IMAGES[e.category] || FALLBACK_IMAGES.default;
+  img.src = imgSrc;
+  img.alt = e.title;
+  img.onerror = () => { img.src = FALLBACK_IMAGES.default; };
+
+  // Hero badge + title
+  document.getElementById('heroBadge').style.background = src.color;
+  document.getElementById('heroBadge').textContent = src.label;
+  document.getElementById('heroTitle').textContent = e.title;
+  document.getElementById('heroSub').innerHTML = `
+    <span>📅 ${fmtDate(e.start_at, false)}</span>
+    <span>📍 ${esc(e.venue_name || e.city)}, ${esc(e.city)}</span>
+    ${e.category ? `<span>🎵 ${esc(e.category)}</span>` : ''}
+  `;
+
+  // About
+  document.getElementById('aboutText').textContent = e.description || 'No description available.';
+
+  // Details grid
+  const details = [
+    { icon:'📅', label:'Date', val: fmtDate(e.start_at) },
+    e.end_at ? { icon:'⏰', label:'End Time', val: fmtDate(e.end_at) } : null,
+    { icon:'📍', label:'Venue', val: e.venue_name || e.city },
+    { icon:'🏙️', label:'City', val: [e.city, e.state, e.country].filter(Boolean).join(', ') },
+    e.organizer_name ? { icon:'🎪', label:'Organiser', val: e.organizer_name } : null,
+    e.category ? { icon:'🎵', label:'Category', val: e.category } : null,
+  ].filter(Boolean);
+
+  document.getElementById('detailsGrid').innerHTML = details.map(d => `
+    <div class="detail-item">
+      <div class="detail-icon">${d.icon}</div>
+      <div class="detail-label">${esc(d.label)}</div>
+      <div class="detail-val">${esc(d.val)}</div>
+    </div>
+  `).join('');
+
+  // Map placeholder
+  if (e.city) {
+    document.getElementById('mapWrap').style.display = 'flex';
+    document.getElementById('mapLabel').textContent = `${e.venue_name || ''}, ${e.city}`;
+  }
+
+  // Ticket card
+  document.getElementById('ticketBadge').style.background = src.color;
+  document.getElementById('ticketBadge').textContent = `Tickets via ${src.label}`;
+  document.getElementById('ticketPrice').textContent = fmtPrice(e.price_min, e.price_max, e.currency);
+  document.getElementById('ticketPriceSub').textContent = e.price_min > 0 ? 'per person (onwards)' : '';
+
+  const bookUrl = e.ticket_url || e.official_url || '';
+  const btn = document.getElementById('ticketBtn');
+  btn.style.background = src.color;
+  btn.textContent = `Book on ${src.label} ↗`;
+  btn.href = bookUrl || '#';
+  if (!bookUrl) btn.style.display = 'none';
+
+  // Show page
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+}
+
+function showError() {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'block';
+}
+
+loadEvent();
+</script>
+</body>
+</html>
