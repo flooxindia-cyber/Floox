@@ -68,11 +68,11 @@ exports.handler = async (event) => {
     return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Unauthorized.' }) };
   }
   try {
-    // Fetch from all sources in parallel
+    // Fetch from all sources in parallel — each wrapped so one failure doesn't kill the sync
     const [indiaResult, globalResult, bmsDistrictResult] = await Promise.allSettled([
-      getEvents({ countryCode: 'IN', limit: 50, live: '1' }),
-      getEvents({ limit: 100, live: '1' }),
-      indiaEvents({ limit: 80 }),  // BookMyShow + District
+      getEvents({ countryCode: 'IN', limit: 50, live: '1' }).catch(e => { console.error('getEvents IN failed:', e.message); return []; }),
+      getEvents({ limit: 100, live: '1' }).catch(e => { console.error('getEvents global failed:', e.message); return []; }),
+      indiaEvents({ limit: 80 }).catch(e => { console.error('indiaEvents failed:', e.message); return []; }),  // BookMyShow + District
     ]);
 
     const india         = indiaResult.status      === 'fulfilled' ? indiaResult.value      : [];
@@ -96,11 +96,15 @@ exports.handler = async (event) => {
     }
 
     // Remove only expired external events. No existing Floox organiser events are touched.
-    const cleanup = await fetch(
-      supabaseUrl('global_events', `end_at=lt.${encodeURIComponent(new Date().toISOString())}&provider=neq.floox`),
-      { method: 'DELETE', headers: supabaseHeaders() },
-    );
-    if (!cleanup.ok) console.warn('global-events cleanup failed:', cleanup.status);
+    try {
+      const cleanup = await fetch(
+        supabaseUrl('global_events', `end_at=lt.${encodeURIComponent(new Date().toISOString())}&provider=neq.floox`),
+        { method: 'DELETE', headers: supabaseHeaders() },
+      );
+      if (!cleanup.ok) console.warn('global-events cleanup failed:', cleanup.status);
+    } catch (cleanupErr) {
+      console.warn('global-events cleanup threw:', cleanupErr.message);
+    }
 
     return {
       statusCode: 200,
@@ -112,7 +116,7 @@ exports.handler = async (event) => {
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ok: false, error: 'Event sync failed.' }),
+      body: JSON.stringify({ ok: false, error: 'Event sync failed.', detail: error.message, stack: error.stack?.split('\n').slice(0,5) }),
     };
   }
 };
