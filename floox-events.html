@@ -354,6 +354,127 @@
     /* ── Page top padding for fixed navbar ──────────────────────────────────── */
     body{padding-top:70px}
 
+    /* ── Floox community source tab accent ──────────────────────────────────── */
+    .stab[data-src="floox"].active{border-color:var(--o);background:rgba(255,92,0,.12);color:#ffb37a}
+
+    /* ── List Your Event hero button ─────────────────────────────────────────── */
+    .list-event-hero-btn{
+      display:inline-flex;align-items:center;gap:8px;
+      margin-top:24px;
+      border:1.5px solid rgba(255,92,0,.45);
+      background:rgba(255,92,0,.08);
+      color:#fff;border-radius:999px;
+      padding:12px 26px;font-size:.82rem;font-weight:900;
+      cursor:pointer;transition:border-color .2s,background .2s,transform .2s;
+      font-family:var(--body);letter-spacing:.02em;
+    }
+    .list-event-hero-btn:hover{
+      border-color:var(--o);background:rgba(255,92,0,.18);
+      transform:translateY(-2px);
+    }
+
+    /* ── List-event modal overlay ────────────────────────────────────────────── */
+    #listEventOverlay{
+      display:none;position:fixed;inset:0;z-index:2000;
+      background:rgba(0,0,0,.72);backdrop-filter:blur(6px);
+      align-items:center;justify-content:center;padding:20px;
+    }
+    #listEventOverlay.open{display:flex}
+
+    #listEventModal{
+      background:linear-gradient(160deg,#1e1208 0%,#120a02 100%);
+      border:1px solid rgba(255,92,0,.25);border-radius:24px;
+      width:100%;max-width:580px;max-height:90vh;overflow-y:auto;
+      padding:32px;position:relative;
+      box-shadow:0 32px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,92,0,.1);
+    }
+    #listEventModal::-webkit-scrollbar{width:6px}
+    #listEventModal::-webkit-scrollbar-track{background:transparent}
+    #listEventModal::-webkit-scrollbar-thumb{background:rgba(255,92,0,.3);border-radius:3px}
+
+    .modal-close{
+      position:absolute;top:18px;right:20px;
+      background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+      color:var(--txt2);border-radius:50%;width:34px;height:34px;
+      cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;
+      transition:background .2s;
+    }
+    .modal-close:hover{background:rgba(255,255,255,.14)}
+
+    .modal-head{margin-bottom:24px}
+    .modal-head h2{font-family:var(--head);font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:6px}
+    .modal-head p{font-size:.8rem;color:var(--txt2)}
+
+    /* Login-wall notice (shown when not logged in) */
+    #modalAuthWall{
+      display:none;
+      flex-direction:column;align-items:center;text-align:center;padding:20px 0;gap:16px;
+    }
+    #modalAuthWall.show{display:flex}
+    #modalAuthWall .wall-icon{font-size:2.8rem}
+    #modalAuthWall h3{font-family:var(--head);font-size:1.1rem;font-weight:800;color:#fff}
+    #modalAuthWall p{font-size:.82rem;color:var(--txt2);max-width:300px}
+    #modalAuthWall a{
+      display:inline-block;padding:11px 28px;
+      background:linear-gradient(135deg,var(--o),var(--p));
+      color:#fff;border-radius:999px;font-weight:900;font-size:.85rem;
+      text-decoration:none;transition:opacity .2s;
+    }
+    #modalAuthWall a:hover{opacity:.88}
+
+    /* Form fields */
+    #listEventForm{display:none}
+    #listEventForm.show{display:block}
+
+    .form-row{display:grid;gap:14px;margin-bottom:14px}
+    .form-row.cols2{grid-template-columns:1fr 1fr}
+    .form-group{display:flex;flex-direction:column;gap:6px}
+    .form-group label{font-size:.72rem;font-weight:900;color:var(--txt2);letter-spacing:.04em;text-transform:uppercase}
+    .form-group input,
+    .form-group select,
+    .form-group textarea{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);border-radius:12px;
+      color:var(--txt);padding:11px 14px;font-size:.88rem;font-family:var(--body);
+      outline:none;transition:border-color .2s,box-shadow .2s;width:100%;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus{
+      border-color:rgba(255,92,0,.5);box-shadow:0 0 0 3px rgba(255,92,0,.08);
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder{color:var(--txt3)}
+    .form-group select option{background:#1c1006;color:#fff}
+    .form-group textarea{resize:vertical;min-height:80px}
+
+    .form-hint{font-size:.7rem;color:var(--txt3);margin-top:2px}
+
+    /* Submit button */
+    .modal-submit{
+      width:100%;padding:14px;margin-top:20px;
+      background:linear-gradient(135deg,var(--o),var(--p));
+      color:#fff;border:none;border-radius:14px;
+      font-size:.9rem;font-weight:900;cursor:pointer;font-family:var(--body);
+      transition:opacity .2s,transform .15s;
+    }
+    .modal-submit:hover{opacity:.88;transform:translateY(-1px)}
+    .modal-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+    /* Status message */
+    #listEventStatus{
+      margin-top:14px;padding:12px 16px;border-radius:12px;
+      font-size:.82rem;font-weight:700;display:none;
+    }
+    #listEventStatus.ok{
+      display:block;background:rgba(34,197,94,.12);
+      border:1px solid rgba(34,197,94,.3);color:#4ade80;
+    }
+    #listEventStatus.err{
+      display:block;background:rgba(239,68,68,.1);
+      border:1px solid rgba(239,68,68,.25);color:#f87171;
+    }
+
     /* ── Responsive ───────────────────────────────────────────────────────────── */
     @media(max-width:768px){
       .hero h1{font-size:2.2rem}
@@ -361,6 +482,8 @@
       .city-select,.search-btn{width:100%}
       .nav-links{display:none}
       .hamburger{display:flex}
+      .form-row.cols2{grid-template-columns:1fr}
+      #listEventModal{padding:24px 20px}
     }
   </style>
 </head>
@@ -414,6 +537,9 @@
       <span class="sb-dot" style="background:var(--eb)"></span> Eventbrite
     </div>
   </div>
+  <button class="list-event-hero-btn" id="listEventHeroBtn" onclick="openListEventModal()">
+    🎤 List Your Event — It's Free
+  </button>
 </section>
 
 <!-- ── Nearby Prompt ─────────────────────────────────────────────────────── -->
@@ -485,6 +611,9 @@
   <button class="stab" data-src="eventbrite">
     <span class="dot" style="background:var(--eb)"></span> Eventbrite
   </button>
+  <button class="stab" data-src="floox">
+    <span class="dot" style="background:var(--o)"></span> 🎤 Floox Community
+  </button>
 </div>
 
 <!-- ── Grid ──────────────────────────────────────────────────────────────── -->
@@ -508,6 +637,138 @@
   </div>
 </div>
 
+<!-- ── List Your Event Modal ──────────────────────────────────────────────── -->
+<div id="listEventOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div id="listEventModal">
+    <button class="modal-close" onclick="closeListEventModal()" aria-label="Close">✕</button>
+    <div class="modal-head">
+      <h2 id="modalTitle">🎤 List Your Event</h2>
+      <p>Your event will appear instantly on Floox for everyone in India to discover — for free.</p>
+    </div>
+
+    <!-- Auth wall — shown when user is not logged in -->
+    <div id="modalAuthWall">
+      <span class="wall-icon">🔐</span>
+      <h3>Sign in to list your event</h3>
+      <p>It's free — create your Floox account and your event goes live in seconds.</p>
+      <a href="floox-login.html">Sign In / Register →</a>
+    </div>
+
+    <!-- Form — shown when user is logged in -->
+    <form id="listEventForm" onsubmit="submitListEvent(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="evTitle">Event Title *</label>
+          <input id="evTitle" type="text" placeholder="e.g. Arijit Singh Live in Delhi" maxlength="120" required>
+        </div>
+      </div>
+
+      <div class="form-row cols2">
+        <div class="form-group">
+          <label for="evDate">Date *</label>
+          <input id="evDate" type="date" required>
+        </div>
+        <div class="form-group">
+          <label for="evTime">Time</label>
+          <input id="evTime" type="time" value="19:00">
+        </div>
+      </div>
+
+      <div class="form-row cols2">
+        <div class="form-group">
+          <label for="evCity">City *</label>
+          <select id="evCity" required>
+            <option value="">Select city</option>
+            <option value="Mumbai">Mumbai</option>
+            <option value="Delhi">Delhi</option>
+            <option value="Bangalore">Bangalore</option>
+            <option value="Hyderabad">Hyderabad</option>
+            <option value="Chennai">Chennai</option>
+            <option value="Kolkata">Kolkata</option>
+            <option value="Pune">Pune</option>
+            <option value="Ahmedabad">Ahmedabad</option>
+            <option value="Jaipur">Jaipur</option>
+            <option value="Goa">Goa</option>
+            <option value="Chandigarh">Chandigarh</option>
+            <option value="Lucknow">Lucknow</option>
+            <option value="Kochi">Kochi</option>
+            <option value="Indore">Indore</option>
+            <option value="Surat">Surat</option>
+            <option value="Nagpur">Nagpur</option>
+            <option value="Bhopal">Bhopal</option>
+            <option value="Saharanpur">Saharanpur</option>
+            <option value="Dehradun">Dehradun</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="evCategory">Category</label>
+          <select id="evCategory">
+            <option value="Music">🎵 Music</option>
+            <option value="Concert">🎤 Concert</option>
+            <option value="Music Festival">🎪 Music Festival</option>
+            <option value="Comedy">😂 Comedy</option>
+            <option value="Theatre">🎭 Theatre</option>
+            <option value="Workshop">🎓 Workshop</option>
+            <option value="Art">🎨 Art</option>
+            <option value="Food">🍽️ Food</option>
+            <option value="Sports">⚽ Sports</option>
+            <option value="Club Night">🎧 Club Night</option>
+            <option value="Open Mic">🎙️ Open Mic</option>
+            <option value="Other">📌 Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="evVenue">Venue Name</label>
+          <input id="evVenue" type="text" placeholder="e.g. Indira Gandhi Arena, Blue Frog">
+        </div>
+      </div>
+
+      <div class="form-row cols2">
+        <div class="form-group">
+          <label for="evPriceMin">Price From (₹)</label>
+          <input id="evPriceMin" type="number" min="0" placeholder="0 = Free">
+        </div>
+        <div class="form-group">
+          <label for="evPriceMax">Price Up To (₹)</label>
+          <input id="evPriceMax" type="number" min="0" placeholder="Leave blank if fixed">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="evTicketUrl">Ticket / Info Link</label>
+          <input id="evTicketUrl" type="url" placeholder="https://bookmyshow.com/... or your event page">
+          <span class="form-hint">Where people can book tickets or learn more</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="evImageUrl">Event Photo URL</label>
+          <input id="evImageUrl" type="url" placeholder="https://your-image.jpg (optional)">
+          <span class="form-hint">Paste a direct image link — ideally 800×450 or wider</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="evDescription">About This Event</label>
+          <textarea id="evDescription" placeholder="Tell people what makes this event special…" maxlength="1000"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="modal-submit" id="modalSubmitBtn">
+        🎉 Publish Event — It's Free
+      </button>
+      <div id="listEventStatus"></div>
+    </form>
+  </div>
+</div>
+
 <!-- ── Footer ────────────────────────────────────────────────────────────── -->
 <footer>
   <div>© 2026 Floox · <a href="floox-terms.html">Terms</a> · <a href="floox-privacy.html">Privacy</a></div>
@@ -523,7 +784,7 @@
 
   // ── Config ─────────────────────────────────────────────────────────────────
   const API = '/api/global-events';
-  const PAGE_SIZE = 24;
+  const PAGE_SIZE = 50;
 
   // ── State ──────────────────────────────────────────────────────────────────
   let allEvents   = [];
@@ -794,7 +1055,7 @@
     try {
       const params = new URLSearchParams();
       params.set('countryCode', 'IN');
-      params.set('limit', '100');
+      params.set('limit', '200');
       if (userCity) params.set('city', userCity);
 
       const res = await fetch(`${API}?${params}`);
@@ -979,6 +1240,147 @@
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
   });
 })();
+
+// ── List Your Event modal ──────────────────────────────────────────────────
+// (lives outside IIFE so onclick="..." handlers can reach it)
+
+function openListEventModal() {
+  const overlay = document.getElementById('listEventOverlay');
+  const authWall = document.getElementById('modalAuthWall');
+  const form = document.getElementById('listEventForm');
+  const status = document.getElementById('listEventStatus');
+
+  // Check auth
+  let token = null;
+  try { token = localStorage.getItem('floox_token') || localStorage.getItem('floox-token'); } catch {}
+
+  if (token) {
+    authWall.classList.remove('show');
+    form.classList.add('show');
+    // Set sensible date minimum (tomorrow)
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() + 1);
+    document.getElementById('evDate').min = minDate.toISOString().slice(0,10);
+  } else {
+    authWall.classList.add('show');
+    form.classList.remove('show');
+  }
+
+  status.className = '';
+  status.style.display = 'none';
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeListEventModal() {
+  document.getElementById('listEventOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close on overlay click
+document.getElementById('listEventOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeListEventModal();
+});
+
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeListEventModal();
+});
+
+async function submitListEvent(e) {
+  e.preventDefault();
+
+  const btn = document.getElementById('modalSubmitBtn');
+  const status = document.getElementById('listEventStatus');
+  status.className = '';
+  status.style.display = 'none';
+
+  // Build datetime
+  const dateVal = document.getElementById('evDate').value;
+  const timeVal = document.getElementById('evTime').value || '19:00';
+  const startAt = dateVal ? `${dateVal}T${timeVal}:00+05:30` : null;
+
+  const priceMinRaw = document.getElementById('evPriceMin').value;
+  const priceMaxRaw = document.getElementById('evPriceMax').value;
+
+  const payload = {
+    title:        document.getElementById('evTitle').value.trim(),
+    start_at:     startAt,
+    city:         document.getElementById('evCity').value,
+    category:     document.getElementById('evCategory').value,
+    venue_name:   document.getElementById('evVenue').value.trim(),
+    price_min:    priceMinRaw !== '' ? Number(priceMinRaw) : null,
+    price_max:    priceMaxRaw !== '' ? Number(priceMaxRaw) : null,
+    ticket_url:   document.getElementById('evTicketUrl').value.trim(),
+    official_url: document.getElementById('evTicketUrl').value.trim(),
+    image_url:    document.getElementById('evImageUrl').value.trim(),
+    description:  document.getElementById('evDescription').value.trim(),
+    currency:     'INR',
+  };
+
+  // Validate title
+  if (!payload.title) {
+    showStatus('err', 'Please enter an event title.');
+    return;
+  }
+  if (!startAt || !dateVal) {
+    showStatus('err', 'Please pick a date for your event.');
+    return;
+  }
+  if (!payload.city) {
+    showStatus('err', 'Please select a city.');
+    return;
+  }
+
+  let token = null;
+  try { token = localStorage.getItem('floox_token') || localStorage.getItem('floox-token'); } catch {}
+  if (!token) {
+    showStatus('err', 'You need to be signed in. Please reload the page and try again.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Publishing…';
+
+  try {
+    const res = await fetch('/api/user-events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showStatus('err', data.error || 'Something went wrong. Please try again.');
+    } else {
+      showStatus('ok', `🎉 ${data.message || 'Your event is now live on Floox!'} Refresh the page to see it in the Floox Community tab.`);
+      // Reset form
+      document.getElementById('listEventForm').reset();
+      btn.textContent = '✅ Published!';
+      // Auto-close after 4 s
+      setTimeout(closeListEventModal, 4000);
+    }
+  } catch (err) {
+    console.error('List event error:', err);
+    showStatus('err', 'Network error. Please check your connection and try again.');
+  } finally {
+    if (btn.textContent === 'Publishing…') {
+      btn.disabled = false;
+      btn.textContent = '🎉 Publish Event — It\'s Free';
+    }
+  }
+}
+
+function showStatus(type, msg) {
+  const el = document.getElementById('listEventStatus');
+  el.className = type;
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
 </script>
 </body>
 </html>
