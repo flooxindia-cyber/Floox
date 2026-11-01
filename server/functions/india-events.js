@@ -10,11 +10,19 @@
 async function safeFetch(url, options = {}) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 12000);
+
+  // Route through ScraperAPI when key is set — bypasses Vercel IP blocks from BMS/District
+  const scraperKey = process.env.SCRAPER_API_KEY;
+  const finalUrl = scraperKey
+    ? `https://api.scraperapi.com/?api_key=${scraperKey}&url=${encodeURIComponent(url)}`
+    : url;
+
   try {
-    const res = await fetch(url, {
+    const res = await fetch(finalUrl, {
       ...options,
       signal: ctrl.signal,
-      headers: {
+      // When routing via ScraperAPI, let it handle headers; otherwise set our own
+      headers: scraperKey ? {} : {
         'User-Agent':
           'Mozilla/5.0 (compatible; Floox-EventBot/1.0; +https://floox.in)',
         Accept: 'application/json, text/html;q=0.9',

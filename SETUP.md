@@ -101,12 +101,13 @@ Add each variable below. Set scope to **Production**, **Preview**, and **Develop
 | Variable | Value | Where to get it |
 |---|---|---|
 | `CRON_SECRET` | Any random string | Generate locally |
+| `SCRAPER_API_KEY` | your key | [scraperapi.com](https://scraperapi.com) → free tier (1000 req/month) |
 | `TICKETMASTER_API_KEY` | optional | [developer.ticketmaster.com](https://developer.ticketmaster.com) |
 | `EVENTBRITE_API_TOKEN` | optional | [eventbrite.com/platform](https://www.eventbrite.com/platform) |
 | `BANDSINTOWN_APP_ID` | optional | [bandsintown.com](https://bandsintown.com) |
 | `BANDSINTOWN_ARTISTS` | `Arijit Singh,Nucleya` | Comma-separated artist names |
 
-> BookMyShow and District events are scraped from their public endpoints — no API key needed.
+> **BookMyShow and District** block requests from Vercel server IPs (HTTP 403). `SCRAPER_API_KEY` routes those requests through ScraperAPI's residential proxy pool, bypassing the block. Without it, BMS/District events will be empty.
 
 ### 4c. Verify cron job
 In `vercel.json` the daily sync is already configured:
