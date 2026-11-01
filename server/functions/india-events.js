@@ -13,9 +13,11 @@ async function safeFetch(url, options = {}) {
 
   // Route through ScraperAPI when key is set — bypasses Vercel IP blocks from BMS/District
   const scraperKey = process.env.SCRAPER_API_KEY;
+  if (!scraperKey) console.warn('[india-events] SCRAPER_API_KEY not set — direct fetch will likely 403');
   const finalUrl = scraperKey
     ? `https://api.scraperapi.com/?api_key=${scraperKey}&url=${encodeURIComponent(url)}`
     : url;
+  console.log(`[india-events] fetching via ${scraperKey ? 'ScraperAPI' : 'direct'}: ${url.slice(0, 80)}`);
 
   try {
     const res = await fetch(finalUrl, {
