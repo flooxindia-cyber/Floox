@@ -57,12 +57,12 @@ a{text-decoration:none;color:inherit}
 
 /* ── Hero ── */
 .hero{
-  position:relative;width:100%;min-height:520px;display:flex;align-items:flex-end;
+  position:relative;width:100%;min-height:clamp(320px,52vw,560px);display:flex;align-items:flex-end;
   overflow:hidden;background:#111;margin-top:64px;
 }
 .hero-img{
   position:absolute;inset:0;width:100%;height:100%;
-  object-fit:cover;opacity:0.45;transition:opacity .6s;
+  object-fit:cover;object-position:center top;opacity:0.45;transition:opacity .6s;
 }
 .hero-gradient{
   position:absolute;inset:0;
@@ -236,11 +236,14 @@ a{text-decoration:none;color:inherit}
 @media(max-width:900px){
   .page-wrap{grid-template-columns:1fr}
   .ticket-card{position:static}
-  .hero{min-height:380px}
+  .hero{min-height:clamp(260px,50vw,380px)}
   .hero-title{font-size:clamp(1.7rem,6vw,2.6rem)}
   .detail-grid{grid-template-columns:1fr}
   .hamburger{display:flex}
   .nav-links{display:none}
+}
+@media(max-width:480px){
+  .hero{min-height:260px}
 }
 </style>
 </head>
@@ -443,6 +446,12 @@ function renderEvent(e) {
   img.alt = e.title;
   img.onerror = () => { img.src = FALLBACK_IMGS.default; img.onerror = null; };
 
+  // Upgrade to Wikipedia photo for static events
+  const _wikiTitle = WIKI_SEARCH_DETAIL[e.provider_id];
+  if (_wikiTitle) {
+    fetchWikiPhotoDetail(e.provider_id, _wikiTitle, img);
+  }
+
   // Hero source badge
   const sb = document.getElementById('heroSourceBadge');
   sb.style.background = src.color;
@@ -554,6 +563,63 @@ async function loadEvent() {
   } catch {
     showError();
   }
+}
+
+/* ── Wikipedia photo map for static events ── */
+const WIKI_SEARCH_DETAIL = {
+  'static-arijit-singh-delhi-2026':       'Arijit Singh',
+  'static-prateek-kuhad-hyderabad-2026':  'Prateek Kuhad',
+  'static-diljit-dosanjh-mumbai-2026':    'Diljit Dosanjh',
+  'static-ap-dhillon-delhi-2026':         'AP Dhillon',
+  'static-karan-aujla-bangalore-2026':    'Karan Aujla',
+  'static-ritviz-pune-2026':              'Ritviz',
+  'static-armaan-malik-chennai-2026':     'Armaan Malik',
+  'static-divine-mumbai-2026':            'Divine (rapper)',
+  'static-jonita-gandhi-kolkata-2026':    'Jonita Gandhi',
+  'static-agam-hyderabad-2026':           'Agam (band)',
+  'static-shreya-ghoshal-ahmedabad-2026': 'Shreya Ghoshal',
+  'static-seedhe-maut-delhi-2026':        'Seedhe Maut',
+  'static-darshan-raval-jaipur-2026':     'Darshan Raval',
+  'static-euphoria-chandigarh-2026':      'Euphoria (band)',
+  'static-shankar-ehsaan-loy-mumbai-2026':'Shankar–Ehsaan–Loy',
+  'static-raghu-dixit-bangalore-2026':    'Raghu Dixit',
+  'static-indian-ocean-delhi-2026':       'Indian Ocean (band)',
+  'static-anuv-jain-pune-2027':           'Anuv Jain',
+  'static-comedy-factory-mumbai-2026':    'Zakir Khan (comedian)',
+  'static-zakir-khan-delhi-2026':         'Zakir Khan (comedian)',
+  'static-sunburn-2026':                  'Sunburn Festival',
+  'static-nh7-pune-2026':                 'NH7 Weekender',
+  'static-bacardi-nh7-delhi-2026':        'NH7 Weekender',
+  'static-lollapalooza-mumbai-2027':      'Lollapalooza India',
+  'static-bollywood-music-project-2026':  'Arijit Singh',
+  'static-when-chai-met-toast-bangalore': 'When Chai Met Toast',
+  'static-when-chai-met-toast-kochi-2027':'When Chai Met Toast',
+  'static-nucleya-mumbai-2026':           'Nucleya',
+  'static-the-local-train-bangalore-2026':'The Local Train (band)',
+  'static-vh1-supersonic-2027':           'VH1 Supersonic',
+  'static-ziro-festival-2027':            'Ziro Festival of Music',
+  'static-magnetic-fields-2027':          'Magnetic Fields Festival',
+  'static-goa-sunsplash-2026':            'Goa Sunsplash',
+  'static-papon-guwahati-2026':           'Papon (singer)',
+  'static-ankur-tewari-delhi-2026':       'Ankur Tewari',
+  'static-vishal-shekhar-mumbai-2026':    'Vishal–Shekhar',
+  'static-jazz-india-bangalore-2026':     'Jazz India Circuit',
+  'static-neha-kakkar-lucknow-2026':      'Neha Kakkar',
+  'static-sonu-nigam-delhi-2026':         'Sonu Nigam',
+  'static-habitat-open-mic-mumbai-2026':  'The Habitat Mumbai',
+  'static-hans-raj-hans-amritsar-2026':   'Hans Raj Hans',
+};
+async function fetchWikiPhotoDetail(pid, title, imgEl) {
+  try {
+    const res = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
+      { headers: { 'Accept': 'application/json' } }
+    );
+    if (!res.ok) return;
+    const data = await res.json();
+    const thumb = data?.thumbnail?.source || data?.originalimage?.source;
+    if (thumb) { imgEl.src = thumb; }
+  } catch {}
 }
 
 loadEvent();

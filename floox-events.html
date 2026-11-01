@@ -238,10 +238,10 @@
       box-shadow:0 24px 48px rgba(0,0,0,.35),0 0 0 1px rgba(255,92,0,.1);
     }
     .ev-img{
-      height:190px;position:relative;overflow:hidden;
+      height:clamp(160px,18vw,220px);position:relative;overflow:hidden;
       background:linear-gradient(135deg,rgba(255,92,0,.25),rgba(255,45,120,.2));
     }
-    .ev-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease;display:block}
+    .ev-img img{width:100%;height:100%;object-fit:cover;object-position:center top;transition:transform .5s ease;display:block}
     .ev-card:hover .ev-img img{transform:scale(1.06)}
     .ev-img-overlay{
       position:absolute;inset:0;
@@ -484,6 +484,10 @@
       .hamburger{display:flex}
       .form-row.cols2{grid-template-columns:1fr}
       #listEventModal{padding:24px 20px}
+      .ev-img{height:clamp(140px,40vw,180px)}
+    }
+    @media(max-width:480px){
+      .ev-img{height:180px}
     }
   </style>
 </head>
