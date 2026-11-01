@@ -17,7 +17,7 @@ exports.handler = async (event) => {
     city: city || undefined,
     q: q || undefined,
     id: id || undefined,
-    limit: Math.min(parseInt(limit, 10) || 20, 50),
+    limit: Math.min(parseInt(limit, 10) || 20, 250),
     offset: Math.max(parseInt(offset, 10) || 0, 0),
   };
 
