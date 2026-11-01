@@ -151,7 +151,7 @@ async function getCachedEvents(query = {}) {
   const city = clean(query.city);
   const countryCode = clean(query.countryCode);
   const category = clean(query.category);
-  const limit = Math.min(Math.max(Number(query.limit) || 24, 1), 50);
+  const limit = Math.min(Math.max(Number(query.limit) || 24, 1), 200);
   const parts = [
     'select=provider,provider_id,title,description,category,start_at,end_at,timezone,venue_name,city,state,country,latitude,longitude,image_url,organizer_name,official_url,ticket_url,price_min,price_max,currency,source_updated_at,last_synced_at',
     `start_at=gte.${encodeURIComponent(new Date().toISOString())}`,
@@ -188,7 +188,7 @@ async function getEvents(query = {}) {
   const region = clean(query.region);
   const source = clean(query.source).toLowerCase();
   const bandsintownArtists = clean(query.artist || process.env.BANDSINTOWN_ARTISTS).split(',').map((name) => name.trim()).filter(Boolean).slice(0, 20);
-  const limit = Math.min(Math.max(Number(query.limit) || 24, 1), 50);
+  const limit = Math.min(Math.max(Number(query.limit) || 24, 1), 200);
   const startDateTime = query.startDateTime || new Date().toISOString();
 
   const jobs = [];
