@@ -9,45 +9,59 @@
   <meta property="og:title" content="Discover Events Near You — Floox">
   <meta property="og:description" content="Live events across India. Book on the official site — Floox just helps you discover.">
   <meta name="theme-color" content="#FF5C00">
-  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
 
   <style>
     /* ── Reset & Tokens ──────────────────────────────────────────────────────── */
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
       --o:#FF5C00;--p:#FF2D78;--y:#FFD600;--t:#00C2A8;
-      --bg:#100a02;--bg2:#160d04;--bg3:#1c1006;
+      --bg:#0D0800;--bg2:#160d04;--bg3:#1c1006;
       --sur:rgba(255,255,255,0.05);--bdr:rgba(255,255,255,0.1);
       --txt:#fff;--txt2:rgba(255,255,255,0.62);--txt3:rgba(255,255,255,0.35);
-      --head:'Clash Display',sans-serif;--body:'Cabinet Grotesk',sans-serif;
+      --head:'Bricolage Grotesque',sans-serif;--body:'Plus Jakarta Sans',sans-serif;
       /* Source brand colours */
-      --bms:#E31837;    /* BookMyShow red */
-      --dist:#6C2BF6;   /* District purple */
-      --tm:#026CDF;     /* Ticketmaster blue */
-      --eb:#F05537;     /* Eventbrite orange */
-      --bit:#00B4B3;    /* Bandsintown teal */
+      --bms:#E31837;--dist:#6C2BF6;--tm:#026CDF;--eb:#F05537;--bit:#00B4B3;
+      /* Public page tokens for nav match */
+      --bg-light:#FFFBF4;--border-light:#E8DDD0;--text-dark:#1C1000;--muted:#7A6A50;
     }
     html{scroll-behavior:smooth;overflow-x:hidden}
     body{background:var(--bg);color:var(--txt);font-family:var(--body);overflow-x:hidden;min-height:100vh}
     a{text-decoration:none;color:inherit}
 
-    /* ── Navbar ──────────────────────────────────────────────────────────────── */
-    .nav{
-      position:sticky;top:0;z-index:100;
-      background:rgba(16,10,2,0.88);backdrop-filter:blur(18px);
-      border-bottom:1px solid var(--bdr);
+    /* ── Navbar (matches floox-public.html) ──────────────────────────────────── */
+    #navbar{
+      position:fixed;top:0;left:0;right:0;z-index:1000;
       display:flex;align-items:center;justify-content:space-between;
-      padding:0 5%;height:62px;
+      padding:1rem 5%;
+      background:rgba(255,251,244,0.92);backdrop-filter:blur(20px);
+      border-bottom:1.5px solid var(--border-light);transition:all 0.3s;
     }
-    .nav-logo{font-family:var(--head);font-weight:700;font-size:1.35rem;color:var(--o)}
-    .nav-links{display:flex;gap:22px;align-items:center}
-    .nav-links a{font-size:.82rem;font-weight:700;color:var(--txt2);transition:color .2s}
-    .nav-links a:hover,.nav-links a.active{color:var(--txt)}
+    #navbar.scrolled{padding:.7rem 5%;box-shadow:0 4px 30px rgba(255,92,0,.1)}
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .logo img{height:38px;width:auto;object-fit:contain;border-radius:10px}
+    .logo-name{font-family:var(--head);font-size:1.3rem;font-weight:800;color:var(--text-dark);letter-spacing:-.5px}
+    .logo-name em{font-style:normal;color:var(--o)}
+    .nav-links{display:flex;align-items:center;gap:1.8rem;list-style:none}
+    .nav-links a{
+      font-family:var(--head);font-size:.82rem;font-weight:700;letter-spacing:.02em;
+      color:var(--muted);text-decoration:none;transition:color .2s;
+    }
+    .nav-links a:hover,.nav-links a.active{color:var(--o)}
     .nav-cta{
-      border:none;border-radius:999px;padding:8px 18px;
-      background:linear-gradient(135deg,var(--o),var(--p));
-      color:#fff;font-size:.78rem;font-weight:900;cursor:pointer;
+      background:linear-gradient(135deg,var(--o),var(--p)) !important;
+      color:#fff !important;padding:.55rem 1.4rem;border-radius:100px;
+      box-shadow:0 4px 16px rgba(255,92,0,.3);
+      font-family:var(--head);font-weight:700;font-size:.82rem;
+      border:none;cursor:pointer;transition:transform .2s,box-shadow .2s !important;
     }
+    .nav-cta:hover{transform:translateY(-2px) !important;box-shadow:0 8px 24px rgba(255,92,0,.4) !important}
+    .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px}
+    .hamburger span{width:22px;height:2px;background:var(--text-dark);border-radius:2px;transition:all .3s;display:block}
+    .mob-menu{display:none;position:fixed;inset:0;background:#fff;z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:2.2rem}
+    .mob-menu.open{display:flex}
+    .mob-menu a{font-family:var(--head);font-size:1.6rem;font-weight:800;color:var(--text-dark);text-decoration:none}
+    .mob-x{position:absolute;top:1.5rem;right:5%;font-size:2rem;cursor:pointer;color:var(--muted);background:none;border:none}
 
     /* ── Hero ────────────────────────────────────────────────────────────────── */
     .hero{
@@ -302,27 +316,46 @@
     footer a{color:var(--txt2)}
     .disclaimer{font-size:.7rem;color:var(--txt3);max-width:600px;margin:8px auto 0;line-height:1.5}
 
+    /* ── Page top padding for fixed navbar ──────────────────────────────────── */
+    body{padding-top:70px}
+
     /* ── Responsive ───────────────────────────────────────────────────────────── */
     @media(max-width:768px){
       .hero h1{font-size:2.2rem}
       .search-bar{flex-direction:column}
       .city-select,.search-btn{width:100%}
       .nav-links{display:none}
+      .hamburger{display:flex}
     }
   </style>
 </head>
 <body>
 
-<!-- ── Navbar ────────────────────────────────────────────────────────────── -->
-<nav class="nav">
-  <a href="index.html" class="nav-logo">Floox</a>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="floox-search-results.html">Artists</a>
-    <a href="floox-events.html" class="active">Events</a>
-  </div>
-  <button class="nav-cta" onclick="location.href='floox-login.html'">Sign In</button>
+<!-- ── Navbar (matches floox-public.html) ────────────────────────────────── -->
+<nav id="navbar">
+  <a href="index.html" class="logo">
+    <img src="logo_floox.jpeg" alt="Floox">
+    <span class="logo-name">Flo<em>ox</em></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="floox-search-results.html">Artists</a></li>
+    <li><a href="floox-events.html" class="active" style="color:var(--o)">🎪 Events</a></li>
+    <li><a href="floox-login.html" class="nav-cta">Join Free 🎤</a></li>
+  </ul>
+  <button class="hamburger" onclick="document.getElementById('mobMenu').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- Mobile menu -->
+<div class="mob-menu" id="mobMenu">
+  <button class="mob-x" onclick="document.getElementById('mobMenu').classList.remove('open')">✕</button>
+  <a href="index.html" onclick="document.getElementById('mobMenu').classList.remove('open')">Home</a>
+  <a href="floox-search-results.html" onclick="document.getElementById('mobMenu').classList.remove('open')">Artists</a>
+  <a href="floox-events.html" style="color:var(--o)" onclick="document.getElementById('mobMenu').classList.remove('open')">🎪 Events</a>
+  <a href="floox-login.html" style="color:var(--o)" onclick="document.getElementById('mobMenu').classList.remove('open')">Join Free →</a>
+</div>
 
 <!-- ── Hero ─────────────────────────────────────────────────────────────── -->
 <section class="hero">
@@ -857,6 +890,11 @@
 
     fetchEvents();
   })();
+
+  // Navbar scroll effect
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+  });
 })();
 </script>
 </body>
