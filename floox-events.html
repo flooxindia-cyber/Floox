@@ -537,9 +537,9 @@
       <span class="sb-dot" style="background:var(--eb)"></span> Eventbrite
     </div>
   </div>
-  <button class="list-event-hero-btn" id="listEventHeroBtn" onclick="openListEventModal()">
+  <a href="floox-list-event.html" class="list-event-hero-btn" id="listEventHeroBtn">
     🎤 List Your Event — It's Free
-  </button>
+  </a>
 </section>
 
 <!-- ── Nearby Prompt ─────────────────────────────────────────────────────── -->
@@ -637,8 +637,8 @@
   </div>
 </div>
 
-<!-- ── List Your Event Modal ──────────────────────────────────────────────── -->
-<div id="listEventOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+<!-- ── List Your Event Modal (replaced by /floox-list-event.html) ── -->
+<div id="listEventOverlay" style="display:none" aria-hidden="true">
   <div id="listEventModal">
     <button class="modal-close" onclick="closeListEventModal()" aria-label="Close">✕</button>
     <div class="modal-head">
@@ -1241,9 +1241,8 @@
   });
 })();
 
-// ── List Your Event modal ──────────────────────────────────────────────────
-// (lives outside IIFE so onclick="..." handlers can reach it)
-
+// ── List Your Event — now a full page at /floox-list-event.html ──────────
+// Stubs kept so any old onclick="openListEventModal()" calls don't break.
 function openListEventModal() {
   const overlay = document.getElementById('listEventOverlay');
   const authWall = document.getElementById('modalAuthWall');

@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>List Your Event — Floox | India's Live Music Platform</title>
+<link rel="icon" href="logo_floox.jpeg">
+<link rel="stylesheet" href="floox-shared.css">
+<style>
+/* ── Page shell ── */
+.le-page{background:#0D0800;min-height:100vh;color:#fff}
+
+/* ── Hero ── */
+.le-hero{position:relative;overflow:hidden;padding:7rem 5% 3.5rem;background:#0D0800}
+.le-hero-bg{position:absolute;inset:0;background:
+  radial-gradient(ellipse 60% 70% at 15% 50%,rgba(255,92,0,.18) 0%,transparent 60%),
+  radial-gradient(ellipse 55% 65% at 85% 30%,rgba(124,58,237,.14) 0%,transparent 60%),
+  linear-gradient(135deg,#0d0800 0%,#160a00 60%,#0d0800 100%);pointer-events:none}
+.le-lights{position:absolute;inset:0;pointer-events:none}
+.le-light{position:absolute;bottom:0;width:2px;transform-origin:bottom center;animation:lSway 4s ease-in-out infinite}
+.le-light:nth-child(1){left:12%;height:65%;background:linear-gradient(to top,rgba(255,92,0,.35),transparent);animation-delay:0s}
+.le-light:nth-child(2){left:34%;height:80%;background:linear-gradient(to top,rgba(255,45,120,.35),transparent);animation-delay:1.1s}
+.le-light:nth-child(3){left:62%;height:70%;background:linear-gradient(to top,rgba(255,214,0,.28),transparent);animation-delay:.5s}
+.le-light:nth-child(4){left:85%;height:60%;background:linear-gradient(to top,rgba(124,58,237,.35),transparent);animation-delay:1.8s}
+@keyframes lSway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.le-hero-content{position:relative;z-index:2;max-width:760px}
+.le-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,92,0,.14);border:1px solid rgba(255,92,0,.3);border-radius:100px;padding:.35rem .95rem;font-size:.72rem;font-weight:700;color:#ffb37a;margin-bottom:1.4rem;letter-spacing:.07em;text-transform:uppercase}
+.le-badge-dot{width:6px;height:6px;background:#22c55e;border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.5)}50%{opacity:.5;box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+.le-hero h1{font:800 clamp(2.5rem,5vw,4rem)/1 var(--head);letter-spacing:-2.5px;margin-bottom:1rem}
+.le-hero h1 .grad{background:linear-gradient(135deg,#ffd600,#ff8c00,#ff2d78);-webkit-background-clip:text;background-clip:text;color:transparent}
+.le-hero p{color:rgba(255,255,255,.55);font-size:1rem;line-height:1.75;max-width:520px}
+.le-perks{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.6rem}
+.le-perk{display:flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:100px;padding:.35rem .9rem;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.02em}
+
+/* ── Auth wall (full-page) ── */
+#leAuthWall{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;padding:4rem 5%;gap:1.2rem}
+#leAuthWall.show{display:flex}
+#leAuthWall .wall-icon{font-size:3.5rem}
+#leAuthWall h2{font:800 1.7rem var(--head);letter-spacing:-.6px}
+#leAuthWall p{color:rgba(255,255,255,.5);max-width:380px;font-size:.9rem;line-height:1.7}
+#leAuthWall .auth-btns{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:.5rem}
+.btn-login{background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;border:0;border-radius:12px;padding:.75rem 2rem;font:800 .82rem var(--head);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:.2s}
+.btn-login:hover{opacity:.88;transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:.75rem 1.8rem;font:800 .82rem var(--head);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:.2s}
+.btn-ghost:hover{color:#fff;border-color:rgba(255,255,255,.35)}
+
+/* ── Main form wrapper ── */
+#leFormWrap{display:none;padding:3rem 5% 6rem;max-width:820px;margin:0 auto}
+#leFormWrap.show{display:block}
+
+/* ── Step progress bar ── */
+.le-progress{display:flex;align-items:center;gap:0;margin-bottom:3rem}
+.le-step-item{display:flex;align-items:center;flex:1}
+.le-step-item:last-child{flex:0}
+.le-step-dot{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);display:grid;place-items:center;font:800 .75rem var(--head);color:rgba(255,255,255,.35);flex-shrink:0;transition:.35s}
+.le-step-dot.active{border-color:var(--orange);background:rgba(255,92,0,.15);color:#ffb37a}
+.le-step-dot.done{border-color:#22c55e;background:rgba(34,197,94,.12);color:#22c55e}
+.le-step-connector{flex:1;height:2px;background:rgba(255,255,255,.10);margin:0 6px;transition:.35s}
+.le-step-connector.done{background:rgba(34,197,94,.4)}
+.le-step-label{display:block;font:700 .62rem var(--head);letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:5px;text-align:center;white-space:nowrap}
+.le-step-item .le-step-inner{display:flex;flex-direction:column;align-items:center}
+
+/* ── Step panels ── */
+.le-panel{display:none}
+.le-panel.active{display:block}
+
+/* ── Section card ── */
+.le-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:2rem 2.2rem;margin-bottom:1.5rem}
+.le-card-head{display:flex;align-items:center;gap:.75rem;margin-bottom:1.6rem}
+.le-card-icon{width:42px;height:42px;border-radius:12px;background:rgba(255,92,0,.12);border:1px solid rgba(255,92,0,.25);display:grid;place-items:center;font-size:1.2rem;flex-shrink:0}
+.le-card-head h3{font:800 1rem var(--head);letter-spacing:-.3px}
+.le-card-head p{font-size:.75rem;color:rgba(255,255,255,.45);margin-top:2px}
+
+/* ── Form elements ── */
+.le-row{display:grid;gap:1.1rem;margin-bottom:1.1rem}
+.le-row.cols2{grid-template-columns:1fr 1fr}
+.le-row.cols3{grid-template-columns:1fr 1fr 1fr}
+.le-group{display:flex;flex-direction:column;gap:.45rem}
+.le-group label{font:800 .67rem var(--head);letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.le-group label .req{color:var(--orange);margin-left:2px}
+.le-input,.le-select,.le-textarea{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:11px;color:#fff;padding:.75rem 1rem;font-size:.88rem;font-family:inherit;width:100%;transition:.25s;box-sizing:border-box;-webkit-appearance:none}
+.le-input::placeholder,.le-textarea::placeholder{color:rgba(255,255,255,.28)}
+.le-input:focus,.le-select:focus,.le-textarea:focus{outline:none;border-color:rgba(255,92,0,.6);background:rgba(255,92,0,.06);box-shadow:0 0 0 3px rgba(255,92,0,.1)}
+.le-select option{background:#1a0d00;color:#fff}
+.le-textarea{resize:vertical;min-height:110px;line-height:1.65}
+.le-hint{font-size:.7rem;color:rgba(255,255,255,.35);line-height:1.5}
+.le-hint a{color:var(--orange);text-decoration:none}
+
+/* ── Image uploader ── */
+.le-drop-zone{border:2px dashed rgba(255,255,255,.18);border-radius:16px;background:rgba(255,255,255,.03);padding:2.5rem 1.5rem;text-align:center;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+.le-drop-zone:hover,.le-drop-zone.drag-over{border-color:rgba(255,92,0,.5);background:rgba(255,92,0,.06)}
+.le-drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2}
+.le-drop-zone .dz-icon{font-size:2.5rem;display:block;margin-bottom:.7rem}
+.le-drop-zone .dz-title{font:800 .9rem var(--head);color:rgba(255,255,255,.75);margin-bottom:.35rem}
+.le-drop-zone .dz-sub{font-size:.72rem;color:rgba(255,255,255,.35)}
+.le-drop-zone .dz-sub span{color:var(--orange);font-weight:700}
+
+/* upload progress */
+.le-upload-progress{display:none;margin-top:1rem}
+.le-upload-progress.show{display:block}
+.up-bar{height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.up-fill{height:100%;background:linear-gradient(90deg,var(--orange),var(--pink));width:0;border-radius:3px;transition:width .3s}
+.up-status{font:700 .72rem var(--head);color:rgba(255,255,255,.45);margin-top:.4rem}
+
+/* image preview */
+.le-img-preview{display:none;margin-top:1.2rem;border-radius:14px;overflow:hidden;position:relative;aspect-ratio:16/9}
+.le-img-preview.show{display:block}
+.le-img-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.le-img-remove{position:absolute;top:.6rem;right:.6rem;background:rgba(0,0,0,.7);border:0;border-radius:8px;color:#fff;font:700 .7rem var(--head);padding:.3rem .7rem;cursor:pointer;transition:.2s}
+.le-img-remove:hover{background:rgba(220,38,38,.8)}
+
+/* URL fallback */
+.le-url-toggle{font-size:.72rem;color:var(--orange);font-weight:700;cursor:pointer;text-decoration:underline;margin-top:.5rem;display:inline-block}
+#leImageUrlRow{display:none}
+#leImageUrlRow.show{display:flex}
+
+/* ── Price toggle ── */
+.le-price-toggle{display:flex;gap:.6rem;margin-bottom:1rem}
+.le-price-opt{border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);border-radius:9px;padding:.5rem 1.1rem;font:700 .72rem var(--head);color:rgba(255,255,255,.45);cursor:pointer;transition:.2s}
+.le-price-opt.sel{border-color:var(--orange);background:rgba(255,92,0,.1);color:#ffb37a}
+#lePriceFields{display:none}
+#lePriceFields.show{display:grid}
+
+/* ── Nav buttons ── */
+.le-nav{display:flex;align-items:center;justify-content:space-between;margin-top:2.5rem;gap:1rem}
+.le-nav-back{background:transparent;border:1.5px solid rgba(255,255,255,.18);border-radius:12px;color:rgba(255,255,255,.6);padding:.75rem 1.6rem;font:800 .78rem var(--head);cursor:pointer;transition:.2s}
+.le-nav-back:hover{border-color:rgba(255,255,255,.35);color:#fff}
+.le-nav-next{background:linear-gradient(135deg,var(--orange),var(--pink));border:0;border-radius:12px;color:#fff;padding:.8rem 2rem;font:800 .82rem var(--head);cursor:pointer;transition:.2s;display:flex;align-items:center;gap:.5rem}
+.le-nav-next:hover{opacity:.88;transform:translateY(-1px)}
+.le-nav-next:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* ── Preview step ── */
+.le-preview-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;overflow:hidden}
+.le-preview-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:rgba(255,255,255,.05)}
+.le-preview-img-placeholder{aspect-ratio:16/9;background:linear-gradient(135deg,rgba(255,92,0,.12),rgba(124,58,237,.12));display:flex;align-items:center;justify-content:center;font-size:3rem}
+.le-preview-body{padding:1.6rem 2rem}
+.le-preview-cat{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,92,0,.12);border:1px solid rgba(255,92,0,.25);border-radius:100px;padding:.3rem .85rem;font:800 .65rem var(--head);color:#ffb37a;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
+.le-preview-title{font:800 1.6rem var(--head);letter-spacing:-.5px;margin-bottom:.8rem}
+.le-preview-meta{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1.2rem}
+.le-preview-meta-item{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:rgba(255,255,255,.55)}
+.le-preview-meta-item strong{color:rgba(255,255,255,.9);font-weight:700}
+.le-preview-desc{font-size:.88rem;color:rgba(255,255,255,.55);line-height:1.75;border-top:1px solid rgba(255,255,255,.08);padding-top:1.2rem;margin-top:.8rem}
+.le-preview-price{display:inline-flex;align-items:center;gap:.4rem;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:100px;padding:.3rem .85rem;font:800 .75rem var(--head);color:#86efac;margin-bottom:1.2rem}
+
+/* Review fields side by side */
+.le-review-table{display:grid;grid-template-columns:auto 1fr;gap:.5rem 1.2rem;margin-bottom:.5rem}
+.le-review-label{font:700 .65rem var(--head);text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.35);white-space:nowrap;padding:.35rem 0}
+.le-review-val{font-size:.85rem;color:rgba(255,255,255,.8);padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.le-review-label+.le-review-val{border-bottom:1px solid rgba(255,255,255,.07)}
+
+/* success state */
+#leSuccess{display:none;text-align:center;padding:4rem 2rem;max-width:520px;margin:0 auto}
+#leSuccess.show{display:block}
+.success-icon{font-size:4rem;animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes popIn{0%{transform:scale(0)}100%{transform:scale(1)}}
+#leSuccess h2{font:800 1.8rem var(--head);letter-spacing:-.5px;margin:.8rem 0 .6rem}
+#leSuccess p{color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1.8rem}
+.success-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+
+/* ── Global error/status ── */
+.le-status{padding:1rem 1.2rem;border-radius:12px;font:700 .82rem var(--head);margin-top:1rem;display:none}
+.le-status.err{display:block;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);color:#fca5a5}
+.le-status.ok{display:block;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#86efac}
+
+/* ── Char counter ── */
+.le-counter{font:600 .68rem var(--head);color:rgba(255,255,255,.3);float:right;margin-top:.3rem}
+.le-counter.warn{color:#fbbf24}
+
+/* ── Responsive ── */
+@media(max-width:700px){
+  .le-row.cols2,.le-row.cols3{grid-template-columns:1fr}
+  .le-card{padding:1.4rem 1.2rem}
+  .le-hero{padding:6rem 5% 2.5rem}
+  #leFormWrap{padding:2rem 5% 5rem}
+  .le-preview-body{padding:1.2rem 1.2rem}
+  .le-preview-title{font-size:1.3rem}
+}
+</style>
+</head>
+<body>
+
+<nav id="navbar">
+  <a href="index.html" class="nav-logo">
+    <img src="logo_floox.jpeg" alt="Floox">
+    <span class="nav-logo-text">Floox</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="floox-events.html">Events</a></li>
+    <li><a href="floox-public.html">Discover</a></li>
+    <li><a href="floox-platform.html">Platform</a></li>
+    <li><a href="floox-contact.html">Contact</a></li>
+    <li><a href="floox-login.html" class="nav-cta" data-auth="login">Login</a></li>
+    <li style="display:none" data-auth="logout"><a href="#" onclick="FLOOX.logout();return false">Logout</a></li>
+  </ul>
+</nav>
+
+<!-- ── Hero ── -->
+<div class="le-page">
+<div class="le-hero">
+  <div class="le-hero-bg"></div>
+  <div class="le-lights">
+    <div class="le-light"></div><div class="le-light"></div>
+    <div class="le-light"></div><div class="le-light"></div>
+  </div>
+  <div class="le-hero-content">
+    <div class="le-badge"><span class="le-badge-dot"></span>Free for everyone</div>
+    <h1>List Your Event on<br><span class="grad">Floox — for Free.</span></h1>
+    <p>Reach thousands of music fans across India. Your event goes live instantly on our discovery page — no approvals, no fees.</p>
+    <div class="le-perks">
+      <span class="le-perk">🎉 Instant publishing</span>
+      <span class="le-perk">🇮🇳 Reach across India</span>
+      <span class="le-perk">📸 Upload event photos</span>
+      <span class="le-perk">🎟️ Ticket link included</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Auth wall ── -->
+<div id="leAuthWall">
+  <span class="wall-icon">🔐</span>
+  <h2>Sign in to list your event</h2>
+  <p>A free Floox account lets you publish events, manage your listings, and reach fans across India — instantly.</p>
+  <div class="auth-btns">
+    <a href="floox-login.html" class="btn-login">Sign In →</a>
+    <a href="floox-login.html#signup" class="btn-ghost">Create Account</a>
+  </div>
+</div>
+
+<!-- ── Main multi-step form ── -->
+<div id="leFormWrap">
+
+  <!-- Progress -->
+  <div class="le-progress" id="leProgress">
+    <div class="le-step-item">
+      <div class="le-step-inner">
+        <div class="le-step-dot active" id="sdot1">1</div>
+        <span class="le-step-label">Details</span>
+      </div>
+    </div>
+    <div class="le-step-connector" id="scon1"></div>
+    <div class="le-step-item">
+      <div class="le-step-inner">
+        <div class="le-step-dot" id="sdot2">2</div>
+        <span class="le-step-label">Venue & Time</span>
+      </div>
+    </div>
+    <div class="le-step-connector" id="scon2"></div>
+    <div class="le-step-item">
+      <div class="le-step-inner">
+        <div class="le-step-dot" id="sdot3">3</div>
+        <span class="le-step-label">Media</span>
+      </div>
+    </div>
+    <div class="le-step-connector" id="scon3"></div>
+    <div class="le-step-item">
+      <div class="le-step-inner">
+        <div class="le-step-dot" id="sdot4">4</div>
+        <span class="le-step-label">Preview</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ STEP 1: Basic details ════ -->
+  <div class="le-panel active" id="lePanel1">
+    <div class="le-card">
+      <div class="le-card-head">
+        <div class="le-card-icon">🎤</div>
+        <div><h3>Event Details</h3><p>Tell fans what's happening</p></div>
+      </div>
+
+      <div class="le-row">
+        <div class="le-group">
+          <label for="evTitle">Event Title <span class="req">*</span></label>
+          <input id="evTitle" class="le-input" type="text" placeholder="e.g. Arijit Singh Live in Delhi" maxlength="120" required oninput="updateCounter('evTitle','titleCount',120)">
+          <div style="display:flex;justify-content:space-between">
+            <span class="le-hint">Be clear and specific — good titles get 3× more clicks</span>
+            <span class="le-counter" id="titleCount">0 / 120</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="le-row cols2">
+        <div class="le-group">
+          <label for="evCategory">Category <span class="req">*</span></label>
+          <select id="evCategory" class="le-select" required>
+            <option value="">Select category</option>
+            <option value="Concert">🎤 Concert</option>
+            <option value="Music Festival">🎪 Music Festival</option>
+            <option value="Bollywood">🎬 Bollywood Night</option>
+            <option value="Electronic">🎧 Electronic / DJ</option>
+            <option value="Hip-Hop">🎶 Hip-Hop</option>
+            <option value="Rock">🎸 Rock</option>
+            <option value="Indie">🎻 Indie / Folk</option>
+            <option value="Punjabi">🥁 Punjabi</option>
+            <option value="Classical">🪗 Classical</option>
+            <option value="Jazz">🎷 Jazz</option>
+            <option value="Sufi">🎵 Sufi</option>
+            <option value="Comedy">😂 Comedy</option>
+            <option value="Theatre">🎭 Theatre</option>
+            <option value="Open Mic">🎙️ Open Mic</option>
+            <option value="Club Night">🌃 Club Night</option>
+            <option value="Workshop">🎓 Workshop</option>
+            <option value="Art">🎨 Art & Culture</option>
+            <option value="Food">🍽️ Food & Drinks</option>
+            <option value="Sports">⚽ Sports</option>
+            <option value="Other">📌 Other</option>
+          </select>
+        </div>
+        <div class="le-group">
+          <label for="evOrganizerName">Organiser / Artist Name</label>
+          <input id="evOrganizerName" class="le-input" type="text" placeholder="e.g. BookMyShow Live, Your Band Name">
+          <span class="le-hint">Who is putting on this show?</span>
+        </div>
+      </div>
+
+      <div class="le-row">
+        <div class="le-group">
+          <label for="evDescription">About This Event</label>
+          <textarea id="evDescription" class="le-textarea" placeholder="Tell fans what makes this event special. Who's performing? What's the vibe? Any special guests?" maxlength="1000" oninput="updateCounter('evDescription','descCount',1000)"></textarea>
+          <div style="display:flex;justify-content:space-between">
+            <span class="le-hint">A great description gets fans excited and boosts your event's visibility</span>
+            <span class="le-counter" id="descCount">0 / 1000</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="le-nav">
+      <a href="floox-events.html" class="le-nav-back">← Back to Events</a>
+      <button class="le-nav-next" onclick="goStep(2)">Next: Venue & Time →</button>
+    </div>
+  </div>
+
+  <!-- ════ STEP 2: Venue & Timing ════ -->
+  <div class="le-panel" id="lePanel2">
+    <div class="le-card">
+      <div class="le-card-head">
+        <div class="le-card-icon">📍</div>
+        <div><h3>Venue & Location</h3><p>Where are fans going?</p></div>
+      </div>
+
+      <div class="le-row cols2">
+        <div class="le-group">
+          <label for="evCity">City <span class="req">*</span></label>
+          <select id="evCity" class="le-select" required>
+            <option value="">Select city</option>
+            <optgroup label="Metro">
+              <option value="Mumbai">Mumbai</option>
+              <option value="Delhi">Delhi</option>
+              <option value="Bangalore">Bangalore</option>
+              <option value="Hyderabad">Hyderabad</option>
+              <option value="Chennai">Chennai</option>
+              <option value="Kolkata">Kolkata</option>
+              <option value="Pune">Pune</option>
+              <option value="Ahmedabad">Ahmedabad</option>
+            </optgroup>
+            <optgroup label="Tier 2 & Popular">
+              <option value="Jaipur">Jaipur</option>
+              <option value="Goa">Goa</option>
+              <option value="Chandigarh">Chandigarh</option>
+              <option value="Lucknow">Lucknow</option>
+              <option value="Kochi">Kochi</option>
+              <option value="Indore">Indore</option>
+              <option value="Surat">Surat</option>
+              <option value="Nagpur">Nagpur</option>
+              <option value="Bhopal">Bhopal</option>
+              <option value="Amritsar">Amritsar</option>
+              <option value="Bhubaneswar">Bhubaneswar</option>
+              <option value="Coimbatore">Coimbatore</option>
+              <option value="Guwahati">Guwahati</option>
+              <option value="Mangalore">Mangalore</option>
+              <option value="Mysore">Mysore</option>
+              <option value="Nashik">Nashik</option>
+              <option value="Patna">Patna</option>
+              <option value="Raipur">Raipur</option>
+              <option value="Ranchi">Ranchi</option>
+              <option value="Srinagar">Srinagar</option>
+              <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+              <option value="Vadodara">Vadodara</option>
+              <option value="Visakhapatnam">Visakhapatnam</option>
+              <option value="Dehradun">Dehradun</option>
+              <option value="Saharanpur">Saharanpur</option>
+            </optgroup>
+            <option value="Other">Other / Multiple Cities</option>
+          </select>
+        </div>
+        <div class="le-group">
+          <label for="evVenue">Venue Name</label>
+          <input id="evVenue" class="le-input" type="text" placeholder="e.g. Indira Gandhi Arena, High Spirits">
+        </div>
+      </div>
+
+      <div class="le-row">
+        <div class="le-group">
+          <label for="evVenueAddress">Venue Address</label>
+          <input id="evVenueAddress" class="le-input" type="text" placeholder="e.g. Bhikaji Cama Place, New Delhi 110066">
+          <span class="le-hint">Helps fans find the venue — even a landmark or area works</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="le-card">
+      <div class="le-card-head">
+        <div class="le-card-icon">📅</div>
+        <div><h3>Date & Time</h3><p>When does the show start?</p></div>
+      </div>
+
+      <div class="le-row cols3">
+        <div class="le-group">
+          <label for="evDate">Date <span class="req">*</span></label>
+          <input id="evDate" class="le-input" type="date" required>
+        </div>
+        <div class="le-group">
+          <label for="evStartTime">Doors / Start Time</label>
+          <input id="evStartTime" class="le-input" type="time" value="19:00">
+        </div>
+        <div class="le-group">
+          <label for="evEndTime">End Time</label>
+          <input id="evEndTime" class="le-input" type="time" value="22:00">
+          <span class="le-hint">Optional</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="le-card">
+      <div class="le-card-head">
+        <div class="le-card-icon">🎟️</div>
+        <div><h3>Tickets & Pricing</h3><p>Free, paid, or invite-only?</p></div>
+      </div>
+
+      <div class="le-price-toggle" id="lePriceToggle">
+        <button type="button" class="le-price-opt sel" data-val="free" onclick="setPriceType('free')">🆓 Free Entry</button>
+        <button type="button" class="le-price-opt" data-val="paid" onclick="setPriceType('paid')">💳 Paid</button>
+        <button type="button" class="le-price-opt" data-val="invite" onclick="setPriceType('invite')">🔒 Invite Only</button>
+      </div>
+
+      <div id="lePriceFields" class="le-row cols2">
+        <div class="le-group">
+          <label for="evPriceMin">Starting Price (₹)</label>
+          <input id="evPriceMin" class="le-input" type="number" min="0" placeholder="e.g. 499">
+        </div>
+        <div class="le-group">
+          <label for="evPriceMax">Maximum Price (₹)</label>
+          <input id="evPriceMax" class="le-input" type="number" min="0" placeholder="Leave blank if one tier">
+        </div>
+      </div>
+
+      <div class="le-row" style="margin-top:.8rem">
+        <div class="le-group">
+          <label for="evTicketUrl">Ticket / RSVP Link</label>
+          <input id="evTicketUrl" class="le-input" type="url" placeholder="https://in.bookmyshow.com/... or your event page">
+          <span class="le-hint">Where fans can book tickets, RSVP, or learn more. Leave blank if you'll add it later.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="le-nav">
+      <button class="le-nav-back" onclick="goStep(1)">← Back</button>
+      <button class="le-nav-next" onclick="goStep(3)">Next: Add Photos →</button>
+    </div>
+  </div>
+
+  <!-- ════ STEP 3: Media ════ -->
+  <div class="le-panel" id="lePanel3">
+    <div class="le-card">
+      <div class="le-card-head">
+        <div class="le-card-icon">📸</div>
+        <div><h3>Event Photo</h3><p>A great image gets 5× more clicks</p></div>
+      </div>
+
+      <!-- Drop zone -->
+      <div class="le-drop-zone" id="leDropZone" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <input type="file" id="evImageFile" accept="image/*" onchange="handleFileSelect(event)">
+        <span class="dz-icon">🖼️</span>
+        <div class="dz-title">Drop your event photo here, or <span style="color:var(--orange)">browse</span></div>
+        <div class="dz-sub">JPG, PNG, WEBP &nbsp;·&nbsp; Max 10 MB &nbsp;·&nbsp; Ideal: <span>16:9 landscape</span></div>
+      </div>
+
+      <!-- Upload progress -->
+      <div class="le-upload-progress" id="leUpProgress">
+        <div class="up-bar"><div class="up-fill" id="leUpFill"></div></div>
+        <div class="up-status" id="leUpStatus">Uploading…</div>
+      </div>
+
+      <!-- Image preview -->
+      <div class="le-img-preview" id="leImgPreview">
+        <img id="leImgPreviewImg" src="" alt="Event photo preview">
+        <button class="le-img-remove" onclick="removeImage()" type="button">✕ Remove</button>
+      </div>
+
+      <!-- URL fallback -->
+      <div style="margin-top:.9rem">
+        <span class="le-url-toggle" id="leUrlToggle" onclick="toggleUrlInput()">Or paste an image URL instead</span>
+      </div>
+      <div class="le-row" id="leImageUrlRow">
+        <div class="le-group">
+          <label for="evImageUrl">Image URL</label>
+          <input id="evImageUrl" class="le-input" type="url" placeholder="https://example.com/event-photo.jpg" oninput="onImageUrlChange()">
+          <span class="le-hint">Direct link to an image — ideally 800×450 px or wider. Must start with https://</span>
+        </div>
+      </div>
+
+      <!-- Hidden field for final image url (from upload or URL) -->
+      <input type="hidden" id="evFinalImageUrl">
+    </div>
+
+    <div class="le-card">
+      <div class="le-card-head">
+        <div class="le-card-icon">🔗</div>
+        <div><h3>Official Links</h3><p>Optional — helps fans find more info</p></div>
+      </div>
+      <div class="le-row">
+        <div class="le-group">
+          <label for="evOfficialUrl">Event Page / Artist Website</label>
+          <input id="evOfficialUrl" class="le-input" type="url" placeholder="https://yourband.in or your social media event link">
+          <span class="le-hint">Instagram event, Facebook page, official artist site — whatever you have</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="le-nav">
+      <button class="le-nav-back" onclick="goStep(2)">← Back</button>
+      <button class="le-nav-next" onclick="goStep(4)">Preview My Event →</button>
+    </div>
+  </div>
+
+  <!-- ════ STEP 4: Preview & publish ════ -->
+  <div class="le-panel" id="lePanel4">
+    <p style="color:rgba(255,255,255,.45);font-size:.82rem;margin-bottom:1.4rem">This is exactly how your event will appear to fans on Floox. Check the details, then hit Publish.</p>
+
+    <div class="le-preview-card" id="lePreviewCard">
+      <!-- filled by buildPreview() -->
+    </div>
+
+    <div class="le-card" style="margin-top:1.5rem">
+      <div class="le-card-head" style="margin-bottom:.5rem">
+        <div class="le-card-icon">✅</div>
+        <div><h3>All Details</h3></div>
+      </div>
+      <div class="le-review-table" id="leReviewTable">
+        <!-- filled by buildPreview() -->
+      </div>
+    </div>
+
+    <div class="le-status" id="leStatus"></div>
+
+    <div class="le-nav">
+      <button class="le-nav-back" onclick="goStep(3)">← Edit</button>
+      <button class="le-nav-next" id="lePublishBtn" onclick="publishEvent()">🎉 Publish Event — It's Free</button>
+    </div>
+  </div>
+
+  <!-- ════ SUCCESS ════ -->
+  <div id="leSuccess">
+    <div class="success-icon">🎉</div>
+    <h2>Your event is live!</h2>
+    <p>It's now visible to fans across India on the Floox events page. Share the link and get people excited!</p>
+    <div class="success-actions">
+      <a href="floox-events.html" class="le-nav-next" style="text-decoration:none">🎵 See it on Events</a>
+      <button class="le-nav-back" onclick="resetForm()">+ Add Another Event</button>
+    </div>
+  </div>
+
+</div><!-- /leFormWrap -->
+</div><!-- /le-page -->
+
+<script src="floox-shared.js"></script>
+<script>
+'use strict';
+
+// ── Config ──────────────────────────────────────────────────
+const CLD_CLOUD  = 'cqes6im5';
+const CLD_PRESET = 'floox_artist_media';
+const API_URL    = '/api/user-events';
+
+// ── State ────────────────────────────────────────────────────
+let currentStep  = 1;
+let uploadedImageUrl = '';  // from Cloudinary upload
+let priceType    = 'free';  // 'free' | 'paid' | 'invite'
+let userToken    = '';
+
+// ── Auth gate ───────────────────────────────────────────────
+(function initAuth() {
+  userToken = localStorage.getItem('floox_token') || localStorage.getItem('floox-token') || '';
+  if (!userToken) {
+    document.getElementById('leAuthWall').classList.add('show');
+  } else {
+    document.getElementById('leFormWrap').classList.add('show');
+    // Set date min to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const el = document.getElementById('evDate');
+    if (el) el.min = tomorrow.toISOString().slice(0, 10);
+  }
+})();
+
+// ── Step navigation ─────────────────────────────────────────
+function goStep(n) {
+  if (n > currentStep && !validateStep(currentStep)) return;
+
+  // Update dots + connectors
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById(`sdot${i}`);
+    dot.classList.remove('active', 'done');
+    if (i < n)      dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+
+    if (i < 4) {
+      const con = document.getElementById(`scon${i}`);
+      con.classList.toggle('done', i < n);
+    }
+  }
+
+  // Show/hide panels
+  document.querySelectorAll('.le-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`lePanel${n}`).classList.add('active');
+
+  // Build preview on step 4
+  if (n === 4) buildPreview();
+
+  currentStep = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Validation ───────────────────────────────────────────────
+function validateStep(step) {
+  if (step === 1) {
+    const title = document.getElementById('evTitle').value.trim();
+    const cat   = document.getElementById('evCategory').value;
+    if (!title) { alert('Please enter an event title.'); return false; }
+    if (!cat)   { alert('Please select a category.'); return false; }
+    return true;
+  }
+  if (step === 2) {
+    const city = document.getElementById('evCity').value;
+    const date = document.getElementById('evDate').value;
+    if (!city) { alert('Please select a city.'); return false; }
+    if (!date) { alert('Please pick an event date.'); return false; }
+    const d = new Date(date + 'T00:00:00');
+    if (d < new Date()) { alert('Event date must be in the future.'); return false; }
+    return true;
+  }
+  return true;
+}
+
+// ── Price type toggle ────────────────────────────────────────
+function setPriceType(val) {
+  priceType = val;
+  document.querySelectorAll('.le-price-opt').forEach(b => {
+    b.classList.toggle('sel', b.dataset.val === val);
+  });
+  const pf = document.getElementById('lePriceFields');
+  pf.classList.toggle('show', val === 'paid');
+}
+
+// ── Char counters ────────────────────────────────────────────
+function updateCounter(inputId, counterId, max) {
+  const len = document.getElementById(inputId).value.length;
+  const el  = document.getElementById(counterId);
+  el.textContent = `${len} / ${max}`;
+  el.classList.toggle('warn', len > max * 0.85);
+}
+
+// ── Image upload (Cloudinary) ────────────────────────────────
+function onDragOver(e) { e.preventDefault(); document.getElementById('leDropZone').classList.add('drag-over'); }
+function onDragLeave(e) { document.getElementById('leDropZone').classList.remove('drag-over'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('leDropZone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) uploadFile(file);
+}
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) uploadFile(file);
+}
+
+async function uploadFile(file) {
+  if (!file.type.startsWith('image/')) { alert('Please select an image file.'); return; }
+  if (file.size > 10 * 1024 * 1024)   { alert('Image must be under 10 MB.'); return; }
+
+  const prog   = document.getElementById('leUpProgress');
+  const fill   = document.getElementById('leUpFill');
+  const status = document.getElementById('leUpStatus');
+  prog.classList.add('show');
+  fill.style.width = '0%';
+  status.textContent = 'Uploading…';
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLD_PRESET);
+  fd.append('folder', 'floox/events');
+
+  try {
+    // Fake progress animation while waiting
+    let pct = 0;
+    const ticker = setInterval(() => {
+      pct = Math.min(pct + Math.random() * 15, 85);
+      fill.style.width = pct + '%';
+    }, 200);
+
+    const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLD_CLOUD}/image/upload`, { method: 'POST', body: fd });
+    clearInterval(ticker);
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error?.message || 'Upload failed');
+
+    fill.style.width = '100%';
+    status.textContent = '✓ Photo uploaded successfully!';
+    setTimeout(() => prog.classList.remove('show'), 2500);
+
+    uploadedImageUrl = data.secure_url;
+    document.getElementById('evFinalImageUrl').value = uploadedImageUrl;
+    showImagePreview(uploadedImageUrl);
+  } catch (err) {
+    prog.classList.remove('show');
+    alert('Upload failed: ' + err.message);
+  }
+}
+
+function showImagePreview(url) {
+  const wrap = document.getElementById('leImgPreview');
+  document.getElementById('leImgPreviewImg').src = url;
+  wrap.classList.add('show');
+  document.getElementById('leDropZone').style.display = 'none';
+  document.getElementById('leUrlToggle').style.display = 'none';
+  document.getElementById('leImageUrlRow').classList.remove('show');
+}
+
+function removeImage() {
+  uploadedImageUrl = '';
+  document.getElementById('evFinalImageUrl').value = '';
+  document.getElementById('evImageUrl').value = '';
+  document.getElementById('leImgPreview').classList.remove('show');
+  document.getElementById('leDropZone').style.display = '';
+  document.getElementById('leUrlToggle').style.display = '';
+  document.getElementById('evImageFile').value = '';
+}
+
+// URL fallback
+function toggleUrlInput() {
+  const row = document.getElementById('leImageUrlRow');
+  row.classList.toggle('show');
+  document.getElementById('leUrlToggle').textContent = row.classList.contains('show')
+    ? 'Hide URL field' : 'Or paste an image URL instead';
+}
+
+function onImageUrlChange() {
+  const url = document.getElementById('evImageUrl').value.trim();
+  document.getElementById('evFinalImageUrl').value = url;
+  if (url.match(/^https?:\/\//)) {
+    showImagePreview(url);
+    uploadedImageUrl = '';
+  }
+}
+
+// ── Build preview (step 4) ────────────────────────────────────
+function buildPreview() {
+  const title     = document.getElementById('evTitle').value.trim();
+  const cat       = document.getElementById('evCategory').value;
+  const desc      = document.getElementById('evDescription').value.trim();
+  const city      = document.getElementById('evCity').value;
+  const venue     = document.getElementById('evVenue').value.trim();
+  const addr      = document.getElementById('evVenueAddress').value.trim();
+  const date      = document.getElementById('evDate').value;
+  const startTime = document.getElementById('evStartTime').value;
+  const endTime   = document.getElementById('evEndTime').value;
+  const imgUrl    = document.getElementById('evFinalImageUrl').value || uploadedImageUrl;
+  const ticketUrl = document.getElementById('evTicketUrl').value.trim();
+  const pMin      = document.getElementById('evPriceMin').value;
+  const pMax      = document.getElementById('evPriceMax').value;
+  const organizer = document.getElementById('evOrganizerName').value.trim();
+
+  // Format date
+  let dateStr = '';
+  if (date) {
+    const d = new Date(date + 'T12:00:00');
+    dateStr = d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  // Price string
+  let priceStr = '';
+  if (priceType === 'free') priceStr = 'Free Entry';
+  else if (priceType === 'invite') priceStr = 'Invite Only';
+  else {
+    if (pMin && pMax) priceStr = `₹${Number(pMin).toLocaleString('en-IN')} – ₹${Number(pMax).toLocaleString('en-IN')}`;
+    else if (pMin)    priceStr = `From ₹${Number(pMin).toLocaleString('en-IN')}`;
+    else              priceStr = 'Paid';
+  }
+
+  const card = document.getElementById('lePreviewCard');
+  card.innerHTML = `
+    ${imgUrl
+      ? `<img class="le-preview-img" src="${imgUrl}" alt="${title}" onerror="this.style.display='none'">`
+      : `<div class="le-preview-img-placeholder">🎵</div>`}
+    <div class="le-preview-body">
+      <div class="le-preview-cat">${cat || 'Event'}</div>
+      <div class="le-preview-title">${title || 'Your Event Title'}</div>
+      <div class="le-preview-meta">
+        ${dateStr ? `<div class="le-preview-meta-item">📅 <strong>${dateStr}</strong></div>` : ''}
+        ${startTime ? `<div class="le-preview-meta-item">⏰ <strong>${formatTime(startTime)}${endTime ? ' – ' + formatTime(endTime) : ''}</strong></div>` : ''}
+        ${city ? `<div class="le-preview-meta-item">📍 <strong>${venue ? venue + ', ' : ''}${city}</strong></div>` : ''}
+        ${organizer ? `<div class="le-preview-meta-item">🎤 <strong>${organizer}</strong></div>` : ''}
+      </div>
+      <div class="le-preview-price">${priceType === 'free' ? '🆓' : priceType === 'invite' ? '🔒' : '💳'} ${priceStr}</div>
+      ${desc ? `<div class="le-preview-desc">${desc.replace(/\n/g, '<br>')}</div>` : ''}
+    </div>`;
+
+  // Review table
+  const rows = [
+    ['Title', title],
+    ['Category', cat],
+    ['Date', dateStr],
+    ['Time', startTime ? `${formatTime(startTime)}${endTime ? ' – ' + formatTime(endTime) : ''}` : '—'],
+    ['City', city],
+    ['Venue', venue || '—'],
+    ['Address', addr || '—'],
+    ['Price', priceStr],
+    ['Ticket Link', ticketUrl ? `<a href="${ticketUrl}" style="color:var(--orange)" target="_blank">View link ↗</a>` : '—'],
+    ['Organiser', organizer || '—'],
+    ['Event Photo', imgUrl ? '✓ Uploaded' : '— (no photo)'],
+  ];
+  document.getElementById('leReviewTable').innerHTML = rows
+    .map(([l, v]) => `<div class="le-review-label">${l}</div><div class="le-review-val">${v || '—'}</div>`)
+    .join('');
+}
+
+function formatTime(t) {
+  if (!t) return '';
+  const [h, m] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12  = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+}
+
+// ── Publish ───────────────────────────────────────────────────
+async function publishEvent() {
+  const btn    = document.getElementById('lePublishBtn');
+  const status = document.getElementById('leStatus');
+  status.className = 'le-status';
+  status.style.display = 'none';
+
+  // Build datetime string
+  const date      = document.getElementById('evDate').value;
+  const startTime = document.getElementById('evStartTime').value || '19:00';
+  const endTime   = document.getElementById('evEndTime').value;
+  const startAt   = `${date}T${startTime}:00+05:30`;
+  const endAt     = endTime ? `${date}T${endTime}:00+05:30` : null;
+
+  const imgUrl = document.getElementById('evFinalImageUrl').value || uploadedImageUrl;
+
+  const payload = {
+    title:          document.getElementById('evTitle').value.trim(),
+    category:       document.getElementById('evCategory').value,
+    description:    document.getElementById('evDescription').value.trim(),
+    city:           document.getElementById('evCity').value,
+    venue_name:     document.getElementById('evVenue').value.trim(),
+    state:          document.getElementById('evVenueAddress').value.trim(),
+    start_at:       startAt,
+    end_at:         endAt,
+    image_url:      imgUrl,
+    ticket_url:     document.getElementById('evTicketUrl').value.trim(),
+    official_url:   document.getElementById('evOfficialUrl').value.trim(),
+    organizer_name: document.getElementById('evOrganizerName').value.trim(),
+    price_min:      priceType === 'paid' && document.getElementById('evPriceMin').value
+                    ? Number(document.getElementById('evPriceMin').value) : (priceType === 'free' ? 0 : null),
+    price_max:      priceType === 'paid' && document.getElementById('evPriceMax').value
+                    ? Number(document.getElementById('evPriceMax').value) : null,
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Publishing…';
+
+  try {
+    const res  = await fetch(API_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userToken}` },
+      body:    JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+
+    // Show success
+    document.getElementById('leFormWrap').style.display = 'none';
+    document.getElementById('leSuccess').classList.add('show');
+    document.getElementById('leSuccess').scrollIntoView({ behavior: 'smooth' });
+  } catch (err) {
+    status.className = 'le-status err';
+    status.textContent = err.message;
+    status.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🎉 Publish Event — It\'s Free';
+  }
+}
+
+// ── Reset (add another) ───────────────────────────────────────
+function resetForm() {
+  document.getElementById('leSuccess').classList.remove('show');
+  document.getElementById('leFormWrap').style.display = '';
+  document.getElementById('leFormWrap').classList.add('show');
+  document.querySelectorAll('.le-input, .le-select, .le-textarea').forEach(el => { if (el.type !== 'hidden') el.value = ''; });
+  document.getElementById('evStartTime').value = '19:00';
+  document.getElementById('evEndTime').value = '22:00';
+  uploadedImageUrl = '';
+  document.getElementById('evFinalImageUrl').value = '';
+  removeImage();
+  setPriceType('free');
+  goStep(1);
+}
+</script>
+</body>
+</html>
