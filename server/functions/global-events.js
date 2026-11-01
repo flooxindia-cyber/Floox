@@ -158,7 +158,14 @@ async function getCachedEvents(query = {}) {
     'order=start_at.asc',
     `limit=${limit}`,
   ];
-  if (countryCode) parts.push(`country=ilike.${encodeURIComponent(countryCode)}`);
+  // country is stored as full name ("India") but query may be a 2-letter code ("IN").
+  // Map common codes to full names so the filter matches.
+  const COUNTRY_CODE_MAP = { IN: 'India', US: 'United States', GB: 'United Kingdom', AU: 'Australia', CA: 'Canada' };
+  if (countryCode) {
+    const fullName = COUNTRY_CODE_MAP[countryCode.toUpperCase()];
+    const filterVal = encodeURIComponent(fullName || countryCode);
+    parts.push(`country=ilike.*${filterVal}*`);
+  }
   if (city) parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
   if (category) parts.push(`category=ilike.*${encodeURIComponent(category)}*`);
   if (keyword) {
