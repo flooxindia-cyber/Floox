@@ -145,32 +145,60 @@
     /* Category chips */
     .chips{
       display:flex;gap:8px;flex-wrap:wrap;
-      padding:16px 5% 0;max-width:1220px;margin:0 auto;
+      padding:20px 5% 0;max-width:1220px;margin:0 auto;
     }
     .chip{
-      border:1px solid var(--bdr);background:var(--sur);
-      color:var(--txt2);border-radius:999px;padding:8px 16px;
-      font-size:.72rem;font-weight:900;cursor:pointer;transition:.2s;
-      text-transform:uppercase;letter-spacing:.05em;
+      border:1px solid rgba(255,255,255,.13);
+      background:rgba(255,255,255,.05);
+      color:rgba(255,255,255,.55);
+      border-radius:999px;padding:8px 18px;
+      font-size:.72rem;font-weight:700;cursor:pointer;
+      transition:border-color .18s,background .18s,color .18s,box-shadow .18s;
+      font-family:var(--body);white-space:nowrap;
     }
-    .chip:hover,.chip.active{
-      border-color:rgba(255,92,0,.5);background:rgba(255,92,0,.12);color:var(--o);
+    .chip:hover{
+      border-color:rgba(255,92,0,.45);
+      background:rgba(255,92,0,.08);
+      color:rgba(255,255,255,.85);
+    }
+    .chip.active{
+      border-color:var(--o);
+      background:rgba(255,92,0,.18);
+      color:#fff;
+      box-shadow:0 0 12px rgba(255,92,0,.25);
     }
 
     /* Source filter tabs */
     .source-tabs{
       display:flex;gap:8px;flex-wrap:wrap;
-      padding:12px 5% 0;max-width:1220px;margin:0 auto;border-bottom:1px solid var(--bdr);
-      padding-bottom:22px;
+      padding:14px 5% 20px;max-width:1220px;margin:0 auto;
+      border-bottom:1px solid rgba(255,255,255,.08);
     }
     .stab{
-      border:1px solid var(--bdr);background:var(--sur);
-      border-radius:999px;padding:6px 14px;font-size:.7rem;font-weight:900;
-      cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(255,255,255,.04);
+      color:rgba(255,255,255,.5);
+      border-radius:999px;padding:6px 14px;
+      font-size:.68rem;font-weight:700;
+      cursor:pointer;transition:border-color .18s,background .18s,color .18s;
+      display:flex;align-items:center;gap:6px;
+      font-family:var(--body);white-space:nowrap;
     }
-    .stab:hover{border-color:rgba(255,255,255,.3)}
-    .stab.active{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.08)}
-    .stab .dot{width:7px;height:7px;border-radius:50%}
+    .stab:hover{
+      border-color:rgba(255,255,255,.25);
+      color:rgba(255,255,255,.8);
+    }
+    .stab.active{
+      border-color:rgba(255,255,255,.35);
+      background:rgba(255,255,255,.1);
+      color:#fff;
+    }
+    /* Source-specific active accent colours */
+    .stab[data-src="bookmyshow"].active{border-color:var(--bms);background:rgba(227,24,55,.12);color:#ff6b7a}
+    .stab[data-src="district"].active{border-color:var(--dist);background:rgba(108,43,246,.12);color:#b088ff}
+    .stab[data-src="ticketmaster"].active{border-color:var(--tm);background:rgba(2,108,223,.12);color:#6ab4ff}
+    .stab[data-src="eventbrite"].active{border-color:var(--eb);background:rgba(240,85,55,.12);color:#ff9a82}
+    .stab .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
     /* ── Grid ────────────────────────────────────────────────────────────────── */
     .grid-wrap{padding:32px 5% 80px;max-width:1220px;margin:0 auto}
@@ -178,11 +206,18 @@
       display:flex;align-items:center;justify-content:space-between;
       margin-bottom:18px;flex-wrap:wrap;gap:10px;
     }
-    .result-count{font-size:.78rem;color:var(--txt3);font-weight:700}
+    .result-count{font-size:.78rem;color:rgba(255,255,255,.45);font-weight:600;letter-spacing:.02em}
     .sort-select{
-      background:var(--sur);border:1px solid var(--bdr);border-radius:10px;
-      color:var(--txt2);padding:7px 12px;font-size:.72rem;font-family:var(--body);outline:none;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:10px;
+      color:rgba(255,255,255,.75);
+      padding:7px 12px;font-size:.72rem;font-family:var(--body);
+      outline:none;cursor:pointer;
+      transition:border-color .18s;
     }
+    .sort-select:focus{border-color:rgba(255,92,0,.4)}
+    .sort-select option{background:#1c1006;color:#fff}
     .events-grid{
       display:grid;
       grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
