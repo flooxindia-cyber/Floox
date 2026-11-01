@@ -894,28 +894,84 @@
     return FALLBACK_IMGS['default'];
   }
 
-  // ── Photo patch map — corrects stale Supabase image_urls before next sync ──
-  // Keys: old URL fragment (partial match); Values: replacement URL
-  const PHOTO_PATCH = {
-    'static-arijit-singh':    'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Arijit_5th_GiMA_Awards.jpg/640px-Arijit_5th_GiMA_Awards.jpg',
-    'static-prateek-kuhad':   'https://photos.bandsintown.com/thumb/25163621.jpeg',
+  // ── Artist photo map — Wikipedia search term per provider_id ────────────────
+  // Used to fetch real artist photos via Wikipedia REST API (CORS-enabled from browser)
+  // Keys: provider_id  Values: Wikipedia article title for the artist/event
+  const WIKI_SEARCH = {
+    'static-arijit-singh-delhi-2026':       'Arijit Singh',
+    'static-prateek-kuhad-hyderabad-2026':  'Prateek Kuhad',
+    'static-diljit-dosanjh-mumbai-2026':    'Diljit Dosanjh',
+    'static-ap-dhillon-delhi-2026':         'AP Dhillon',
+    'static-karan-aujla-bangalore-2026':    'Karan Aujla',
+    'static-ritviz-pune-2026':              'Ritviz',
+    'static-armaan-malik-chennai-2026':     'Armaan Malik',
+    'static-divine-mumbai-2026':            'Divine (rapper)',
+    'static-jonita-gandhi-kolkata-2026':    'Jonita Gandhi',
+    'static-agam-hyderabad-2026':           'Agam (band)',
+    'static-shreya-ghoshal-ahmedabad-2026': 'Shreya Ghoshal',
+    'static-seedhe-maut-delhi-2026':        'Seedhe Maut',
+    'static-darshan-raval-jaipur-2026':     'Darshan Raval',
+    'static-euphoria-chandigarh-2026':      'Euphoria (band)',
+    'static-shankar-ehsaan-loy-mumbai-2026':'Shankar–Ehsaan–Loy',
+    'static-raghu-dixit-bangalore-2026':    'Raghu Dixit',
+    'static-indian-ocean-delhi-2026':       'Indian Ocean (band)',
+    'static-anuv-jain-pune-2027':           'Anuv Jain',
+    'static-comedy-factory-mumbai-2026':    'Zakir Khan (comedian)',
+    'static-zakir-khan-delhi-2026':         'Zakir Khan (comedian)',
+    'static-sunburn-2026':                  'Sunburn Festival',
+    'static-nh7-pune-2026':                 'NH7 Weekender',
+    'static-bacardi-nh7-delhi-2026':        'NH7 Weekender',
+    'static-lollapalooza-mumbai-2027':      'Lollapalooza India',
+    'static-bollywood-music-project-2026':  'Arijit Singh',
+    'static-when-chai-met-toast-bangalore': 'When Chai Met Toast',
+    'static-when-chai-met-toast-kochi-2027':'When Chai Met Toast',
+    'static-nucleya-mumbai-2026':           'Nucleya',
+    'static-the-local-train-bangalore-2026':'The Local Train (band)',
+    'static-vh1-supersonic-2027':           'VH1 Supersonic',
+    'static-ziro-festival-2027':            'Ziro Festival of Music',
+    'static-magnetic-fields-2027':          'Magnetic Fields Festival',
+    'static-goa-sunsplash-2026':            'Goa Sunsplash',
+    'static-papon-guwahati-2026':           'Papon (singer)',
+    'static-ankur-tewari-delhi-2026':       'Ankur Tewari',
+    'static-vishal-shekhar-mumbai-2026':    'Vishal–Shekhar',
+    'static-jazz-india-bangalore-2026':     'Jazz India Circuit',
+    'static-neha-kakkar-lucknow-2026':      'Neha Kakkar',
+    'static-sonu-nigam-delhi-2026':         'Sonu Nigam',
+    'static-habitat-open-mic-mumbai-2026':  'The Habitat Mumbai',
+    'static-hans-raj-hans-amritsar-2026':   'Hans Raj Hans',
   };
-  // Maps stale image URLs to correct ones by provider_id
-  const PROVIDER_PHOTO = {
-    'static-arijit-singh-delhi-2026':     'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Arijit_5th_GiMA_Awards.jpg/640px-Arijit_5th_GiMA_Awards.jpg',
-    'static-prateek-kuhad-hyderabad-2026':'https://photos.bandsintown.com/thumb/25163621.jpeg',
-    'static-sunburn-2026':                'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&h=450&fit=crop&q=80',
-    'static-nh7-pune-2026':               'https://images.unsplash.com/photo-1603111737929-1b4a73e18789?w=800&h=450&fit=crop&q=80',
-    'static-lollapalooza-mumbai-2027':    'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=800&h=450&fit=crop&q=80',
-    'static-when-chai-met-toast-bangalore':'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&h=450&fit=crop&q=80',
-    'static-nucleya-mumbai-2026':         'https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=800&h=450&fit=crop&q=80',
-    'static-bacardi-nh7-delhi-2026':      'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&h=450&fit=crop&q=80',
-    'static-bollywood-music-project-2026':'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=800&h=450&fit=crop&q=80',
-    'static-the-local-train-bangalore-2026':'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&h=450&fit=crop&q=80',
-  };
+
+  // In-memory cache of resolved Wikipedia thumbnail URLs — provider_id → url
+  const wikiPhotoCache = {};
+
+  // Fetch a Wikipedia thumbnail for an artist name, cache it, and update card <img>
+  async function fetchWikiPhoto(providerId, articleTitle, imgEl, fallback) {
+    if (wikiPhotoCache[providerId]) {
+      imgEl.src = wikiPhotoCache[providerId];
+      return;
+    }
+    try {
+      const res = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(articleTitle)}`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+      if (!res.ok) throw new Error('no page');
+      const data = await res.json();
+      const thumb = data?.thumbnail?.source || data?.originalimage?.source;
+      if (thumb) {
+        wikiPhotoCache[providerId] = thumb;
+        imgEl.src = thumb;
+      } else {
+        imgEl.src = fallback;
+      }
+    } catch {
+      imgEl.src = fallback;
+    }
+  }
+
   function patchedImg(event) {
-    // Prefer provider_id lookup (exact match)
-    if (event.provider_id && PROVIDER_PHOTO[event.provider_id]) return PROVIDER_PHOTO[event.provider_id];
+    // Use image_url directly from API data (set in india-events.js STATIC_INDIA_EVENTS)
+    // Wikipedia photo fetch happens after render via fetchWikiPhoto()
     return event.image_url || '';
   }
 
@@ -937,9 +993,12 @@
       ? `/floox-event.html?id=${encodeURIComponent(event.id || '')}`
       : `/floox-event-detail.html?key=${encodeURIComponent(detailKey)}`;
 
-    // Always show an image — real URL or Unsplash fallback
-    const finalImg = imgSrc !== '#' ? imgSrc : fallback;
-    const imgMarkup = `<img src="${esc(finalImg)}" alt="${esc(event.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${esc(fallback)}'">`;
+    // Always show an image — real URL or fallback
+    const wikiTitle = WIKI_SEARCH[event.provider_id];
+    const cachedWiki = wikiTitle && wikiPhotoCache[event.provider_id];
+    const finalImg = cachedWiki || (imgSrc !== '#' ? imgSrc : fallback);
+    // data-pid lets post-render wiki fetch update this img
+    const imgMarkup = `<img src="${esc(finalImg)}" alt="${esc(event.title)}" loading="lazy" referrerpolicy="no-referrer" data-pid="${esc(event.provider_id||'')}" onerror="this.onerror=null;this.src='${esc(fallback)}'">`;
 
     const ctaMarkup = bookUrl !== '#'
       ? `<a class="ev-cta" href="${esc(bookUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
@@ -1043,6 +1102,18 @@
 
     grid.innerHTML = slice.map(renderCard).join('');
     loadMoreWrap.style.display = slice.length < filtered.length ? 'block' : 'none';
+
+    // After DOM is painted, fetch Wikipedia photos for static events that need them
+    requestAnimationFrame(() => {
+      slice.forEach(ev => {
+        const wikiTitle = WIKI_SEARCH[ev.provider_id];
+        if (!wikiTitle) return;
+        const imgEl = grid.querySelector(`img[data-pid="${CSS.escape(ev.provider_id)}"]`);
+        if (!imgEl) return;
+        const fallback = getFallbackImg(ev);
+        fetchWikiPhoto(ev.provider_id, wikiTitle, imgEl, fallback);
+      });
+    });
   }
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
