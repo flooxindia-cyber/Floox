@@ -180,7 +180,11 @@ async function getCachedEvents(query = {}) {
 
 async function getEvents(query = {}) {
   const cached = await getCachedEvents(query);
-  if (cached.length && String(query.live || '') !== '1') return cached;
+  const requestedLimit = Math.min(Math.max(Number(query.limit) || 24, 1), 200);
+  // Only trust cache if it has a meaningful number of results relative to what was requested.
+  // If cache has fewer than 20 results (e.g. old 10-seed state), bypass and re-fetch live.
+  const cacheIsFull = cached.length >= Math.min(requestedLimit, 20);
+  if (cached.length && cacheIsFull && String(query.live || '') !== '1') return cached;
 
   const keyword = clean(query.keyword || query.q);
   const city = clean(query.city);
@@ -218,6 +222,48 @@ async function getEvents(query = {}) {
     .filter((event) => !countryCode || String(event.country || '').toUpperCase() === countryCode.toUpperCase() || String(event.country || '').toLowerCase() === String(countryCode).toLowerCase())
     .sort((a, b) => String(a.start_at || '').localeCompare(String(b.start_at || '')))
     .slice(0, limit);
+
+  // Background: upsert fetched events into Supabase so cache stays warm for next request.
+  // Fire-and-forget — don't await so response isn't delayed.
+  if (live.length > 0) {
+    const now = new Date().toISOString();
+    const rows = live.map(e => ({
+      provider: e.provider, provider_id: e.provider_id,
+      title: e.title || 'Untitled event', description: e.description || '',
+      category: e.category || 'Other', start_at: e.start_at || null,
+      end_at: e.end_at || null, timezone: e.timezone || null,
+      venue_name: e.venue_name || '', city: e.city || '',
+      state: e.state || '', country: e.country || '',
+      latitude: e.latitude ?? null, longitude: e.longitude ?? null,
+      image_url: e.image_url || '', organizer_name: e.organizer_name || '',
+      official_url: e.official_url || '', ticket_url: e.ticket_url || '',
+      price_min: e.price_min ?? null, price_max: e.price_max ?? null,
+      currency: e.currency || null,
+      source_updated_at: e.source_updated_at || now,
+      last_synced_at: now,
+    }));
+    const BATCH = 50;
+    const upsertHeaders = {
+      'Content-Type': 'application/json',
+      ...supabaseHeaders(),
+      Prefer: 'resolution=merge-duplicates,return=minimal',
+    };
+    (async () => {
+      try {
+        for (let i = 0; i < rows.length; i += BATCH) {
+          const batch = rows.slice(i, i + BATCH);
+          await fetch(
+            supabaseUrl('global_events', 'on_conflict=provider%2Cprovider_id'),
+            { method: 'POST', headers: upsertHeaders, body: JSON.stringify(batch) }
+          );
+        }
+        console.log(`[global-events] background upsert: ${rows.length} events cached`);
+      } catch (e) {
+        console.warn('[global-events] background upsert failed:', e.message);
+      }
+    })();
+  }
+
   return live;
 }
 
