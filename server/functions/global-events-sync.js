@@ -11,6 +11,8 @@ function supabaseHeaders() {
     apikey: key,
     Authorization: `Bearer ${key}`,
     Prefer: 'resolution=merge-duplicates,return=minimal',
+    // PostgREST requires this exact header to treat POST as upsert
+    'X-Upsert': 'true',
   };
 }
 
@@ -86,13 +88,21 @@ exports.handler = async (event) => {
     const rows = [...unique.values()].map(toRow);
 
     if (rows.length) {
-      const res = await fetch(supabaseUrl('global_events'), {
-        method: 'POST',
-        headers: supabaseHeaders(),
-        body: JSON.stringify(rows),
-      });
-      const data = await readJson(res);
-      if (!res.ok) throw new Error(data.message || data.error || `Supabase cache update failed (${res.status})`);
+      // Upsert in batches of 50 to avoid payload limits
+      const BATCH = 50;
+      for (let i = 0; i < rows.length; i += BATCH) {
+        const batch = rows.slice(i, i + BATCH);
+        const res = await fetch(
+          supabaseUrl('global_events', 'on_conflict=provider%2Cprovider_id'),
+          {
+            method: 'POST',
+            headers: supabaseHeaders(),
+            body: JSON.stringify(batch),
+          }
+        );
+        const data = await readJson(res);
+        if (!res.ok) throw new Error(data.message || data.error || data.hint || `Supabase upsert failed (${res.status})`);
+      }
     }
 
     // Remove only expired external events. No existing Floox organiser events are touched.
