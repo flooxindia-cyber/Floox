@@ -10,6 +10,8 @@
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
     { "source": "/floox-login.html", "destination": "/login", "permanent": true },
+    { "source": "/floox-events.html", "destination": "/events", "permanent": true },
+    { "source": "/events.html", "destination": "/events", "permanent": true },
     { "source": "/floox-search-results.html", "destination": "/discover", "permanent": true },
     { "source": "/floox-dashboard-artist.html", "destination": "/artist/dashboard", "permanent": true },
     { "source": "/floox-dashboard-organiser.html", "destination": "/organiser/dashboard", "permanent": true },
@@ -17,6 +19,7 @@
   ],
   "routes": [
     { "src": "/login", "dest": "/floox-login.html" },
+    { "src": "/events", "dest": "/floox-events.html" },
     { "src": "/discover", "dest": "/floox-search-results.html" },
     { "src": "/search", "dest": "/floox-search-results.html" },
     { "src": "/artist/dashboard", "dest": "/floox-dashboard-artist.html" },

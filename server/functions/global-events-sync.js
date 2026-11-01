@@ -1,6 +1,7 @@
 // Floox — scheduled provider sync for the public global_events cache.
 // This handler is intentionally separate from the existing organiser events API.
 const { getEvents } = require('./global-events');
+const { indiaEvents } = require('./india-events');
 
 function supabaseHeaders() {
   const key = process.env.SUPABASE_SERVICE_KEY;
@@ -67,10 +68,21 @@ exports.handler = async (event) => {
     return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Unauthorized.' }) };
   }
   try {
-    const india = await getEvents({ countryCode: 'IN', limit: 50, live: '1' });
-    const global = await getEvents({ limit: 100, live: '1' });
+    // Fetch from all sources in parallel
+    const [indiaResult, globalResult, bmsDistrictResult] = await Promise.allSettled([
+      getEvents({ countryCode: 'IN', limit: 50, live: '1' }),
+      getEvents({ limit: 100, live: '1' }),
+      indiaEvents({ limit: 80 }),  // BookMyShow + District
+    ]);
+
+    const india         = indiaResult.status      === 'fulfilled' ? indiaResult.value      : [];
+    const global        = globalResult.status     === 'fulfilled' ? globalResult.value     : [];
+    const bmsDistrict   = bmsDistrictResult.status === 'fulfilled' ? bmsDistrictResult.value : [];
+
+    console.log(`Sync: ${india.length} Ticketmaster/EB India, ${global.length} global, ${bmsDistrict.length} BMS+District`);
+
     const unique = new Map();
-    for (const item of [...india, ...global]) unique.set(`${item.provider}:${item.provider_id}`, item);
+    for (const item of [...india, ...global, ...bmsDistrict]) unique.set(`${item.provider}:${item.provider_id}`, item);
     const rows = [...unique.values()].map(toRow);
 
     if (rows.length) {

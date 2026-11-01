@@ -189,6 +189,17 @@ async function getEvents(query = {}) {
   if (!source || source === 'eventbrite') jobs.push(eventbrite({ keyword, locationAddress: city || region, startDateRange: startDateTime, pageSize: limit }));
   if ((!source || source === 'bandsintown') && bandsintownArtists.length) jobs.push(...bandsintownArtists.map((artist) => bandsintown({ artist })));
 
+  // Pull India events (BMS + District) when querying India or with no country filter
+  const isIndiaQuery = !countryCode || countryCode.toUpperCase() === 'IN';
+  if (isIndiaQuery && (!source || source === 'bookmyshow' || source === 'district' || source === 'india')) {
+    try {
+      const { indiaEvents } = require('./india-events');
+      jobs.push(indiaEvents({ city: city || undefined, limit }));
+    } catch (e) {
+      console.warn('india-events module not available:', e.message);
+    }
+  }
+
   const settled = await Promise.allSettled(jobs);
   const events = settled.flatMap((item) => item.status === 'fulfilled' ? item.value : []);
   const byId = new Map();
