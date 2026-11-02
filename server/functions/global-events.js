@@ -224,12 +224,16 @@ async function getEvents(query = {}) {
     if (!mergedCache.some(e => `${e.provider}:${e.provider_id}` === k)) mergedCache.push(ev);
   }
 
-  // Only trust cache (+ merged India events) if it has a meaningful number of results.
-  // If cache has fewer than 20 results (e.g. old 10-seed state), bypass and re-fetch live.
+  // Only trust cache if it has enough results AND was synced recently (within 6 hours).
+  // Stale cache (e.g. yesterday's static seeds) must be bypassed so scraper runs fresh.
+  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+  const cacheIsFresh = mergedCache.some(ev => (ev.last_synced_at || ev.source_updated_at || '') > sixHoursAgo);
   const cacheIsFull = mergedCache.length >= Math.min(requestedLimit, 20);
-  if (mergedCache.length && cacheIsFull && String(query.live || '') !== '1') {
+  if (mergedCache.length && cacheIsFull && cacheIsFresh && String(query.live || '') !== '1') {
     return mergedCache.slice(0, limit);
   }
+  // Cache is stale or empty — log so we can see it in Vercel logs
+  console.log(`[global-events] cache bypass: count=${mergedCache.length} fresh=${cacheIsFresh} full=${cacheIsFull}`);
 
   const bandsintownArtists = clean(query.artist || process.env.BANDSINTOWN_ARTISTS).split(',').map((name) => name.trim()).filter(Boolean).slice(0, 20);
 
