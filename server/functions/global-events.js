@@ -206,7 +206,12 @@ async function getEvents(query = {}) {
     freshIndiaById.set(`${ev.provider}:${ev.provider_id}`, ev);
   }
 
-  const cached = await getCachedEvents(query);
+  let cached = [];
+  try {
+    cached = await getCachedEvents(query);
+  } catch (e) {
+    console.warn('[global-events] Supabase cache unavailable, proceeding without it:', e.message);
+  }
   const requestedLimit = Math.min(Math.max(Number(query.limit) || 24, 1), 200);
   // Merge fresh India events over any matching cached entries (fixes stale URLs)
   const mergedCache = cached.map(ev => {
