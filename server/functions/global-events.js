@@ -179,37 +179,61 @@ async function getCachedEvents(query = {}) {
 }
 
 async function getEvents(query = {}) {
-  const cached = await getCachedEvents(query);
-  const requestedLimit = Math.min(Math.max(Number(query.limit) || 24, 1), 200);
-  // Only trust cache if it has a meaningful number of results relative to what was requested.
-  // If cache has fewer than 20 results (e.g. old 10-seed state), bypass and re-fetch live.
-  const cacheIsFull = cached.length >= Math.min(requestedLimit, 20);
-  if (cached.length && cacheIsFull && String(query.live || '') !== '1') return cached;
-
   const keyword = clean(query.keyword || query.q);
   const city = clean(query.city);
   const countryCode = clean(query.countryCode);
   const region = clean(query.region);
   const source = clean(query.source).toLowerCase();
-  const bandsintownArtists = clean(query.artist || process.env.BANDSINTOWN_ARTISTS).split(',').map((name) => name.trim()).filter(Boolean).slice(0, 20);
   const limit = Math.min(Math.max(Number(query.limit) || 24, 1), 200);
   const startDateTime = query.startDateTime || new Date().toISOString();
+  const isIndiaQuery = !countryCode || countryCode.toUpperCase() === 'IN';
+
+  // Always fetch fresh India static events so URL fixes are always live,
+  // regardless of Supabase cache state.
+  let freshIndiaEvents = [];
+  if (isIndiaQuery && (!source || source === 'bookmyshow' || source === 'district' || source === 'india')) {
+    try {
+      const { indiaEvents } = require('./india-events');
+      freshIndiaEvents = await indiaEvents({ city: city || undefined, limit });
+    } catch (e) {
+      console.warn('india-events module not available:', e.message);
+    }
+  }
+
+  // Build a lookup of fresh India events by provider:id so we can override stale cache entries
+  const freshIndiaById = new Map();
+  for (const ev of freshIndiaEvents) {
+    freshIndiaById.set(`${ev.provider}:${ev.provider_id}`, ev);
+  }
+
+  const cached = await getCachedEvents(query);
+  const requestedLimit = Math.min(Math.max(Number(query.limit) || 24, 1), 200);
+  // Merge fresh India events over any matching cached entries (fixes stale URLs)
+  const mergedCache = cached.map(ev => {
+    const k = `${ev.provider}:${ev.provider_id}`;
+    return freshIndiaById.has(k) ? freshIndiaById.get(k) : ev;
+  });
+  // Add fresh India events that weren't in cache yet
+  for (const ev of freshIndiaEvents) {
+    const k = `${ev.provider}:${ev.provider_id}`;
+    if (!mergedCache.some(e => `${e.provider}:${e.provider_id}` === k)) mergedCache.push(ev);
+  }
+
+  // Only trust cache (+ merged India events) if it has a meaningful number of results.
+  // If cache has fewer than 20 results (e.g. old 10-seed state), bypass and re-fetch live.
+  const cacheIsFull = mergedCache.length >= Math.min(requestedLimit, 20);
+  if (mergedCache.length && cacheIsFull && String(query.live || '') !== '1') {
+    return mergedCache.slice(0, limit);
+  }
+
+  const bandsintownArtists = clean(query.artist || process.env.BANDSINTOWN_ARTISTS).split(',').map((name) => name.trim()).filter(Boolean).slice(0, 20);
 
   const jobs = [];
   if (!source || source === 'ticketmaster') jobs.push(ticketmaster({ keyword, city, countryCode, startDateTime, size: limit }));
   if (!source || source === 'eventbrite') jobs.push(eventbrite({ keyword, locationAddress: city || region, startDateRange: startDateTime, pageSize: limit }));
   if ((!source || source === 'bandsintown') && bandsintownArtists.length) jobs.push(...bandsintownArtists.map((artist) => bandsintown({ artist })));
-
-  // Pull India events (BMS + District) when querying India or with no country filter
-  const isIndiaQuery = !countryCode || countryCode.toUpperCase() === 'IN';
-  if (isIndiaQuery && (!source || source === 'bookmyshow' || source === 'district' || source === 'india')) {
-    try {
-      const { indiaEvents } = require('./india-events');
-      jobs.push(indiaEvents({ city: city || undefined, limit }));
-    } catch (e) {
-      console.warn('india-events module not available:', e.message);
-    }
-  }
+  // Fresh India events already fetched above — add them as a resolved job
+  if (freshIndiaEvents.length) jobs.push(Promise.resolve(freshIndiaEvents));
 
   const settled = await Promise.allSettled(jobs);
   const events = settled.flatMap((item) => item.status === 'fulfilled' ? item.value : []);
