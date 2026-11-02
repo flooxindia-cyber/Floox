@@ -238,7 +238,12 @@ async function getEvents(query = {}) {
   const bandsintownArtists = clean(query.artist || process.env.BANDSINTOWN_ARTISTS).split(',').map((name) => name.trim()).filter(Boolean).slice(0, 20);
 
   const jobs = [];
-  if (!source || source === 'ticketmaster') jobs.push(ticketmaster({ keyword, city, countryCode, startDateTime, size: limit }));
+  // Always search India on Ticketmaster — it covers BMS/District events too.
+  // If user filtered by a specific non-India country, respect that; otherwise force IN.
+  const tmCountry = countryCode || 'IN';
+  if (!source || source === 'ticketmaster') {
+    jobs.push(ticketmaster({ keyword, city, countryCode: tmCountry, startDateTime, size: limit }));
+  }
   if (!source || source === 'eventbrite') jobs.push(eventbrite({ keyword, locationAddress: city || region, startDateRange: startDateTime, pageSize: limit }));
   if ((!source || source === 'bandsintown') && bandsintownArtists.length) jobs.push(...bandsintownArtists.map((artist) => bandsintown({ artist })));
   // Fresh India events already fetched above — add them as a resolved job
