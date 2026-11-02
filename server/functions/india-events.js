@@ -272,38 +272,51 @@ function normalizeDistrictEvent(item) {
 }
 
 async function fetchDistrictCity(citySlug) {
-  // Insider/District public API used by their website
-  const url =
-    `https://api.insider.in/v2/events?` +
-    `status=published` +
-    `&city=${encodeURIComponent(citySlug)}` +
-    `&type=events` +
-    `&tags=&page_size=20&page=1` +
-    `&sort=event_date`;
+  // District public website — scrape the city events page HTML.
+  // The API (api.insider.in) rate-limits aggressively (429).
+  // The website is Next.js SSR and embeds all events in __NEXT_DATA__.
+  const url = `https://district.in/events/${citySlug}`;
 
   try {
     const res = await safeFetch(url, {
       _timeout: 20000,
       headers: {
         Referer: 'https://district.in/',
-        Origin:  'https://district.in',
+        Accept:  'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-IN,en;q=0.9',
       },
     });
     if (!res.ok) {
       console.warn(`District ${citySlug}: HTTP ${res.status}`);
       return [];
     }
-    const text = await res.text();
-    let json;
-    try { json = JSON.parse(text); } catch { return []; }
 
+    const html = await res.text();
+
+    // District website is Next.js — events are in __NEXT_DATA__
+    const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+    if (!match) {
+      console.warn(`District ${citySlug}: no __NEXT_DATA__ in HTML`);
+      return [];
+    }
+
+    let pageData;
+    try { pageData = JSON.parse(match[1]); } catch { return []; }
+
+    const props = pageData?.props?.pageProps || {};
     const items =
-      json?.data?.results ||
-      json?.results        ||
-      json?.events         ||
+      props?.events ||
+      props?.data?.events ||
+      props?.initialEvents ||
+      props?.eventsData ||
       [];
 
-    if (!Array.isArray(items)) return [];
+    if (!Array.isArray(items) || items.length === 0) {
+      console.warn(`District ${citySlug}: 0 events. pageProps keys: ${Object.keys(props).join(', ')}`);
+      return [];
+    }
+
+    console.log(`District ${citySlug}: got ${items.length} events from HTML`);
     return items.map(normalizeDistrictEvent);
   } catch (err) {
     console.warn(`District ${citySlug} fetch failed:`, err.message);
