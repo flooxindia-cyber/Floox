@@ -40,24 +40,24 @@ async function safeFetch(url, options = {}) {
 
 // ── City slug maps ────────────────────────────────────────────────────────────
 
-// BookMyShow uses numeric region IDs for its API.
+// BMS uses city slugs in the explore URL and region codes as query params.
+// Pattern: /api/explore/v1/discover/events-{slug}?region={REGION_CODE}
 const BMS_REGIONS = {
-  mumbai:    { id: 'Mumbai',    code: 'HR-48' },
-  delhi:     { id: 'NCR',      code: 'HR-NCR' },
-  bengaluru: { id: 'Bangalore', code: 'HR-51' },
-  bangalore: { id: 'Bangalore', code: 'HR-51' },
-  hyderabad: { id: 'Hyderabad', code: 'HR-55' },
-  chennai:   { id: 'Chennai',  code: 'HR-49' },
-  kolkata:   { id: 'Kolkata',  code: 'HR-50' },
-  pune:      { id: 'Pune',     code: 'HR-100' },
-  ahmedabad: { id: 'Ahmedabad',code: 'HR-56' },
-  jaipur:    { id: 'Jaipur',   code: 'HR-57' },
-  goa:       { id: 'Goa',      code: 'HR-304' },
-  chandigarh:{ id: 'Chandigarh',code: 'HR-321' },
-  lucknow:   { id: 'Lucknow',  code: 'HR-109' },
-  surat:     { id: 'Surat',    code: 'HR-58' },
-  kochi:     { id: 'Kochi',    code: 'HR-54' },
-  indore:    { id: 'Indore',   code: 'HR-343' },
+  mumbai:    { id: 'Mumbai',     slug: 'mumbai',     region: 'MUMBAI' },
+  delhi:     { id: 'NCR',       slug: 'ncr',        region: 'NCR' },
+  bengaluru: { id: 'Bangalore',  slug: 'bengaluru',  region: 'BANG' },
+  bangalore: { id: 'Bangalore',  slug: 'bengaluru',  region: 'BANG' },
+  hyderabad: { id: 'Hyderabad',  slug: 'hyderabad',  region: 'HYD' },
+  chennai:   { id: 'Chennai',   slug: 'chennai',    region: 'CHEN' },
+  kolkata:   { id: 'Kolkata',   slug: 'kolkata',    region: 'KOLK' },
+  pune:      { id: 'Pune',      slug: 'pune',       region: 'PUNE' },
+  ahmedabad: { id: 'Ahmedabad', slug: 'ahmedabad',  region: 'AHD' },
+  jaipur:    { id: 'Jaipur',    slug: 'jaipur',     region: 'JAI' },
+  goa:       { id: 'Goa',       slug: 'goa',        region: 'GOA' },
+  chandigarh:{ id: 'Chandigarh',slug: 'chandigarh', region: 'CHAN' },
+  lucknow:   { id: 'Lucknow',   slug: 'lucknow',    region: 'LKO' },
+  kochi:     { id: 'Kochi',     slug: 'kochi',      region: 'KOCH' },
+  indore:    { id: 'Indore',    slug: 'indore',     region: 'INDR' },
 };
 
 // District (Insider.in) uses city slugs directly in their API.
@@ -126,21 +126,20 @@ async function fetchBmsCity(cityKey) {
   const region = BMS_REGIONS[cityKey.toLowerCase()];
   if (!region) return [];
 
-  // BMS browse API — public, no auth required.
-  // The v1 explore endpoint (api/explore/v1/discover/...) returns 404 as of Nov 2026.
-  // The current website uses a different endpoint pattern.
+  // BMS public browse API — confirmed working endpoint pattern from browser DevTools Nov 2026.
+  // Pattern: /api/explore/v1/discover/events-{slug}?region={REGION}&embedded=true
   const url =
-    `https://in.bookmyshow.com/api/explore/v1/discover/regions/${region.code}/categories/` +
-    `events/filter?sortBy=popularity&pageNumber=1&pageSize=20`;
+    `https://in.bookmyshow.com/api/explore/v1/discover/events-${region.slug}` +
+    `?region=${region.region}&embedded=true`;
 
   try {
     const res = await safeFetch(url, {
       headers: {
         Referer:  'https://in.bookmyshow.com/',
         Origin:   'https://in.bookmyshow.com',
-        'x-region-code': region.code,
-        'x-region-slug': region.id.toLowerCase(),
-        'x-bms-id':      region.code,
+        Accept:   'application/json, text/plain, */*',
+        'x-region-code': region.region,
+        'x-region-slug': region.slug,
       },
     });
 
@@ -153,13 +152,22 @@ async function fetchBmsCity(cityKey) {
     let json;
     try { json = JSON.parse(text); } catch { return []; }
 
+    // Log top-level keys so we can see the actual response shape in Vercel logs
+    console.log(`BMS ${cityKey} response keys:`, Object.keys(json || {}).join(', '));
+
     const items =
-      json?.BookMyShow?.arrEvents  ||  // v1 shape
+      json?.BookMyShow?.arrEvents   ||  // old v1 shape
+      json?.arrEvents               ||  // direct array
       json?.EventListings           ||  // alt shape
       json?.resultData              ||
-      [];
+      json?.events                  ||
+      (Array.isArray(json) ? json : []);
 
-    if (!Array.isArray(items)) return [];
+    if (!Array.isArray(items)) {
+      console.warn(`BMS ${cityKey}: unexpected items type`, typeof items);
+      return [];
+    }
+    console.log(`BMS ${cityKey}: got ${items.length} events`);
     return items.map(item => normalizeBmsEvent(item, region.id));
   } catch (err) {
     console.warn(`BMS ${cityKey} fetch failed:`, err.message);
