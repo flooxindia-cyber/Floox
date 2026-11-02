@@ -534,6 +534,7 @@ function showError() {
 async function loadEvent() {
   const params = new URLSearchParams(location.search);
   const keyParam = params.get('key');
+  const backupUrl = params.get('bu'); // ticket URL passed as fallback
   let provider = params.get('provider');
   let providerId = params.get('id');
 
@@ -550,7 +551,11 @@ async function loadEvent() {
     try { return renderEvent(JSON.parse(cached)); } catch {}
   }
 
-  if (!provider || !providerId) { showError(); return; }
+  if (!provider || !providerId) {
+    // If we at least have a backup booking URL, redirect directly
+    if (backupUrl) { window.location.href = backupUrl; return; }
+    showError(); return;
+  }
 
   try {
     const res = await fetch(`/api/global-events?countryCode=IN&limit=200`);
@@ -558,9 +563,14 @@ async function loadEvent() {
     const event = (data.events || []).find(e =>
       e.provider === provider && String(e.provider_id) === String(providerId)
     );
-    if (!event) { showError(); return; }
+    if (!event) {
+      // Couldn't find event in API — redirect to booking site if we have a URL
+      if (backupUrl) { window.location.href = backupUrl; return; }
+      showError(); return;
+    }
     renderEvent(event);
   } catch {
+    if (backupUrl) { window.location.href = backupUrl; return; }
     showError();
   }
 }

@@ -998,9 +998,10 @@
     // Detail page key — same format as floox-public.html
     const isFloox = event.provider === 'floox';
     const detailKey = `${event.provider}:${event.provider_id}`;
+    const ticketUrl = event.ticket_url || event.official_url || '';
     const detailUrl = isFloox
       ? `/floox-event.html?id=${encodeURIComponent(event.id || '')}`
-      : `/floox-event-detail.html?key=${encodeURIComponent(detailKey)}`;
+      : `/floox-event-detail.html?key=${encodeURIComponent(detailKey)}${ticketUrl ? '&bu=' + encodeURIComponent(ticketUrl) : ''}`;
 
     // Always show an image — real URL or fallback
     const wikiTitle = WIKI_SEARCH[event.provider_id];
@@ -1279,7 +1280,8 @@
     if (!card) return;
     const entry = eventMap.get(card.dataset.key);
     if (!entry) return;
-    try { sessionStorage.setItem('floox_event_detail', JSON.stringify(entry.event)); } catch {}
+    // Cache under the key the detail page expects: 'floox_event_' + key
+    try { sessionStorage.setItem('floox_event_' + card.dataset.key, JSON.stringify(entry.event)); } catch {}
     window.location.href = entry.detailUrl;
   });
   grid.addEventListener('keydown', e => {
