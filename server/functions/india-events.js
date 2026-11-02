@@ -135,19 +135,23 @@ async function fetchBmsCity(cityKey) {
   const region = BMS_REGIONS[cityKey.toLowerCase()];
   if (!region) return [];
 
-  // BMS JSON API requires a session-generated scrollId — not usable server-side.
-  // Instead, scrape the public HTML explore page which pre-renders event JSON
-  // inside a <script id="__NEXT_DATA__"> tag (Next.js SSR).
-  const url = `https://in.bookmyshow.com/explore/events-${region.slug}`;
+  // BMS blocks most scraping. Use their public search/browse API which
+  // doesn't require a session scrollId. The /api/explore/v1/discover/events
+  // endpoint (without a city slug) accepts region as a query param.
+  const url =
+    `https://in.bookmyshow.com/api/explore/v1/discover/events` +
+    `?region=${region.region}&appCode=MOBAND&appVersion=14590&lat=0&lon=0&page=1&pageSize=10`;
 
   try {
     const res = await safeFetch(url, {
-      _render: true,   // ScraperAPI JS rendering — BMS pages are client-side rendered
-      _timeout: 30000, // JS rendering takes longer
+      _timeout: 20000,
       headers: {
         Referer:  'https://in.bookmyshow.com/',
-        Accept:   'text/html,application/xhtml+xml',
+        Accept:   'application/json, text/plain, */*',
         'Accept-Language': 'en-IN,en;q=0.9',
+        'x-region-code': region.region,
+        'x-region-slug': region.slug,
+        'x-app-code':    'MOBAND',
       },
     });
 
@@ -156,34 +160,29 @@ async function fetchBmsCity(cityKey) {
       return [];
     }
 
-    const html = await res.text();
-
-    // Next.js pre-renders all page data into __NEXT_DATA__ script tag
-    const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
-    if (!match) {
-      console.warn(`BMS ${cityKey}: no __NEXT_DATA__ found in HTML`);
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch {
+      console.warn(`BMS ${cityKey}: non-JSON response (${text.slice(0, 80)})`);
       return [];
     }
 
-    let pageData;
-    try { pageData = JSON.parse(match[1]); } catch { return []; }
+    console.log(`BMS ${cityKey} response keys:`, Object.keys(json || {}).join(', '));
 
-    // Navigate the Next.js page props to find events array
-    const props = pageData?.props?.pageProps || pageData?.props || {};
     const items =
-      props?.eventsData?.events ||
-      props?.events ||
-      props?.data?.events ||
-      props?.initialData?.events ||
-      [];
+      json?.BookMyShow?.arrEvents ||
+      json?.arrEvents             ||
+      json?.EventListings         ||
+      json?.resultData            ||
+      json?.events                ||
+      (Array.isArray(json) ? json : []);
 
     if (!Array.isArray(items) || items.length === 0) {
-      // Log keys to help debug the shape next time
-      console.warn(`BMS ${cityKey}: no events found. pageProps keys: ${Object.keys(props).join(', ')}`);
+      console.warn(`BMS ${cityKey}: 0 events. keys=${Object.keys(json || {}).join(',')}`);
       return [];
     }
 
-    console.log(`BMS ${cityKey}: got ${items.length} events from HTML`);
+    console.log(`BMS ${cityKey}: got ${items.length} events`);
     return items.map(item => normalizeBmsEvent(item, region.id));
   } catch (err) {
     console.warn(`BMS ${cityKey} fetch failed:`, err.message);
