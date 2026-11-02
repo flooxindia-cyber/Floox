@@ -1,1 +1,122 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reset password — Floox</title><link rel="stylesheet" href="floox-shared.css"></head><body><main style="min-height:100vh;display:grid;place-items:center;padding:24px"><section style="width:min(520px,100%);padding:32px;border:1px solid rgba(255,255,255,.1);border-radius:24px;background:rgba(255,255,255,.04)"><h1>Reset your password</h1><p style="color:#aaa">Enter your account email. We'll send a one-time code.</p><input id="email" type="email" placeholder="you@email.com" style="width:100%;padding:14px;margin:16px 0;border-radius:12px"><button id="send" class="btn-fire" style="width:100%">Send reset code</button><p id="msg" style="color:#aaa"></p><a href="floox-login.html">← Back to login</a></section></main><script>document.getElementById('send').onclick=async()=>{const email=document.getElementById('email').value.trim().toLowerCase();const m=document.getElementById('msg');try{const r=await fetch('/api/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});const d=await r.json();if(!r.ok)throw Error(d.error);m.textContent=d.message;location.href='floox-reset-password.html?email='+encodeURIComponent(email)}catch(e){m.textContent=e.message}}</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reset password — Floox</title>
+<link rel="icon" href="logo_floox.jpeg">
+<link rel="stylesheet" href="floox-shared.css">
+<style>
+:root{--bg:#fffaf4;--ink:#1c1000;--muted:#7a6a50;--border:#e8ddd0;--orange:#ff5c00;--pink:#ff2d78;--purple:#7c3aed}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 15% 15%,rgba(255,92,0,.14),transparent 30%),radial-gradient(circle at 90% 80%,rgba(124,58,237,.12),transparent 32%),var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+.shell{min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;align-items:stretch}
+.visual{position:relative;overflow:hidden;background:#1c1000;color:#fff;padding:clamp(2rem,6vw,5.5rem);display:flex;flex-direction:column;justify-content:space-between}
+.visual::before{content:'';position:absolute;width:430px;height:430px;border-radius:50%;right:-180px;top:-140px;background:linear-gradient(135deg,#ff5c00,#ff2d78);filter:blur(2px);opacity:.9}
+.visual::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;left:-160px;bottom:-120px;background:#7c3aed;opacity:.65;filter:blur(45px)}
+.brand{position:relative;z-index:2;display:flex;align-items:center;gap:.7rem;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:1.3rem;text-decoration:none;color:#fff}
+.brand img{width:42px;height:42px;border-radius:13px;object-fit:cover}
+.visual-copy{position:relative;z-index:2;max-width:560px}
+.eyebrow{display:inline-flex;align-items:center;gap:.45rem;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);padding:.4rem .75rem;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.visual h1{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:clamp(2.4rem,5vw,4.8rem);line-height:.98;letter-spacing:-.07em;margin:1.2rem 0}
+.visual h1 span{background:linear-gradient(90deg,#ff9b5c,#ff2d78);-webkit-background-clip:text;background-clip:text;color:transparent}
+.visual p{max-width:480px;color:rgba(255,255,255,.62);font-size:1rem;line-height:1.8}
+.trust{position:relative;z-index:2;display:flex;gap:.7rem;flex-wrap:wrap}
+.trust span{padding:.55rem .75rem;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);font-size:.72rem;color:rgba(255,255,255,.72)}
+.panel{display:grid;place-items:center;padding:2rem;background:rgba(255,250,244,.75)}
+.card{width:min(500px,100%);background:#fff;border:1.5px solid var(--border);border-radius:28px;padding:clamp(1.5rem,4vw,2.6rem);box-shadow:0 24px 70px rgba(28,16,0,.1);animation:rise .55s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.step{display:flex;align-items:center;gap:.65rem;color:var(--muted);font-size:.72rem;font-weight:700;margin-bottom:1.3rem}
+.step-dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:rgba(255,92,0,.1);color:var(--orange)}
+.card h2{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:2rem;line-height:1.05;letter-spacing:-.045em;margin:0 0 .65rem}
+.subtitle{color:var(--muted);font-size:.86rem;line-height:1.7;margin:0 0 1.5rem}
+.finput{width:100%;padding:.85rem 1rem;border:1.5px solid var(--border);border-radius:14px;background:#fffaf4;font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:.9rem;color:var(--ink);outline:none;transition:.2s;margin-bottom:1rem}
+.finput:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,92,0,.1)}
+.submit-btn{width:100%;border:0;border-radius:14px;padding:.95rem 1rem;background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;box-shadow:0 10px 25px rgba(255,92,0,.22);transition:.2s}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(255,92,0,.28)}
+.submit-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.message{min-height:25px;text-align:center;margin-top:.9rem;font-size:.78rem;font-weight:700}
+.message.error{color:#d81b60}
+.message.success{color:#16a34a}
+.message.info{color:var(--muted)}
+.help{display:flex;justify-content:space-between;gap:1rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.7rem;color:var(--muted)}
+.help a{color:var(--ink);font-weight:700;text-decoration:none}
+@media(max-width:850px){
+  .shell{grid-template-columns:1fr}
+  .visual{min-height:260px;padding:1.7rem}
+  .visual h1{font-size:2.5rem;margin:.8rem 0}
+  .visual p{font-size:.84rem}
+  .trust{display:none}
+  .panel{padding:1rem;align-items:start;padding-top:1.2rem}
+  .card{border-radius:22px}
+}
+</style>
+</head>
+<body>
+<main class="shell">
+  <section class="visual">
+    <a href="index.html" class="brand"><img src="logo_floox.jpeg" alt="Floox"><span>Floox</span></a>
+    <div class="visual-copy">
+      <span class="eyebrow">🔑 Password reset</span>
+      <h1>Forgot your<br><span>password?</span></h1>
+      <p>No worries — it happens. Enter your account email and we'll send you a one-time code to set a new password.</p>
+    </div>
+    <div class="trust">
+      <span>🔒 Secure reset</span>
+      <span>⚡ Code in seconds</span>
+      <span>🎵 Get back to Floox</span>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="card">
+      <div class="step"><span class="step-dot">1</span> ACCOUNT RECOVERY</div>
+      <h2>Reset your password.</h2>
+      <p class="subtitle">Enter the email address linked to your Floox account. We'll send you a 6-digit code to create a new password.</p>
+      <input id="email" type="email" class="finput" placeholder="your@email.com" autocomplete="email" inputmode="email">
+      <button id="send" class="submit-btn">Send reset code →</button>
+      <div class="message info" id="msg">Enter your registered email address above.</div>
+      <div class="help">
+        <span>Remember your password?</span>
+        <a href="floox-login.html">← Back to login</a>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+document.getElementById('send').onclick = async () => {
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const btn = document.getElementById('send');
+  const msg = document.getElementById('msg');
+  if (!email || !email.includes('@')) {
+    msg.textContent = 'Please enter a valid email address.';
+    msg.className = 'message error';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  msg.textContent = 'Sending your reset code…';
+  msg.className = 'message info';
+  try {
+    const r = await fetch('/api/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Something went wrong.');
+    msg.textContent = d.message || 'Code sent! Check your inbox.';
+    msg.className = 'message success';
+    setTimeout(() => location.href = 'floox-reset-password.html?email=' + encodeURIComponent(email), 1200);
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.className = 'message error';
+    btn.disabled = false;
+    btn.textContent = 'Send reset code →';
+  }
+};
+document.getElementById('email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('send').click();
+});
+</script>
+</body>
+</html>

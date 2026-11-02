@@ -1124,7 +1124,6 @@ async function handleMediaUpload(input) {
         continue;
       }
 
-      console.log(`Uploading ${file.name}...`);
 
       const formData = new FormData();
       formData.append('file', file);
@@ -1145,7 +1144,6 @@ async function handleMediaUpload(input) {
         throw new Error(data.error?.message || 'Cloudinary upload failed.');
       }
 
-      console.log('Cloudinary upload successful:', data);
 
       mediaItems.push({
         src: data.secure_url,

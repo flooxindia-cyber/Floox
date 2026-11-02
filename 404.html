@@ -1,1 +1,47 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Page not found — Floox</title><link rel="stylesheet" href="floox-shared.css"></head><body><main style="min-height:100vh;display:grid;place-items:center;text-align:center;padding:24px"><div><div style="font-size:6rem">404</div><h1>That stage is empty.</h1><p style="color:#aaa">The page you're looking for doesn't exist.</p><a class="btn-fire" href="index.html">Back to Floox</a></div></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Page not found — Floox</title>
+<link rel="icon" href="logo_floox.jpeg">
+<link rel="stylesheet" href="floox-shared.css">
+<style>
+:root{--o:#FF5C00;--p:#FF2D78;--bg:#0D0800;--txt:#fff;--sur:rgba(255,255,255,.05);--bdr:rgba(255,255,255,.1)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 20% 20%,rgba(255,92,0,.12),transparent 40%),radial-gradient(circle at 80% 80%,rgba(255,45,120,.08),transparent 40%),var(--bg);color:var(--txt);font-family:'Bricolage Grotesque','Plus Jakarta Sans',system-ui,sans-serif;min-height:100vh;display:grid;place-items:center;text-align:center;padding:2rem}
+.nav{position:fixed;top:0;left:0;right:0;padding:1.2rem 2rem;display:flex;align-items:center;gap:.75rem;background:rgba(13,8,0,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--bdr);z-index:100}
+.nav img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+.nav-brand{font-weight:800;font-size:1.1rem;text-decoration:none;color:#fff}
+.wrap{max-width:520px;margin:0 auto}
+.stage{font-size:clamp(5rem,20vw,9rem);line-height:1;font-weight:900;letter-spacing:-.04em;background:linear-gradient(135deg,var(--o),var(--p));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:.25rem}
+.emoji{font-size:clamp(2.5rem,8vw,4rem);margin-bottom:1rem;display:block}
+h1{font-size:clamp(1.6rem,5vw,2.4rem);font-weight:800;letter-spacing:-.03em;margin:0 0 .75rem}
+p{color:rgba(255,255,255,.55);font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:1rem;line-height:1.7;margin:0 0 2rem}
+.links{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+.btn-primary{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 1.6rem;border-radius:100px;background:linear-gradient(135deg,var(--o),var(--p));color:#fff;font-weight:800;font-size:.9rem;text-decoration:none;transition:.2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(255,92,0,.35)}
+.btn-ghost{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 1.6rem;border-radius:100px;border:1.5px solid var(--bdr);color:rgba(255,255,255,.7);font-weight:700;font-size:.9rem;text-decoration:none;transition:.2s}
+.btn-ghost:hover{border-color:rgba(255,255,255,.3);color:#fff}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="index.html" style="display:flex;align-items:center;gap:.6rem;text-decoration:none">
+    <img src="logo_floox.jpeg" alt="Floox">
+    <span class="nav-brand">Floox</span>
+  </a>
+</nav>
+
+<div class="wrap">
+  <div class="stage">404</div>
+  <span class="emoji">🎤</span>
+  <h1>That stage is empty.</h1>
+  <p>The page you're looking for doesn't exist or may have moved.<br>Let's get you back to the music.</p>
+  <div class="links">
+    <a href="index.html" class="btn-primary">🏠 Back to Floox</a>
+    <a href="floox-events.html" class="btn-ghost">🎵 Browse Events</a>
+  </div>
+</div>
+</body>
+</html>

@@ -84,9 +84,15 @@ function normalizeBmsEvent(item, cityName) {
         : `https://in.bmscdn.com/ieapp/events/images/xl/${item.EventImageUrl}`)
     : '';
 
+  // BMS browse API returns EventCode but NOT EventSlug — code-based URLs don't resolve.
+  // Fall back to a BMS search URL so users can actually find and book the event.
+  const citySlug = (cityName || '').toLowerCase().replace(/\s+/g, '-');
+  const bmsExplore = citySlug ? `https://in.bookmyshow.com/explore/events-movies/events/${citySlug}` : 'https://in.bookmyshow.com/explore/events';
   const bookingUrl = item.EventCode
-    ? `https://in.bookmyshow.com/events/${item.EventSlug || item.EventCode}`
-    : 'https://in.bookmyshow.com/explore/events';
+    ? (item.EventSlug
+        ? `https://in.bookmyshow.com/events/${item.EventSlug}`
+        : `https://in.bookmyshow.com/search?q=${encodeURIComponent((item.EventName || item.EventTitle || '').trim())}&category=events`)
+    : bmsExplore;
 
   return {
     provider:          'bookmyshow',
