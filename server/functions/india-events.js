@@ -127,10 +127,11 @@ async function fetchBmsCity(cityKey) {
   if (!region) return [];
 
   // BMS browse API — public, no auth required.
-  // Returns the same data the /explore/events page uses.
+  // The v1 explore endpoint (api/explore/v1/discover/...) returns 404 as of Nov 2026.
+  // The current website uses a different endpoint pattern.
   const url =
-    `https://in.bookmyshow.com/api/explore/v1/discover/regions/${region.id}/categories/` +
-    `events/more?sortBy=popularity&pageNumber=1&pageSize=20`;
+    `https://in.bookmyshow.com/api/explore/v1/discover/regions/${region.code}/categories/` +
+    `events/filter?sortBy=popularity&pageNumber=1&pageSize=20`;
 
   try {
     const res = await safeFetch(url, {
@@ -139,6 +140,7 @@ async function fetchBmsCity(cityKey) {
         Origin:   'https://in.bookmyshow.com',
         'x-region-code': region.code,
         'x-region-slug': region.id.toLowerCase(),
+        'x-bms-id':      region.code,
       },
     });
 
@@ -287,13 +289,20 @@ async function fetchDistrictCity(citySlug) {
 
 /**
  * Fetch District / Insider.in events across multiple cities.
+ * Batches requests to avoid 429 rate-limiting (max 2 parallel, 300ms between batches).
  * @param {string[]} cities  city slugs, e.g. ['mumbai','bangalore']
  * @param {number}   limit   max events to return total
  */
 async function district(cities = DISTRICT_CITIES, limit = 50) {
-  const jobs = cities.slice(0, 6).map(c => fetchDistrictCity(c));
-  const settled = await Promise.allSettled(jobs);
-  const all = settled.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+  const citiesToFetch = cities.slice(0, 6);
+  const all = [];
+  // Fetch in batches of 2 to avoid 429s
+  for (let i = 0; i < citiesToFetch.length; i += 2) {
+    const batch = citiesToFetch.slice(i, i + 2);
+    const settled = await Promise.allSettled(batch.map(c => fetchDistrictCity(c)));
+    all.push(...settled.flatMap(r => r.status === 'fulfilled' ? r.value : []));
+    if (i + 2 < citiesToFetch.length) await new Promise(r => setTimeout(r, 400));
+  }
 
   const seen = new Map();
   for (const e of all) {
