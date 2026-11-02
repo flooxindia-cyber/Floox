@@ -126,20 +126,17 @@ async function fetchBmsCity(cityKey) {
   const region = BMS_REGIONS[cityKey.toLowerCase()];
   if (!region) return [];
 
-  // BMS public browse API — confirmed working endpoint pattern from browser DevTools Nov 2026.
-  // Pattern: /api/explore/v1/discover/events-{slug}?region={REGION}&embedded=true
-  const url =
-    `https://in.bookmyshow.com/api/explore/v1/discover/events-${region.slug}` +
-    `?region=${region.region}&embedded=true`;
+  // BMS JSON API requires a session-generated scrollId — not usable server-side.
+  // Instead, scrape the public HTML explore page which pre-renders event JSON
+  // inside a <script id="__NEXT_DATA__"> tag (Next.js SSR).
+  const url = `https://in.bookmyshow.com/explore/events-${region.slug}`;
 
   try {
     const res = await safeFetch(url, {
       headers: {
         Referer:  'https://in.bookmyshow.com/',
-        Origin:   'https://in.bookmyshow.com',
-        Accept:   'application/json, text/plain, */*',
-        'x-region-code': region.region,
-        'x-region-slug': region.slug,
+        Accept:   'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-IN,en;q=0.9',
       },
     });
 
@@ -148,26 +145,34 @@ async function fetchBmsCity(cityKey) {
       return [];
     }
 
-    const text = await res.text();
-    let json;
-    try { json = JSON.parse(text); } catch { return []; }
+    const html = await res.text();
 
-    // Log top-level keys so we can see the actual response shape in Vercel logs
-    console.log(`BMS ${cityKey} response keys:`, Object.keys(json || {}).join(', '));
-
-    const items =
-      json?.BookMyShow?.arrEvents   ||  // old v1 shape
-      json?.arrEvents               ||  // direct array
-      json?.EventListings           ||  // alt shape
-      json?.resultData              ||
-      json?.events                  ||
-      (Array.isArray(json) ? json : []);
-
-    if (!Array.isArray(items)) {
-      console.warn(`BMS ${cityKey}: unexpected items type`, typeof items);
+    // Next.js pre-renders all page data into __NEXT_DATA__ script tag
+    const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+    if (!match) {
+      console.warn(`BMS ${cityKey}: no __NEXT_DATA__ found in HTML`);
       return [];
     }
-    console.log(`BMS ${cityKey}: got ${items.length} events`);
+
+    let pageData;
+    try { pageData = JSON.parse(match[1]); } catch { return []; }
+
+    // Navigate the Next.js page props to find events array
+    const props = pageData?.props?.pageProps || pageData?.props || {};
+    const items =
+      props?.eventsData?.events ||
+      props?.events ||
+      props?.data?.events ||
+      props?.initialData?.events ||
+      [];
+
+    if (!Array.isArray(items) || items.length === 0) {
+      // Log keys to help debug the shape next time
+      console.warn(`BMS ${cityKey}: no events found. pageProps keys: ${Object.keys(props).join(', ')}`);
+      return [];
+    }
+
+    console.log(`BMS ${cityKey}: got ${items.length} events from HTML`);
     return items.map(item => normalizeBmsEvent(item, region.id));
   } catch (err) {
     console.warn(`BMS ${cityKey} fetch failed:`, err.message);
