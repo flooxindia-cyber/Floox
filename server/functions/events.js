@@ -41,7 +41,7 @@ async function listEvents({ q = '', city = '', type = '', organiserId = '', mine
   if (mine && organiserId) parts.push(`organiser_id=eq.${encodeURIComponent(organiserId)}`);
   else {
     parts.push('status=in.(published,upcoming)');
-    parts.push(`event_date=gte.${new Date().toISOString().slice(0, 10)}`);
+    parts.push(`start_at=gte.${new Date().toISOString()}`);
   }
   if (city) parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
   if (type) parts.push(`event_type=ilike.*${encodeURIComponent(type)}*`);
@@ -57,7 +57,7 @@ async function listEvents({ q = '', city = '', type = '', organiserId = '', mine
 async function countEvents({ q = '', city = '', type = '', organiserId = '', mine = false } = {}) {
   const parts = ['select=id'];
   if (mine && organiserId) parts.push(`organiser_id=eq.${encodeURIComponent(organiserId)}`);
-  else { parts.push('status=in.(published,upcoming)'); parts.push(`event_date=gte.${new Date().toISOString().slice(0, 10)}`); }
+  else { parts.push('status=in.(published,upcoming)'); parts.push(`start_at=gte.${new Date().toISOString()}`); }
   if (city) parts.push(`city=ilike.*${encodeURIComponent(city)}*`);
   if (type) parts.push(`event_type=ilike.*${encodeURIComponent(type)}*`);
   if (q) { const safe = encodeURIComponent(q); parts.push(`or=(name.ilike.*${safe}*,description.ilike.*${safe}*,venue.ilike.*${safe}*,city.ilike.*${safe}*,event_type.ilike.*${safe}*)`); }
