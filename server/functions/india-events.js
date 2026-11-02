@@ -7,29 +7,38 @@
 
 // ── Shared fetch helper ───────────────────────────────────────────────────────
 
+// safeFetch: routes through ScraperAPI when key is set.
+// render=true makes ScraperAPI execute JS before returning HTML — needed for BMS.
 async function safeFetch(url, options = {}) {
+  const timeoutMs = options._timeout || 25000;
+  const render    = options._render  || false;
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 12000);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
 
-  // Route through ScraperAPI when key is set — bypasses Vercel IP blocks from BMS/District
   const scraperKey = process.env.SCRAPER_API_KEY;
   if (!scraperKey) console.warn('[india-events] SCRAPER_API_KEY not set — direct fetch will likely 403');
-  const finalUrl = scraperKey
-    ? `https://api.scraperapi.com/?api_key=${scraperKey}&url=${encodeURIComponent(url)}`
-    : url;
-  console.log(`[india-events] fetching via ${scraperKey ? 'ScraperAPI' : 'direct'}: ${url.slice(0, 80)}`);
+
+  let finalUrl;
+  if (scraperKey) {
+    finalUrl = `https://api.scraperapi.com/?api_key=${scraperKey}&url=${encodeURIComponent(url)}`;
+    if (render) finalUrl += '&render=true';
+  } else {
+    finalUrl = url;
+  }
+  console.log(`[india-events] fetching via ${scraperKey ? 'ScraperAPI' + (render ? '(JS)' : '') : 'direct'}: ${url.slice(0, 80)}`);
+
+  // Strip internal options before passing to fetch
+  const { _timeout, _render, ...fetchOptions } = options;
 
   try {
     const res = await fetch(finalUrl, {
-      ...options,
+      ...fetchOptions,
       signal: ctrl.signal,
-      // When routing via ScraperAPI, let it handle headers; otherwise set our own
       headers: scraperKey ? {} : {
-        'User-Agent':
-          'Mozilla/5.0 (compatible; Floox-EventBot/1.0; +https://floox.in)',
+        'User-Agent': 'Mozilla/5.0 (compatible; Floox-EventBot/1.0; +https://floox.in)',
         Accept: 'application/json, text/html;q=0.9',
         'Accept-Language': 'en-IN,en;q=0.8',
-        ...options.headers,
+        ...fetchOptions.headers,
       },
     });
     return res;
@@ -133,6 +142,8 @@ async function fetchBmsCity(cityKey) {
 
   try {
     const res = await safeFetch(url, {
+      _render: true,   // ScraperAPI JS rendering — BMS pages are client-side rendered
+      _timeout: 30000, // JS rendering takes longer
       headers: {
         Referer:  'https://in.bookmyshow.com/',
         Accept:   'text/html,application/xhtml+xml',
@@ -273,6 +284,7 @@ async function fetchDistrictCity(citySlug) {
 
   try {
     const res = await safeFetch(url, {
+      _timeout: 20000,
       headers: {
         Referer: 'https://district.in/',
         Origin:  'https://district.in',
@@ -307,14 +319,18 @@ async function fetchDistrictCity(citySlug) {
  * @param {number}   limit   max events to return total
  */
 async function district(cities = DISTRICT_CITIES, limit = 50) {
-  const citiesToFetch = cities.slice(0, 6);
+  // Fetch 1 city at a time with 2s gap to avoid District 429s.
+  // Cap at 3 cities to stay well within Vercel's 30s function timeout.
+  const citiesToFetch = cities.slice(0, 3);
   const all = [];
-  // Fetch in batches of 2 to avoid 429s
-  for (let i = 0; i < citiesToFetch.length; i += 2) {
-    const batch = citiesToFetch.slice(i, i + 2);
-    const settled = await Promise.allSettled(batch.map(c => fetchDistrictCity(c)));
-    all.push(...settled.flatMap(r => r.status === 'fulfilled' ? r.value : []));
-    if (i + 2 < citiesToFetch.length) await new Promise(r => setTimeout(r, 400));
+  for (let i = 0; i < citiesToFetch.length; i++) {
+    try {
+      const events = await fetchDistrictCity(citiesToFetch[i]);
+      all.push(...events);
+    } catch (e) {
+      console.warn(`District ${citiesToFetch[i]} error:`, e.message);
+    }
+    if (i + 1 < citiesToFetch.length) await new Promise(r => setTimeout(r, 2000));
   }
 
   const seen = new Map();
