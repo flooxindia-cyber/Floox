@@ -8,9 +8,11 @@
 <meta name="description" content="India's live music platform. Discover 2,400+ verified artists, follow your favourites, and book the perfect performer for your event.">
 <meta property="og:title" content="Floox — India's Live Music Platform">
 <meta property="og:description" content="Discover 2,400+ verified artists across India. Book singers, bands, DJs and more for your event.">
-<meta property="og:image" content="logo_floox.jpeg">
+<meta property="og:image" content="https://www.floox.in/logo_floox.jpeg">
+<meta property="og:url" content="https://www.floox.in/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.floox.in/logo_floox.jpeg">
 <meta name="theme-color" content="#FF5C00">
 <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 
@@ -674,7 +676,7 @@ footer{background:var(--bg);border-top:1px solid var(--bdr);padding:4rem 5% 2rem
     <a href="floox-login.html" class="btn-sign" data-auth="login">Sign In</a>
     <a href="floox-login.html" class="btn-join" data-auth="login">Join Free</a>
     <span class="btn-sign" data-auth="username" style="display:none;color:var(--o)"></span>
-    <a href="floox-dashboard-fan.html" class="btn-sign" data-auth="dashboard" style="display:none">Dashboard</a>
+    <a href="#" class="btn-sign" data-auth="dashboard" style="display:none">Dashboard</a>
     <button class="btn-sign" data-auth="logout" style="display:none" onclick="FLOOX.logout()">Sign Out</button>
   </div>
   <button class="hamburger" onclick="toggleMob()">
@@ -855,15 +857,15 @@ footer{background:var(--bg);border-top:1px solid var(--bdr);padding:4rem 5% 2rem
 
 <!-- ── FEATURED ARTISTS ────────────────────────────────────────────────────────── -->
 <section class="artists-bg" id="artists">
-  <!-- Now Playing Bar -->
+  <!-- Live streaming coming soon banner -->
   <div class="now-playing rv">
-    <div class="np-live"><span class="np-dot"></span>Live on Floox</div>
+    <div class="np-live" style="color:rgba(255,255,255,.5)"><span class="np-dot" style="background:rgba(255,255,255,.3);animation:none"></span>Coming Soon</div>
     <div class="np-vinyl">🎵</div>
     <div class="np-info">
-      <div class="np-artist" id="npArtist">Rohan Mehta — Bollywood Live Set</div>
-      <div class="np-track" id="npTrack">🎤 Performing in Mumbai · 200+ watching</div>
+      <div class="np-artist" id="npArtist" style="color:rgba(255,255,255,.7)">Live Streaming — Coming to Floox</div>
+      <div class="np-track" id="npTrack" style="color:rgba(255,255,255,.4)">Watch your favourite artists perform live from anywhere in India</div>
     </div>
-    <div class="np-bars">
+    <div class="np-bars" style="opacity:.3">
       <div class="np-bar"></div><div class="np-bar"></div><div class="np-bar"></div>
       <div class="np-bar"></div><div class="np-bar"></div>
     </div>
@@ -897,77 +899,26 @@ footer{background:var(--bg);border-top:1px solid var(--bdr);padding:4rem 5% 2rem
     <a href="floox-organiser-register.html" class="view-all">Join as Organiser →</a>
   </div>
   <div class="org-grid" id="organiserGrid">
-    <div class="ocard rv">
-      <div class="ocard-header">
-        <div class="ocard-logo" style="background:linear-gradient(135deg,rgba(255,214,0,.3),rgba(255,92,0,.2))">🎪</div>
-        <div class="ocard-badge obadge-pro">Pro</div>
-      </div>
-      <div class="ocard-body">
-        <div class="ocard-name">Wavelength Events</div>
-        <div class="ocard-city">📍 Mumbai</div>
-        <div class="ocard-tags">
-          <span class="otag">Corporate</span><span class="otag">Concerts</span><span class="otag">Weddings</span>
+    <!-- Why join as organiser -->
+    <div class="ocard rv" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(255,92,0,.08),rgba(255,45,120,.05));border:1.5px solid rgba(255,92,0,.2);display:flex;flex-direction:column;align-items:center;text-align:center;padding:2.5rem 2rem">
+      <div style="font-size:2.5rem;margin-bottom:1rem">🎪</div>
+      <div class="ocard-name" style="font-size:1.3rem;margin-bottom:.5rem">Be the First Organiser on Floox</div>
+      <p class="ocard-desc" style="max-width:540px;margin:.75rem auto 1.5rem">Floox connects event professionals with India's best artists. Create your organiser profile, post events, and receive booking requests — all in one place.</p>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem">
+        <div style="text-align:center;padding:.75rem 1.25rem;background:rgba(255,255,255,.05);border-radius:12px;min-width:100px">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--o)">Free</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:.2rem">to join</div>
         </div>
-        <div class="ocard-stats">
-          <span>🎤 48 bookings</span><span>⭐ 4.9</span>
+        <div style="text-align:center;padding:.75rem 1.25rem;background:rgba(255,255,255,.05);border-radius:12px;min-width:100px">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--t)">India</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:.2rem">nationwide</div>
         </div>
-        <p class="ocard-desc">Mumbai's premium event agency. We book 50+ artists per year across corporate galas, music festivals and private celebrations.</p>
-        <a href="floox-contact.html" class="ocard-cta">View & Connect →</a>
-      </div>
-    </div>
-    <div class="ocard rv d1">
-      <div class="ocard-header">
-        <div class="ocard-logo" style="background:linear-gradient(135deg,rgba(0,194,168,.3),rgba(124,58,237,.2))">🎶</div>
-        <div class="ocard-badge obadge-pro">Pro</div>
-      </div>
-      <div class="ocard-body">
-        <div class="ocard-name">Rhythm House Productions</div>
-        <div class="ocard-city">📍 Delhi NCR</div>
-        <div class="ocard-tags">
-          <span class="otag">Live Music</span><span class="otag">Festivals</span><span class="otag">Clubs</span>
+        <div style="text-align:center;padding:.75rem 1.25rem;background:rgba(255,255,255,.05);border-radius:12px;min-width:100px">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--p)">24h</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:.2rem">response time</div>
         </div>
-        <div class="ocard-stats">
-          <span>🎤 62 bookings</span><span>⭐ 4.8</span>
-        </div>
-        <p class="ocard-desc">Delhi's go-to for live music experiences. Specialising in concert production, venue management and artist management.</p>
-        <a href="floox-contact.html" class="ocard-cta">View & Connect →</a>
       </div>
-    </div>
-    <div class="ocard rv d2">
-      <div class="ocard-header">
-        <div class="ocard-logo" style="background:linear-gradient(135deg,rgba(255,45,120,.3),rgba(124,58,237,.2))">🌟</div>
-        <div class="ocard-badge obadge-ver">Verified</div>
-      </div>
-      <div class="ocard-body">
-        <div class="ocard-name">Starlight Occasions</div>
-        <div class="ocard-city">📍 Bangalore</div>
-        <div class="ocard-tags">
-          <span class="otag">Weddings</span><span class="otag">Private</span><span class="otag">Corporate</span>
-        </div>
-        <div class="ocard-stats">
-          <span>🎤 35 bookings</span><span>⭐ 4.7</span>
-        </div>
-        <p class="ocard-desc">Crafting unforgettable celebrations in Bangalore. From intimate gatherings to grand weddings — we book the perfect talent.</p>
-        <a href="floox-contact.html" class="ocard-cta">View & Connect →</a>
-      </div>
-    </div>
-    <div class="ocard rv d3">
-      <div class="ocard-header">
-        <div class="ocard-logo" style="background:linear-gradient(135deg,rgba(34,197,94,.25),rgba(0,194,168,.2))">🏆</div>
-        <div class="ocard-badge obadge-new">New</div>
-      </div>
-      <div class="ocard-body">
-        <div class="ocard-name">Goa Beats Co.</div>
-        <div class="ocard-city">📍 Goa</div>
-        <div class="ocard-tags">
-          <span class="otag">Beach Events</span><span class="otag">DJ Nights</span><span class="otag">Festivals</span>
-        </div>
-        <div class="ocard-stats">
-          <span>🎤 18 bookings</span><span>⭐ 4.9</span>
-        </div>
-        <p class="ocard-desc">Goa's freshest event collective. We run beach parties, sunset DJ sessions, and multi-day music festivals on the coast.</p>
-        <a href="floox-contact.html" class="ocard-cta">View & Connect →</a>
-      </div>
+      <a href="floox-organiser-register.html" class="ocard-cta" style="font-size:1rem;padding:.9rem 2rem;background:linear-gradient(135deg,var(--o),var(--p));color:#fff;border:none">Register as Organiser →</a>
     </div>
   </div>
 </section>
@@ -978,41 +929,46 @@ footer{background:var(--bg);border-top:1px solid var(--bdr);padding:4rem 5% 2rem
     <div class="spotlight-left rv-l">
       <div class="sec-eyebrow" style="color:var(--t)">Watch</div>
       <h2 class="sec-title">See Them Live</h2>
-      <p class="sec-sub" style="max-width:360px">Watch performance clips from India's most exciting artists — before you book them for your event.</p>
-      <a href="floox-public.html" class="view-all" style="margin-top:1.5rem;display:inline-flex;color:var(--t);border-color:rgba(0,194,168,.3)">Explore all artists →</a>
+      <p class="sec-sub" style="max-width:360px">Performance videos from verified Floox artists — coming soon. Artists, add your reel when you register to be featured here.</p>
+      <a href="floox-artist-register.html" class="view-all" style="margin-top:1.5rem;display:inline-flex;color:var(--t);border-color:rgba(0,194,168,.3)">Register as Artist →</a>
     </div>
     <div class="spotlight-vids rv-r">
-      <div class="svid" onclick="playVideo(this,'Ananya Sharma','Bollywood Pop')">
-        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(255,92,0,.3),rgba(255,45,120,.2))"></div>
-        <img class="svid-thumb-img" src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&q=80&auto=format&fit=crop" alt="Ananya Sharma">
-        <div class="svid-overlay"></div>
-        <div class="svid-play">▶️</div>
-        <div class="svid-info"><div class="svid-artist">Ananya Sharma</div><div class="svid-genre">Bollywood Pop · Mumbai</div></div>
-        <button class="like-btn" onclick="event.stopPropagation();toggleLike(this,'Ananya Sharma')" data-id="ananya"><span class="heart empty"></span></button>
+      <!-- Coming soon placeholder cards -->
+      <div class="svid" style="cursor:default">
+        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(255,92,0,.2),rgba(255,45,120,.12))"></div>
+        <div class="svid-overlay" style="background:rgba(0,0,0,.6)"></div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1rem">
+          <div style="font-size:2rem;margin-bottom:.5rem;opacity:.5">🎤</div>
+          <div style="font-size:.8rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.06em">ARTIST REEL</div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.3);margin-top:.3rem">Coming soon</div>
+        </div>
       </div>
-      <div class="svid" onclick="playVideo(this,'DJ Ravi','Electronic')">
-        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(0,194,168,.2))"></div>
-        <img class="svid-thumb-img" src="https://images.unsplash.com/photo-1493676304819-0d7a8d026dcf?w=600&q=80&auto=format&fit=crop" alt="DJ Ravi">
-        <div class="svid-overlay"></div>
-        <div class="svid-play">▶️</div>
-        <div class="svid-info"><div class="svid-artist">DJ Ravi</div><div class="svid-genre">Electronic / DJ · Bangalore</div></div>
-        <button class="like-btn" onclick="event.stopPropagation();toggleLike(this,'DJ Ravi')" data-id="djravi"><span class="heart empty"></span></button>
+      <div class="svid" style="cursor:default">
+        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(0,194,168,.12))"></div>
+        <div class="svid-overlay" style="background:rgba(0,0,0,.6)"></div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1rem">
+          <div style="font-size:2rem;margin-bottom:.5rem;opacity:.5">🎛</div>
+          <div style="font-size:.8rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.06em">DJ PERFORMANCE</div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.3);margin-top:.3rem">Coming soon</div>
+        </div>
       </div>
-      <div class="svid" onclick="playVideo(this,'Zubair Khan','Sufi Ghazal')">
-        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(0,194,168,.25),rgba(255,214,0,.15))"></div>
-        <img class="svid-thumb-img" src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=600&q=80&auto=format&fit=crop" alt="Zubair Khan">
-        <div class="svid-overlay"></div>
-        <div class="svid-play">▶️</div>
-        <div class="svid-info"><div class="svid-artist">Zubair Khan</div><div class="svid-genre">Sufi / Ghazal · Delhi</div></div>
-        <button class="like-btn" onclick="event.stopPropagation();toggleLike(this,'Zubair Khan')" data-id="zubair"><span class="heart empty"></span></button>
+      <div class="svid" style="cursor:default">
+        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(0,194,168,.18),rgba(255,214,0,.1))"></div>
+        <div class="svid-overlay" style="background:rgba(0,0,0,.6)"></div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1rem">
+          <div style="font-size:2rem;margin-bottom:.5rem;opacity:.5">🎵</div>
+          <div style="font-size:.8rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.06em">LIVE SESSION</div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.3);margin-top:.3rem">Coming soon</div>
+        </div>
       </div>
-      <div class="svid" onclick="playVideo(this,'The Strings Collective','Rock Indie')">
-        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(255,45,120,.25),rgba(124,58,237,.2))"></div>
-        <img class="svid-thumb-img" src="https://images.unsplash.com/photo-1468164016595-6108e4c60c8b?w=600&q=80&auto=format&fit=crop" alt="The Strings Collective">
-        <div class="svid-overlay"></div>
-        <div class="svid-play">▶️</div>
-        <div class="svid-info"><div class="svid-artist">The Strings Collective</div><div class="svid-genre">Rock & Indie · Pune</div></div>
-        <button class="like-btn" onclick="event.stopPropagation();toggleLike(this,'The Strings Collective')" data-id="strings"><span class="heart empty"></span></button>
+      <div class="svid" style="cursor:default">
+        <div class="svid-thumb" style="background:linear-gradient(135deg,rgba(255,45,120,.2),rgba(124,58,237,.12))"></div>
+        <div class="svid-overlay" style="background:rgba(0,0,0,.6)"></div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1rem">
+          <div style="font-size:2rem;margin-bottom:.5rem;opacity:.5">🎸</div>
+          <div style="font-size:.8rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.06em">BAND SHOWCASE</div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.3);margin-top:.3rem">Coming soon</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1101,16 +1057,16 @@ footer{background:var(--bg);border-top:1px solid var(--bdr);padding:4rem 5% 2rem
     <a href="floox-public.html" class="view-all">All cities →</a>
   </div>
   <div class="cities-scroll">
-    <a href="floox-public.html?city=Mumbai" class="cpill"><span class="cpill-ico">🌆</span><span class="cpill-name">Mumbai</span><span class="cpill-cnt">380 artists</span></a>
-    <a href="floox-public.html?city=Delhi" class="cpill"><span class="cpill-ico">🏛️</span><span class="cpill-name">Delhi NCR</span><span class="cpill-cnt">320 artists</span></a>
-    <a href="floox-public.html?city=Bangalore" class="cpill"><span class="cpill-ico">🌿</span><span class="cpill-name">Bangalore</span><span class="cpill-cnt">280 artists</span></a>
-    <a href="floox-public.html?city=Chennai" class="cpill"><span class="cpill-ico">🎼</span><span class="cpill-name">Chennai</span><span class="cpill-cnt">195 artists</span></a>
-    <a href="floox-public.html?city=Kolkata" class="cpill"><span class="cpill-ico">🎭</span><span class="cpill-name">Kolkata</span><span class="cpill-cnt">165 artists</span></a>
-    <a href="floox-public.html?city=Hyderabad" class="cpill"><span class="cpill-ico">💎</span><span class="cpill-name">Hyderabad</span><span class="cpill-cnt">145 artists</span></a>
-    <a href="floox-public.html?city=Pune" class="cpill"><span class="cpill-ico">🎵</span><span class="cpill-name">Pune</span><span class="cpill-cnt">130 artists</span></a>
-    <a href="floox-public.html?city=Jaipur" class="cpill"><span class="cpill-ico">🏰</span><span class="cpill-name">Jaipur</span><span class="cpill-cnt">95 artists</span></a>
-    <a href="floox-public.html?city=Goa" class="cpill"><span class="cpill-ico">🌊</span><span class="cpill-name">Goa</span><span class="cpill-cnt">80 artists</span></a>
-    <a href="floox-public.html?city=Saharanpur" class="cpill"><span class="cpill-ico">🎤</span><span class="cpill-name">Saharanpur</span><span class="cpill-cnt">45 artists</span></a>
+    <a href="floox-public.html?city=Mumbai" class="cpill"><span class="cpill-ico">🌆</span><span class="cpill-name">Mumbai</span><span class="cpill-cnt">Search →</span></a>
+    <a href="floox-public.html?city=Delhi" class="cpill"><span class="cpill-ico">🏛️</span><span class="cpill-name">Delhi NCR</span><span class="cpill-cnt">Search →</span></a>
+    <a href="floox-public.html?city=Bangalore" class="cpill"><span class="cpill-ico">🌿</span><span class="cpill-name">Bangalore</span><span class="cpill-cnt">Search →</span></a>
+    <a href="floox-public.html?city=Chennai" class="cpill"><span class="cpill-ico">🎼</span><span class="cpill-name">Chennai</span><span class="cpill-cnt">Search →</span></a>
+    <a href="floox-public.html?city=Kolkata" class="cpill"><span class="cpill-ico">🎭</span><span class="cpill-name">Kolkata</span><span class="cpill-cnt">Search →</span></a>
+    <a href="floox-public.html?city=Hyderabad" class="cpill"><span class="cpill-ico">💎</span><span class="cpill-name">Hyderabad</span><span class="cpill-cnt">Search →</span></a>
+    <a href="floox-public.html?city=Pune" class="cpill"><span class="cpill-ico">🎵</span><span class="cpill-name">Pune</span><span class="cpill-cnt">Search →</span></a>
+    <a href="floox-public.html?city=Jaipur" class="cpill"><span class="cpill-ico">🏰</span><span class="cpill-name">Jaipur</span><span class="cpill-cnt">Search →</span></a>
+    <a href="floox-public.html?city=Goa" class="cpill"><span class="cpill-ico">🌊</span><span class="cpill-name">Goa</span><span class="cpill-cnt">Search →</span></a>
+    <a href="floox-public.html?city=Saharanpur" class="cpill"><span class="cpill-ico">🎤</span><span class="cpill-name">Saharanpur</span><span class="cpill-cnt">Search →</span></a>
   </div>
 </div>
 
@@ -1390,7 +1346,7 @@ function liveSearch() {
     html += '</div>';
   }
 
-  html += '<div class="sd-see-all" onclick="doSearch()">See all ' + results.length + '+ results &rarr;</div>';
+  html += '<div class="sd-footer" style="padding:10px 14px;font-size:.68rem;color:rgba(255,255,255,.3);border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center"><span>Sample profiles · Search our live database →</span><span class="sd-see-all" onclick="doSearch()" style="color:#ff7a18;cursor:pointer;font-weight:800">Search →</span></div>';
   dd.innerHTML = html;
   dd.style.display = 'block';
 }
@@ -1662,10 +1618,7 @@ function showRandomArtists(){
 
 async function loadArtists(){
   try{
-    console.log('Floox: Loading real artists...');
-
     const res=await FLOOX.getArtists({limit:50});
-    console.log('Floox: Artists received:',res);
 
     if(!res || !Array.isArray(res.artists)){
       throw new Error('Invalid artists response');
@@ -1678,8 +1631,6 @@ async function loadArtists(){
       !String(a.id).startsWith('demo-') &&
       !String(a.email||'').endsWith('@demo.floox.in')
     );
-
-    console.log('Floox: Real artists loaded:',realArtists.length);
 
     if(!realArtists.length){
       const grid=document.getElementById('artistGrid');
