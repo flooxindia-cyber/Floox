@@ -1021,9 +1021,10 @@ async function loadEvents() {
       const isFloox = e.provider === 'floox';
       const imgSrc = e.image_url || FALLBACK_IMGS[e.category] || FALLBACK_IMGS.default;
       const detailKey = `${e.provider}:${e._key?.split(':').slice(1).join(':') || e.provider_id || ''}`;
+      const ticketUrl = e.ticket_url || e.official_url || '';
       const detailUrl = isFloox
         ? `/floox-event.html?id=${encodeURIComponent(e.id||'')}`
-        : `/floox-event-detail.html?key=${encodeURIComponent(detailKey)}`;
+        : `/floox-event-detail.html?key=${encodeURIComponent(detailKey)}${ticketUrl && !isFloox ? '&bu=' + encodeURIComponent(ticketUrl) : ''}`;
       const priceStr = e._floox_free || e.price_min === 0
         ? '<span style="color:#22a06b;font-weight:700">Free entry</span>'
         : (e.price_min ? '₹' + escHtml(String(Number(e.price_min).toLocaleString('en-IN'))) : '');
