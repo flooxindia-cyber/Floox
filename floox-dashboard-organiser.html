@@ -1533,20 +1533,14 @@ function createEvent(status) {
   showToast(status === 'draft' ? 'Event saved as draft 📝' : 'Event published! 🎉', 'success');
 }
 // ── ORGANISER UPLOADS ──
-const CLD_CLOUD = 'cqes6im5';
-const CLD_PRESET = 'floox_artist_media';
 let orgMediaItems = [];
 
 function triggerUpload(id) { const el = document.getElementById(id); if (el) el.click(); }
 
-async function cloudinaryUpload(file, resource) {
-  const fd = new FormData();
-  fd.append('file', file);
-  fd.append('upload_preset', CLD_PRESET);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLD_CLOUD}/${resource}/upload`, { method:'POST', body: fd });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error?.message || 'Cloudinary upload failed.');
-  return data;
+// Uploads via /api/upload-media → Supabase Storage (no Cloudinary needed)
+async function flooxUpload(file) {
+  const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+  return FLOOX.uploadFile(file, mediaType);
 }
 
 async function persistOrganiser(fields) {
@@ -1576,9 +1570,9 @@ async function handleOrganiserCoverUpload(input) {
     if (!file.type.startsWith('image/')) throw new Error('Please select an image file.');
     if (file.size > 10*1024*1024) throw new Error('Cover photo must be 10 MB or smaller.');
     showToast('Uploading cover photo…', 'info');
-    const data = await cloudinaryUpload(file, 'image');
-    await persistOrganiser({ cover_image: data.secure_url });
-    user.cover_image = data.secure_url;
+    const data = await flooxUpload(file);
+    await persistOrganiser({ cover_image: data.url });
+    user.cover_image = data.url;
     renderOrganiserImages();
     showToast('Cover photo saved ✅', 'success');
   } catch (e) { console.error(e); showToast(e.message || 'Cover upload failed', 'error'); }
@@ -1591,9 +1585,9 @@ async function handleOrganiserAvatarUpload(input) {
     if (!file.type.startsWith('image/')) throw new Error('Please select an image file.');
     if (file.size > 10*1024*1024) throw new Error('Profile photo must be 10 MB or smaller.');
     showToast('Uploading profile photo…', 'info');
-    const data = await cloudinaryUpload(file, 'image');
-    await persistOrganiser({ avatar: data.secure_url });
-    user.avatar = data.secure_url;
+    const data = await flooxUpload(file);
+    await persistOrganiser({ avatar: data.url });
+    user.avatar = data.url;
     renderOrganiserImages();
     showToast('Profile photo saved ✅', 'success');
   } catch (e) { console.error(e); showToast(e.message || 'Profile photo upload failed', 'error'); }
@@ -1626,11 +1620,11 @@ async function handleOrganiserMediaUpload(input) {
   let added = 0;
   for (const file of files) {
     try {
-      if (file.size > 100*1024*1024) { showToast(`${file.name} is over 100 MB`, 'error'); continue; }
+      if (file.size > 50*1024*1024) { showToast(`${file.name} is over 50 MB`, 'error'); continue; }
       if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) { showToast(`${file.name} is not an image/video`, 'error'); continue; }
       showToast(`Uploading ${file.name}…`, 'info');
-      const data = await cloudinaryUpload(file, 'auto');
-      orgMediaItems.push({ src: data.secure_url, type: file.type.startsWith('video/') ? 'video' : 'image', name: file.name, publicId: data.public_id || '', resourceType: data.resource_type || 'image' });
+      const data = await flooxUpload(file);
+      orgMediaItems.push({ src: data.url, type: file.type.startsWith('video/') ? 'video' : 'image', name: file.name, publicId: data.publicId || '', resourceType: data.resourceType || 'image' });
       added++; renderOrganiserMedia();
     } catch (e) { console.error(e); showToast(`Failed: ${file.name} — ${e.message}`, 'error'); }
   }
