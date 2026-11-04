@@ -1,58 +1,37 @@
-// Floox media upload
-// Uses the existing public Supabase Storage bucket `floox-media`.
-// This removes the old Cloudinary dependency and keeps uploads on the same backend.
+// Floox media upload — signed Cloudinary upload via backend
+// POST /api/upload-media
+// Body: { fileData (base64 data URL), fileName, fileType, mediaType ('image'|'video'|'audio') }
 
-const {
-  corsOk, json,
-  verifyToken, extractBearer,
-} = require('./_utils');
+const crypto = require('crypto');
+const { corsOk, json, verifyToken, extractBearer } = require('./_utils');
 
-function safeName(name = 'file') {
-  return String(name)
-    .replace(/[^a-zA-Z0-9._-]/g, '-')
-    .replace(/-+/g, '-')
-    .slice(-120) || 'file';
-}
-
-function extension(fileName, fileType) {
-  const fromName = String(fileName || '').match(/\.([a-zA-Z0-9]{1,8})$/);
-  if (fromName) return fromName[1].toLowerCase();
-  const map = {
-    'image/jpeg': 'jpg',
-    'image/png': 'png',
-    'image/webp': 'webp',
-    'image/gif': 'gif',
-    'video/mp4': 'mp4',
-    'video/webm': 'webm',
-    'audio/mpeg': 'mp3',
-    'audio/wav': 'wav',
-    'audio/ogg': 'ogg',
-  };
-  return map[fileType] || 'bin';
+function sha1(str) {
+  return crypto.createHash('sha1').update(str).digest('hex');
 }
 
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return corsOk();
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
 
+  // ── Auth ──────────────────────────────────────────────────────────────────
   const token = extractBearer(event);
   if (!token) return json(401, { error: 'Authentication required.' });
 
   let claims;
-  try {
-    claims = verifyToken(token);
-  } catch {
-    return json(401, { error: 'Session expired.' });
-  }
+  try { claims = verifyToken(token); }
+  catch { return json(401, { error: 'Session expired.' }); }
 
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-  const BUCKET = 'floox-media';
+  // ── Cloudinary config ─────────────────────────────────────────────────────
+  const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+  const API_KEY    = process.env.CLOUDINARY_API_KEY;
+  const API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
-  if (!SUPABASE_URL || !SERVICE_KEY) {
+  if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
+    console.error('Cloudinary env vars missing');
     return json(500, { error: 'Media storage is not configured.' });
   }
 
+  // ── Parse body ─────────────────────────────────────────────────────────────
   let body;
   try { body = JSON.parse(event.body || '{}'); }
   catch { return json(400, { error: 'Invalid request body.' }); }
@@ -62,61 +41,58 @@ exports.handler = async (event) => {
     return json(400, { error: 'No file data provided.' });
   }
 
+  // Validate base64 data URL
   const match = fileData.match(/^data:([^;]+);base64,(.+)$/s);
-  if (!match) return json(400, { error: 'Invalid file data format.' });
+  if (!match) return json(400, { error: 'Invalid file data format. Must be a base64 data URL.' });
 
-  const contentType = String(fileType || match[1] || 'application/octet-stream');
-  const base64 = match[2];
-  let buffer;
-  try {
-    buffer = Buffer.from(base64, 'base64');
-  } catch {
-    return json(400, { error: 'Invalid base64 file data.' });
-  }
+  const detectedType = String(fileType || match[1] || 'image/jpeg');
 
-  if (!buffer.length) return json(400, { error: 'Empty file.' });
-  if (buffer.length > 50 * 1024 * 1024) {
+  // Size guard before Cloudinary (50 MB max)
+  const base64Payload = match[2];
+  const approxBytes = Math.floor(base64Payload.length * 0.75);
+  if (approxBytes > 50 * 1024 * 1024) {
     return json(413, { error: 'File is too large. Maximum size is 50 MB.' });
   }
 
-  const typePrefix = mediaType === 'video' ? 'videos' : mediaType === 'audio' ? 'audio' : 'images';
-  const userId = safeName(claims.id || 'user');
-  const name = safeName(fileName || `upload.${extension(fileName, contentType)}`);
-  const objectPath = `${userId}/${typePrefix}/${Date.now()}-${name}`;
-  const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${objectPath}`;
+  // ── Build signed Cloudinary upload ────────────────────────────────────────
+  const resourceType = detectedType.startsWith('video/') || mediaType === 'video' ? 'video'
+                     : detectedType.startsWith('audio/') || mediaType === 'audio' ? 'video' // Cloudinary uses 'video' for audio too
+                     : 'image';
+  const folder    = `floox/${claims.id || 'user'}`;
+  const timestamp = Math.floor(Date.now() / 1000);
+
+  // Params must be sorted alphabetically for the signature
+  const sigParams = `folder=${folder}&timestamp=${timestamp}${API_SECRET}`;
+  const signature = sha1(sigParams);
+
+  const formData = new URLSearchParams();
+  formData.append('file',      fileData);  // Cloudinary accepts base64 data URLs directly
+  formData.append('folder',    folder);
+  formData.append('timestamp', String(timestamp));
+  formData.append('api_key',   API_KEY);
+  formData.append('signature', signature);
 
   try {
-    const res = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${SERVICE_KEY}`,
-        apikey: SERVICE_KEY,
-        'Content-Type': contentType,
-        'x-upsert': 'false',
-      },
-      body: buffer,
-    });
+    const uploadRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`,
+      { method: 'POST', body: formData }
+    );
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      console.error('Supabase Storage error:', data);
-      return json(res.status >= 400 && res.status < 500 ? res.status : 500, {
-        error: data.message || data.error || 'Upload failed.'
-      });
+    const data = await uploadRes.json().catch(() => ({}));
+    if (!uploadRes.ok) {
+      console.error('Cloudinary upload error:', data);
+      return json(500, { error: data.error?.message || 'Upload failed.' });
     }
 
-    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${objectPath}`;
-
     return json(200, {
-      url: publicUrl,
-      publicId: objectPath,
-      format: extension(fileName, contentType),
-      resourceType: mediaType,
-      bytes: buffer.length,
-      path: objectPath,
+      url:          data.secure_url,
+      publicId:     data.public_id,
+      resourceType: data.resource_type,
+      format:       data.format,
+      bytes:        data.bytes,
     });
   } catch (err) {
-    console.error('Supabase Storage upload error:', err);
+    console.error('Cloudinary upload exception:', err);
     return json(500, { error: 'Upload failed. Please try again.' });
   }
 };
