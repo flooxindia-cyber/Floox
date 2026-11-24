@@ -55,7 +55,10 @@ body{background:var(--bg);min-height:100vh}
     <a class="sb-link" href="#profile"><span class="sb-icon">◎</span>My Profile</a>
     <a class="sb-link" href="floox-public.html"><span class="sb-icon">↗</span>Back to Floox</a>
   </nav>
-  <div class="sb-bottom"><button class="sb-link" id="logout"><span class="sb-icon">↪</span>Log out</button></div>
+  <div class="sb-bottom">
+    <button class="sb-link" onclick="openDeleteModal()" style="color:rgba(255,45,120,.7)"><span class="sb-icon">🗑</span>Delete Account</button>
+    <button class="sb-link" id="logout"><span class="sb-icon">↪</span>Log out</button>
+  </div>
 </aside>
 <main class="main" id="top">
   <header class="topbar"><div style="display:flex;align-items:center;gap:12px"><button class="mobile-toggle" id="toggle">☰</button><div><div class="top-title">Fan Dashboard</div><div class="top-sub">Your personal Floox space</div></div></div><div class="top-actions"><a class="ghost" href="floox-search-results.html?type=artists">Discover artists</a><a class="fire" href="floox-contact.html">Plan an event →</a></div></header>
@@ -110,5 +113,103 @@ document.querySelectorAll('.sb-link[href^="#"]').forEach(a=>a.addEventListener('
 </script>
   <script src="floox-marketplace.js"></script>
   <script src="floox-marketplace-enhancements.js"></script>
+
+<!-- ── DELETE ACCOUNT MODAL ──────────────────────────────────────────────── -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.88);backdrop-filter:blur(14px);align-items:center;justify-content:center;padding:1.2rem">
+  <div style="background:#0f0a02;border:1.5px solid rgba(255,45,120,.25);border-radius:28px;width:100%;max-width:460px;padding:2.5rem;animation:dmIn .35s cubic-bezier(.34,1.56,.64,1)">
+    <style>@keyframes dmIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}</style>
+    <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
+    <div style="font-family:var(--head,Syne,sans-serif);font-size:1.3rem;font-weight:800;letter-spacing:-.5px;margin-bottom:.75rem;color:#fff">Delete Your Account?</div>
+    <p style="font-size:.88rem;color:rgba(255,255,255,.55);line-height:1.75;margin-bottom:1.4rem">
+      This will <strong style="color:#FF2D78">permanently delete</strong> your Floox fan profile and all your data, including saved artists and favourites.<br><br>
+      To confirm, type <strong style="color:#fff;background:rgba(255,45,120,.1);padding:.1rem .4rem;border-radius:6px;font-family:monospace">DELETE</strong> below:
+    </p>
+    <input id="deleteConfirmInput" type="text" placeholder='Type "DELETE" to confirm'
+      style="width:100%;border:1.5px solid rgba(255,45,120,.3);border-radius:12px;padding:12px 14px;background:rgba(255,255,255,.04);color:#fff;font-size:.9rem;font-family:monospace;outline:none;box-sizing:border-box;margin-bottom:1rem"
+      oninput="document.getElementById('deleteConfirmBtn').disabled=this.value.trim()!=='DELETE';document.getElementById('deleteConfirmBtn').style.opacity=this.value.trim()==='DELETE'?'1':'.45'">
+    <div id="deleteErrMsg" style="display:none;font-size:.8rem;color:#FF2D78;margin-bottom:.9rem;padding:.7rem 1rem;background:rgba(255,45,120,.08);border-radius:10px;border:1px solid rgba(255,45,120,.2)"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button onclick="closeDeleteModal()" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.65);font:700 .82rem var(--head,Syne,sans-serif);cursor:pointer">Cancel</button>
+      <button id="deleteConfirmBtn" onclick="confirmDeleteAccount()" disabled
+        style="flex:1;padding:12px;border-radius:12px;border:0;background:linear-gradient(135deg,#c0003a,#FF2D78);color:#fff;font:700 .82rem var(--head,Syne,sans-serif);cursor:not-allowed;opacity:.45;transition:.2s">
+        🗑️ Delete Permanently
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── FAN DASHBOARD: DELETE ACCOUNT ────────────────────────────────────────────
+function openDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'flex';
+  document.getElementById('deleteConfirmInput').value = '';
+  document.getElementById('deleteConfirmBtn').disabled = true;
+  document.getElementById('deleteConfirmBtn').style.opacity = '.45';
+  document.getElementById('deleteConfirmBtn').style.cursor = 'not-allowed';
+  document.getElementById('deleteErrMsg').style.display = 'none';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('deleteConfirmInput');
+  const btn   = document.getElementById('deleteConfirmBtn');
+  if (input && btn) {
+    input.addEventListener('input', () => {
+      const ok = input.value.trim() === 'DELETE';
+      btn.disabled      = !ok;
+      btn.style.opacity = ok ? '1' : '.45';
+      btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+    });
+  }
+  document.getElementById('deleteModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+  });
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDeleteModal();
+});
+
+async function confirmDeleteAccount() {
+  const btn    = document.getElementById('deleteConfirmBtn');
+  const errMsg = document.getElementById('deleteErrMsg');
+  btn.disabled = true;
+  btn.textContent = '⏳ Deleting…';
+  btn.style.opacity = '.7';
+  errMsg.style.display = 'none';
+
+  try {
+    await FLOOX.apiPost('delete-account', {}, true);
+
+    // Clear all local session data
+    FLOOX.clearSession();
+    localStorage.removeItem('floox_likes');
+
+    btn.textContent = '✓ Deleted';
+    btn.style.background = 'rgba(34,197,94,.2)';
+    btn.style.color = '#22C55E';
+    btn.style.border = '1.5px solid rgba(34,197,94,.3)';
+
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1500);
+
+  } catch (e) {
+    errMsg.textContent = e.message && !e.message.toLowerCase().includes('fetch')
+      ? e.message
+      : '⚠️ Could not reach server. Please try again or contact support at hello@floox.in.';
+    errMsg.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '🗑️ Delete Permanently';
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  }
+}
+</script>
 </body>
 </html>
